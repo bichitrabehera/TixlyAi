@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSlackToken, isSlackConnected } from "@/lib/db";
+import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
   try {
@@ -9,20 +9,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No text provided" }, { status: 400 });
     }
 
-    if (!isSlackConnected()) {
+    // Read token from cookies (browser storage)
+    const cookieStore = await cookies();
+    const token = cookieStore.get("slack_token")?.value;
+    const userId = cookieStore.get("slack_user_id")?.value;
+
+    if (!token || !userId) {
       return NextResponse.json(
         { error: "Slack not connected. Please connect Slack first." },
         { status: 401 }
       );
     }
-
-    const row = getSlackToken();
-    if (!row) {
-      return NextResponse.json({ error: "Slack token not found" }, { status: 401 });
-    }
-
-    const token = row.access_token;
-    const userId = row.user_id;
 
     // Step 1: Open DM conversation
     const openResponse = await fetch("https://slack.com/api/conversations.open", {

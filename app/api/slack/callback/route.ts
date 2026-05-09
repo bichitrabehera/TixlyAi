@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { saveSlackToken } from "@/lib/db";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -46,16 +45,28 @@ export async function GET(request: Request) {
       return NextResponse.redirect(new URL("/demo?error=oauth_failed", request.url));
     }
 
-    // Save to SQLite
-    saveSlackToken(
-      data.access_token,
-      data.authed_user?.id,
-      data.team?.id
-    );
+    // Save token in cookies (browser storage)
+    const isProduction = !isLocalhost;
+    const redirectResponse = NextResponse.redirect(new URL("/demo?slack_connected=true", request.url));
 
-    console.log("Slack token saved to database");
+    redirectResponse.cookies.set("slack_token", data.access_token, {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
+    });
+    redirectResponse.cookies.set("slack_user_id", data.authed_user?.id, {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
+    });
 
-    return NextResponse.redirect(new URL("/demo?slack_connected=true", request.url));
+    console.log("Slack token stored in browser cookies");
+
+    return redirectResponse;
   } catch (error) {
     console.error("OAuth exception:", error);
     return NextResponse.redirect(new URL("/demo?error=oauth_exception", request.url));
