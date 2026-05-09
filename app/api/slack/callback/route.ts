@@ -38,8 +38,9 @@ export async function GET(request: Request) {
     console.log("Slack OAuth response:", data);
 
     if (!data.ok) {
-      console.error("Slack OAuth error:", data);
-      return NextResponse.redirect(new URL("/demo?error=oauth_failed&msg=" + (data.error || ""), request.url));
+      console.error("Slack OAuth error:", JSON.stringify(data));
+      const errorMsg = data.error || data.message || JSON.stringify(data);
+      return NextResponse.redirect(new URL("/demo?error=oauth_failed: " + errorMsg, request.url));
     }
 
     const accessToken = data.access_token;
