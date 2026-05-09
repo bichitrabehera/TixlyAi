@@ -6,7 +6,7 @@ export function Header() {
     <header className="sticky z-50">
        <div className="bg-amber-50 mb-6 border-b border-amber-100 py-2 text-center">
         <p className="text-sm text-amber-800">
-          🚧 SnapShot v1 — Early MVP. More features (login, Slack, Jira) coming soon.
+          🚧 TixlyAi v1 — Early MVP. More features (login, Slack, Jira) coming soon.
         </p>
         <p className="text-xs text-amber-600 mt-0.5">Thanks for trying it early 🙌</p>
       </div>
@@ -16,7 +16,7 @@ export function Header() {
             href="/"
             className="flex items-center gap-2 rounded-full px-4 py-2 text-base font-bold tracking-tight text-slate-900 transition-colors hover:bg-slate-100/80 hover:text-slate-700"
           >
-            SnapShot
+            TixlyAi
           </Link>
 
           <nav className="flex items-center gap-1">

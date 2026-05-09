@@ -121,7 +121,7 @@ export function InputPanel({
         <div className="mt-4 rounded-lg bg-neutral-100 p-4 text-center">
           <p className="text-base font-medium text-neutral-700">🚀 You've reached the free MVP limit.</p>
           <p className="text-sm text-neutral-500 mt-2">
-            This is an early version of SnapShot.
+            This is an early version of TixlyAi.
             <br />
             We're working on login, Slack, Jira integrations and more.
             <br />

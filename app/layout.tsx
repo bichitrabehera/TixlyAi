@@ -6,7 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SnapShot - Screenshot to Bug Ticket",
+  title: "TixlyAi - Screenshot to Bug Ticket",
   description: "Convert screenshots to structured bug tickets using OCR and AI",
 };
 

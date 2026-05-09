@@ -13,7 +13,7 @@ export function CallToAction() {
           Ready to save time?
         </h2>
         <p className="text-lg text-slate-600 mb-8">
-          Try SnapShot now. Paste a screenshot and see how fast you can generate a ticket.
+          Try TixlyAi now. Paste a screenshot and see how fast you can generate a ticket.
         </p>
         <Link
           href="/demo"

@@ -7,7 +7,7 @@ export function Footer() {
         <div className="flex flex-col items-center gap-8">
           <div className="text-center">
             <div className="mb-2 flex items-center justify-center gap-2 font-bold text-xl tracking-tight text-slate-900">
-              SnapShot
+              TixlyAi
             </div>
             <p className="text-sm text-slate-600">
               Screenshot to ticket, instantly.
@@ -52,7 +52,7 @@ export function Footer() {
           </div>
 
           <div className="text-xs text-slate-400">
-            © 2026 SnapShot. All rights reserved.
+            © 2026 TixlyAi. All rights reserved.
           </div>
         </div>
       </div>
