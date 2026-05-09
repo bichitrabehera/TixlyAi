@@ -1,13 +1,20 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export function Header() {
   return (
-    <header className="sticky top-6 z-50 mx-4 lg:mx-8">
+    <header className="sticky z-50 mx-4 lg:mx-8">
+       <div className="bg-amber-50 border-b border-amber-100 py-2 text-center">
+        <p className="text-sm text-amber-800">
+          🚧 SnapShot v1 — Early MVP. More features (login, Jira) coming soon.
+        </p>
+        <p className="text-xs text-amber-600 mt-0.5">Thanks for trying it early 🙌</p>
+      </div>
       <div className="mx-auto w-fit rounded-full border border-slate-900/10 backdrop-blur-xl shadow-lg shadow-slate-900/5">
         <div className="flex items-center gap-1 px-2 py-2">
           <Link
             href="/"
-            className="font-bold px-4 py-2 text-base tracking-tight text-slate-900 hover:text-slate-700 transition-colors"
+            className="flex items-center gap-2 rounded-full px-4 py-2 text-base font-bold tracking-tight text-slate-900 transition-colors hover:bg-slate-100/80 hover:text-slate-700"
           >
             SnapShot
           </Link>
@@ -15,16 +22,17 @@ export function Header() {
           <nav className="flex items-center gap-1">
             <Link
               href="#how"
-              className="text-sm font-medium text-slate-700 hover:text-slate-900 px-4 py-2 rounded-full hover:bg-slate-100/80 transition-all"
+              className="text-sm font-medium text-slate-700 px-4 py-2 rounded-full transition-all hover:bg-slate-100/80 hover:text-slate-900"
             >
               How it works
             </Link>
 
             <Link
               href="/demo"
-              className="text-sm font-medium bg-slate-900 text-white px-5 py-2.5 rounded-full hover:bg-slate-800 transition-all shadow-sm ml-1"
+              className="ml-1 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-slate-800"
             >
               Demo
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </nav>
         </div>

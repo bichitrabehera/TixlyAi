@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { Slack, Jira } from "developer-icons";
+import { CheckCircle2, ArrowRight } from "lucide-react";
+import { Slack, Jira, Notion } from "developer-icons";
 
 export function Hero() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-24 lg:px-8 lg:py-32">
       <div className="text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full bg-green-200 px-4 py-1.5 text-sm font-medium text-slate-700 mb-8">
+        <div className="inline-flex items-center gap-2 rounded-xl bg-green-200 px-4 py-1.5 text-sm font-medium text-slate-700 mb-8">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
@@ -33,12 +34,10 @@ export function Hero() {
         <div className="mt-12 flex gap-4 sm:flex-row justify-center items-center">
           <Link
             href="/demo"
-            className="group relative rounded-xl bg-green-700 px-4 py-2 font-semibold text-white transition-all hover:bg-green-600 hover:shadow-lg hover:shadow-green-900/10 hover:-translate-y-0.5"
+            className="group relative inline-flex items-center rounded-xl bg-green-700 px-4 py-2 font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-green-600 hover:shadow-lg hover:shadow-green-900/10"
           >
             Try it now
-            <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">
-              →
-            </span>
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
 
           <a
@@ -52,47 +51,17 @@ export function Hero() {
         {/* Trust indicators */}
         <div className="mt-16 flex items-center justify-center gap-8 text-sm text-slate-500">
           <div className="flex items-center gap-2">
-            <svg
-              className="w-5 h-5 text-green-500"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
             No signup needed
           </div>
 
           <div className="flex items-center gap-2">
-            <svg
-              className="w-5 h-5 text-green-500"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
             Works with any tracker
           </div>
 
           <div className="flex items-center gap-2">
-            <svg
-              className="w-5 h-5 text-green-500"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
             Instant results
           </div>
         </div>
@@ -102,9 +71,33 @@ export function Hero() {
           Works with your existing tools
         </p>
 
-        <div className="mt-4 flex items-center justify-center gap-8 opacity-70">
-          <Slack className="h-6 w-6 text-slate-500 hover:text-[#4A154B] hover:scale-110 transition" />
-          <Jira className="h-6 w-6 text-slate-500 hover:text-[#0052CC] hover:scale-110 transition" />
+        <div className="mt-8 flex items-center justify-center gap-6">
+          <div className="group flex flex-col items-center gap-2 cursor-pointer">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white transition-all group-hover:border-[#4A154B] group-hover:bg-[#4A154B]/5 group-hover:shadow-md group-hover:-translate-y-1">
+              <Slack className="h-6 w-6 text-slate-400 transition-colors group-hover:text-[#4A154B]" />
+            </div>
+            <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700 transition-colors">
+              Slack
+            </span>
+          </div>
+
+          <div className="group flex flex-col items-center gap-2 cursor-pointer">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white transition-all group-hover:border-[#0052CC] group-hover:bg-[#0052CC]/5 group-hover:shadow-md group-hover:-translate-y-1">
+              <Jira className="h-6 w-6 text-slate-400 transition-colors group-hover:text-[#0052CC]" />
+            </div>
+            <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700 transition-colors">
+              Jira
+            </span>
+          </div>
+
+          <div className="group flex flex-col items-center gap-2 cursor-pointer">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white transition-all group-hover:border-slate-900 group-hover:bg-slate-50 group-hover:shadow-md group-hover:-translate-y-1">
+              <Notion className="h-6 w-6 text-slate-400 transition-colors group-hover:text-slate-900" />
+            </div>
+            <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700 transition-colors">
+              Notion
+            </span>
+          </div>
         </div>
       </div>
     </section>

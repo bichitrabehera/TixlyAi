@@ -1,20 +1,26 @@
+import { Bug, ClipboardList, Palette, Ticket } from "lucide-react";
+
 export function UseCases() {
   const cases = [
     {
       title: "Bug reports",
       description: "Capture error details from screenshots without retyping",
+      icon: Bug,
     },
     {
       title: "Testing notes",
       description: "Document test results and edge cases quickly",
+      icon: ClipboardList,
     },
     {
       title: "Design feedback",
       description: "Extract UI text and details for design reviews",
+      icon: Palette,
     },
     {
       title: "Support tickets",
       description: "Convert user screenshots into actionable tickets",
+      icon: Ticket,
     },
   ];
 
@@ -32,8 +38,11 @@ export function UseCases() {
           {cases.map((item) => (
             <div
               key={item.title}
-              className="rounded-lg border border-slate-200 p-6 hover:border-slate-300 transition bg-white"
+              className="rounded-xl border border-slate-200 p-6 hover:border-slate-300 transition bg-white"
             >
+              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
+                <item.icon className="h-5 w-5" />
+              </div>
               <h3 className="font-semibold text-lg mb-2 text-slate-900">{item.title}</h3>
               <p className="text-slate-600">{item.description}</p>
             </div>

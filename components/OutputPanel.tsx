@@ -5,6 +5,8 @@ interface OutputPanelProps {
   onSendToSlack: () => Promise<void>;
   slackLoading: boolean;
   slackSent: boolean;
+  slackConnected: boolean;
+  disabled: boolean;
 }
 
 export function OutputPanel({
@@ -14,18 +16,20 @@ export function OutputPanel({
   onSendToSlack,
   slackLoading,
   slackSent,
+  slackConnected,
+  disabled,
 }: OutputPanelProps) {
   return (
-    <section className="rounded-lg border border-slate-300 p-6">
+    <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
-        <h2 className="mb-1 text-lg font-semibold">Generated ticket</h2>
-        <p className="text-sm text-slate-600">Copy-ready bug report</p>
+        <h2 className="text-lg font-semibold text-neutral-900">Generated Ticket</h2>
+        <p className="text-sm text-neutral-500 mt-1">Ready to copy or send</p>
       </div>
 
       {ticket ? (
         <>
-          <div className="mb-6 max-h-96 overflow-auto rounded-lg border border-slate-200 p-4">
-            <pre className="whitespace-pre-wrap font-mono text-sm leading-6 text-slate-800">
+          <div className="mb-6 max-h-80 overflow-auto rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-neutral-800">
               {ticket}
             </pre>
           </div>
@@ -33,33 +37,39 @@ export function OutputPanel({
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
               onClick={onCopy}
-              className="flex-1 rounded-lg bg-teal-700 px-4 py-3 font-medium text-white transition hover:bg-teal-600"
+              disabled={disabled}
+              className="flex-1 rounded-lg bg-teal-600 px-4 py-3 font-medium text-white transition hover:bg-teal-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Copy ticket
+              Copy to clipboard
             </button>
-            <button
-              onClick={onSendToSlack}
-              disabled={slackLoading || slackSent}
-              className="flex-1 rounded-lg bg-slate-900 px-4 py-3 font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
-            >
-              {slackLoading
-                ? "Sending..."
-                : slackSent
-                  ? "Sent to Slack ✅"
-                  : "Send to Slack"}
-            </button>
+
+            {slackConnected && (
+              <button
+                onClick={onSendToSlack}
+                disabled={disabled || slackLoading || slackSent}
+                className="flex-1 rounded-lg bg-[#4A154B] px-4 py-3 font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {slackLoading
+                  ? "Sending..."
+                  : slackSent
+                    ? "Sent ✓"
+                    : "Send to Slack"}
+              </button>
+            )}
+
             <button
               onClick={onReset}
-              className="rounded-lg border border-slate-200 px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+              disabled={disabled}
+              className="rounded-lg border border-neutral-200 px-4 py-3 font-medium text-neutral-600 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Reset
+              New ticket
             </button>
           </div>
         </>
       ) : (
-        <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center">
-          <p className="text-slate-600">
-            Paste a screenshot to generate a ticket.
+        <div className="rounded-lg border border-dashed border-neutral-300 p-8 text-center">
+          <p className="text-neutral-500">
+            {disabled ? "Generate a ticket to see output" : "Ticket will appear here"}
           </p>
         </div>
       )}

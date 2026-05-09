@@ -14,6 +14,8 @@ interface InputPanelProps {
   onNoteChange: (value: string) => void;
   onGenerate: () => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  limitReached?: boolean;
+  onGenerateSuccess?: () => void;
 }
 
 export function InputPanel({
@@ -30,46 +32,57 @@ export function InputPanel({
   onNoteChange,
   onGenerate,
   onFileChange,
+  limitReached = false,
 }: InputPanelProps) {
+  const isDisabled = loading || !image || limitReached;
+
+  const buttonText = () => {
+    if (loading) return status || "Processing...";
+    if (limitReached) return "Limit reached";
+    if (!image) return "Upload an image to generate";
+    return "Generate ticket";
+  };
+
   return (
-    <section className="border border-slate-300 rounded-lg p-6">
+    <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-1">Paste screenshot</h2>
-        <p className="text-sm text-slate-600">Drop an image or press Ctrl+V</p>
+        <h2 className="text-lg font-semibold text-neutral-900">Screenshot</h2>
+        <p className="text-sm text-neutral-500 mt-1">Paste or drop an image (Ctrl+V)</p>
       </div>
 
-      {/* DROPZONE */}
       <div
         onDrop={onDrop}
         onDragOver={onDragOver}
         onClick={onClickDropzone}
-        className="relative mb-6 min-h-64 flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-slate-300 transition"
+        className="relative mb-6 flex min-h-56 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 transition hover:border-neutral-400 hover:bg-neutral-100"
       >
         {image ? (
-          <div className="absolute inset-0 p-4">
+          <div className="flex flex-col items-center">
             <img
               src={image}
               alt="Screenshot preview"
-              className="w-full h-full object-contain"
+              className="max-h-48 object-contain"
             />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveImage();
+              }}
+              className="mt-3 rounded-lg bg-neutral-200 px-3 py-1.5 text-sm font-medium text-neutral-600 hover:bg-neutral-300"
+            >
+              Remove
+            </button>
           </div>
         ) : (
           <div className="text-center">
-            <p className="font-medium text-slate-700">Paste or drop image</p>
-            <p className="text-sm text-slate-500 mt-1">JPG, PNG, or GIF</p>
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 text-white">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <p className="font-medium text-neutral-700">Drop image here</p>
+            <p className="text-sm text-neutral-400 mt-1">or click to upload</p>
           </div>
-        )}
-
-        {image && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemoveImage();
-            }}
-            className="absolute top-3 right-3 rounded px-2 py-1 text-xs font-medium text-slate-600 shadow-sm"
-          >
-            Remove
-          </button>
         )}
       </div>
 
@@ -81,31 +94,43 @@ export function InputPanel({
         className="hidden"
       />
 
-      {/* CONTEXT */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium mb-2">
-          Add context (optional)
+      <div className="mb-5">
+        <label className="block text-sm font-medium text-neutral-700 mb-2">
+          Context (optional)
         </label>
         <textarea
           value={note}
           onChange={(e) => onNoteChange(e.target.value)}
           placeholder="What's wrong? Where did you see it?"
-          className="w-full rounded-lg border border-slate-200 p-3 text-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
-          rows={3}
+          disabled={loading || limitReached}
+          className="w-full rounded-lg border border-neutral-200 p-3 text-sm placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none disabled:opacity-50"
+          rows={2}
         />
       </div>
 
-      {/* GENERATE BUTTON */}
       <button
         onClick={onGenerate}
-        disabled={loading || !image}
-        className="w-full rounded-lg bg-teal-700 px-4 py-3 font-medium text-white transition hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={isDisabled}
+        className="w-full rounded-lg bg-neutral-900 px-4 py-3 font-medium text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? status || "Generating..." : "Generate ticket"}
+        {buttonText()}
       </button>
 
-      {/* ERROR */}
-      {error && (
+      {/* Limit reached message */}
+      {limitReached && (
+        <div className="mt-4 rounded-lg bg-neutral-100 p-4 text-center">
+          <p className="text-base font-medium text-neutral-700">🚀 You've reached the free MVP limit.</p>
+          <p className="text-sm text-neutral-500 mt-2">
+            This is an early version of SnapShot.
+            <br />
+            We're working on login, Slack, Jira integrations and more.
+            <br />
+            <span className="text-neutral-400">Stay tuned 👀</span>
+          </p>
+        </div>
+      )}
+
+      {error && !limitReached && (
         <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
           {error}
         </div>

@@ -28,15 +28,23 @@ export async function POST(request: Request) {
 SCREENSHOT TEXT:
 ${ocrText}
 
-Generate a clear, actionable bug report with these sections:
-- **Title**: Brief description of the issue
-- **Priority**: High/Medium/Low (based on severity)
-- **Description**: What's happening and where
-- **Steps to Reproduce** (if applicable): How to trigger the bug
-- **Expected Behavior**: What should happen
-- **Actual Behavior**: What's actually happening
+Generate a clear, actionable bug report in this format:
 
-Keep it concise and professional.`;
+🐛 Title: [brief description]
+📊 Priority: [High/Medium/Low]
+
+📝 Description:
+[What happened and where]
+
+🔄 Steps to Reproduce:
+1. [step 1]
+2. [step 2]
+3. [step 3]
+
+✅ Expected: [what should happen]
+❌ Actual: [what actually happened]
+
+Keep it concise. Use bullet points. No markdown.`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
