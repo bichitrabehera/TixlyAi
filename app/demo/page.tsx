@@ -93,8 +93,10 @@ export default function Demo() {
   }, []);
 
   const connectSlack = () => {
+    const clientId = process.env.NEXT_PUBLIC_SLACK_CLIENT_ID || "your_client_id";
     const redirectUri = `${window.location.origin}/api/slack/callback`;
-    const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.NEXT_PUBLIC_SLACK_CLIENT_ID || "your_client_id"}&scope=chat:write,im:write,im:read,users:read&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    const url = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=chat:write,im:write,im:read,users:read&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    console.log("Connecting to Slack with redirect:", redirectUri);
     window.location.href = url;
   };
 

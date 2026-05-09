@@ -13,7 +13,10 @@ export async function GET(request: Request) {
   const origin = request.headers.get("origin") || "http://localhost:3000";
   const redirectUri = `${origin}/api/slack/callback`;
 
+  console.log("OAuth callback - origin:", origin, "redirectUri:", redirectUri);
+
   if (!clientId || !clientSecret || clientId === "your_client_id_here") {
+    console.error("Missing client ID or secret");
     return NextResponse.redirect(new URL("/demo?error=slack_not_configured", request.url));
   }
 
@@ -32,47 +35,44 @@ export async function GET(request: Request) {
     });
 
     const data = await response.json();
+    console.log("Slack OAuth response:", data);
 
     if (!data.ok) {
       console.error("Slack OAuth error:", data);
-      return NextResponse.redirect(new URL("/demo?error=oauth_failed", request.url));
+      return NextResponse.redirect(new URL("/demo?error=oauth_failed&msg=" + (data.error || ""), request.url));
     }
 
     const accessToken = data.access_token;
-    const botToken = data.bot_access_token || data.access_token; // Use bot token if available
     const userId = data.authed_user?.id;
     const teamId = data.team?.id;
 
-    console.log("Slack OAuth response:", { 
-      hasAccessToken: !!data.access_token, 
-      hasBotToken: !!data.bot_access_token,
-      tokenType: data.access_token?.startsWith("xoxb") ? "bot" : "user" 
-    });
-
-    // Use bot token if available, otherwise use access token
-    const finalToken = botToken;
+    // Determine if production
+    const isProduction = !origin.includes("localhost");
 
     // Create response with redirect
     const redirectResponse = NextResponse.redirect(new URL("/demo?slack_connected=true", request.url));
 
-    // Set cookies to persist token
-    redirectResponse.cookies.set("slack_token", finalToken, {
+    // Set cookies with appropriate settings for environment
+    redirectResponse.cookies.set("slack_token", accessToken, {
       httpOnly: false,
-      secure: false,
+      secure: isProduction,
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
     });
     redirectResponse.cookies.set("slack_user_id", userId, {
       httpOnly: false,
-      secure: false,
+      secure: isProduction,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30,
+      path: "/",
     });
     redirectResponse.cookies.set("slack_team_id", teamId || "", {
       httpOnly: false,
-      secure: false,
+      secure: isProduction,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30,
+      path: "/",
     });
 
     return redirectResponse;
