@@ -93,21 +93,21 @@ export default function Demo() {
   }, []);
 
   const connectSlack = () => {
+    const baseUrl = "https://snap-shot-error.vercel.app";
     const clientId = process.env.NEXT_PUBLIC_SLACK_CLIENT_ID;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     
     if (!clientId) {
-      alert("Slack client ID not configured");
-      return;
-    }
-    if (!baseUrl) {
-      alert("Base URL not configured. Set NEXT_PUBLIC_BASE_URL");
+      alert("Slack client ID not set. Check NEXT_PUBLIC_SLACK_CLIENT_ID in env.");
       return;
     }
     
     const redirectUri = `${baseUrl}/api/slack/callback`;
+    
+    // Show the URL to add in Slack
+    alert("Add this EXACT URL to Slack → OAuth & Permissions → Redirect URLs:\n\n" + redirectUri + "\n\nThen click Connect Slack");
+    return;
+    
     const url = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=chat:write,im:write,im:read,users:read&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    alert("Redirect URI: " + redirectUri + "\n\nMake sure this matches your Slack app Redirect URL");
     window.location.href = url;
   };
 
