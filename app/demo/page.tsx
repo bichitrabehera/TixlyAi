@@ -41,8 +41,6 @@ export default function Demo() {
   const [slackLoading, setSlackLoading] = useState(false);
   const [slackSent, setSlackSent] = useState(false);
   const [slackConnected, setSlackConnected] = useState(false);
-  const [slackToken, setSlackToken] = useState("");
-  const [slackUserId, setSlackUserId] = useState("");
   const [usageCount, setUsageCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -83,47 +81,30 @@ export default function Demo() {
     fetch("/api/slack/status")
       .then((res) => res.json())
       .then((data) => {
-        if (data.connected) {
-          setSlackConnected(true);
-          setSlackToken(data.accessToken || "");
-          setSlackUserId(data.userId || "");
-        }
+        setSlackConnected(data.connected);
       })
       .catch(() => {});
   }, []);
 
   const connectSlack = () => {
-    const baseUrl = "https://snap-shot-error.vercel.app";
-    const clientId = process.env.NEXT_PUBLIC_SLACK_CLIENT_ID;
-    
-    if (!clientId) {
-      alert("Slack client ID not set. Check NEXT_PUBLIC_SLACK_CLIENT_ID in env.");
-      return;
-    }
-    
+    const clientId =
+      process.env.NEXT_PUBLIC_SLACK_CLIENT_ID ||
+      "11092752722018.11086391247955";
+    const baseUrl = window.location.origin;
     const redirectUri = `${baseUrl}/api/slack/callback`;
-    
-    // Show the URL to add in Slack
-    alert("Add this EXACT URL to Slack → OAuth & Permissions → Redirect URLs:\n\n" + redirectUri + "\n\nThen click Connect Slack");
-    return;
-    
     const url = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=chat:write,im:write,im:read,users:read&redirect_uri=${encodeURIComponent(redirectUri)}`;
     window.location.href = url;
   };
 
   const sendToSlack = async () => {
-    if (!ticket || !slackToken) return;
+    if (!ticket) return;
     setSlackLoading(true);
     setSlackSent(false);
     try {
       const response = await fetch("/api/slack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: ticket,
-          accessToken: slackToken,
-          userId: slackUserId,
-        }),
+        body: JSON.stringify({ text: ticket }),
       });
       const data = await response.json();
       if (!response.ok || !data.success) {
@@ -282,8 +263,7 @@ export default function Demo() {
                 onClick={connectSlack}
                 className="inline-flex items-center gap-2 rounded-full bg-[#4A154B] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
               >
-                <Slack className="h-4 w-4" />
-                Connect Slack
+                Connect <Slack className="h-4 w-4" />
               </button>
             )}
           </div>
