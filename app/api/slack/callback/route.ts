@@ -10,10 +10,11 @@ export async function GET(request: Request) {
 
   const clientId = process.env.SLACK_CLIENT_ID;
   const clientSecret = process.env.SLACK_CLIENT_SECRET;
-  const origin = request.headers.get("origin") || "http://localhost:3000";
-  const redirectUri = `${origin}/api/slack/callback`;
+  // Use env var for production, fallback to header origin
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || request.headers.get("origin") || "http://localhost:3000";
+  const redirectUri = `${baseUrl}/api/slack/callback`;
 
-  console.log("OAuth callback - origin:", origin, "redirectUri:", redirectUri);
+  console.log("OAuth callback - baseUrl:", baseUrl, "redirectUri:", redirectUri);
 
   if (!clientId || !clientSecret || clientId === "your_client_id_here") {
     console.error("Missing client ID or secret");
