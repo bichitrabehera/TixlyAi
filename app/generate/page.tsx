@@ -70,11 +70,11 @@ export default function Demo() {
       setSlackConnected(true);
       showToast("Slack connected!");
       // Clean URL
-      window.history.replaceState({}, "", "/demo");
+      window.history.replaceState({}, "", "/generate");
     }
     if (params.get("error")) {
       showToast(params.get("error") || "Something went wrong");
-      window.history.replaceState({}, "", "/demo");
+      window.history.replaceState({}, "", "/generate");
     }
 
     // Check Slack connection status

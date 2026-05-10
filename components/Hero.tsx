@@ -33,7 +33,7 @@ export function Hero() {
         {/* CTA */}
         <div className="mt-12 flex gap-4 sm:flex-row justify-center items-center">
           <Link
-            href="/demo"
+            href="/generate"
             className="group relative inline-flex items-center rounded-xl bg-green-700 px-4 py-2 font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-green-600 hover:shadow-lg hover:shadow-green-900/10"
           >
             {HERO.cta}

@@ -48,7 +48,7 @@ export function HowItWorks() {
 
         <div className="mt-20 text-center">
           <a
-            href="/demo"
+            href="/generate"
             className="group inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition-colors hover:text-slate-700"
           >
             {HOW_IT_WORKS.bottomLink}

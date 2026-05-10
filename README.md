@@ -67,4 +67,4 @@ Stop rewriting. Start generating.
 
 ---
 
-[Generate your first ticket →](/demo)
+[Generate your first ticket →](/generate)
