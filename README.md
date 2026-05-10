@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TixlyAI
 
-## Getting Started
+**v1.0 — First MVP**
 
-First, run the development server:
+Turn any screenshot into a structured, actionable ticket in seconds.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## The Problem
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Every day, thousands of developers, QA testers, and product teams spend valuable time manually rewriting bug reports. You spot an issue, take a screenshot, then spend 15-30 minutes typing out a ticket—title, description, reproduction steps, expected vs actual results, severity level. It's repetitive, time-consuming, and slows down your workflow.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## The Solution
 
-## Learn More
+TixlyAI eliminates the manual work. Paste a screenshot, and our AI instantly generates a complete, structured ticket ready for your project management tool. No typing. No formatting. Just results.
 
-To learn more about Next.js, take a look at the following resources:
+## How It Works
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Paste your screenshot** — Drop an image or paste from clipboard
+2. **AI extracts the details** — Title, description, reproduction steps, expected vs actual results, and severity are auto-generated
+3. **Export or copy** — Send directly to Jira, Linear, Notion, or Slack with one click
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Total time: **5 seconds** instead of 15-30 minutes.
 
-## Deploy on Vercel
+## What You Get
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Every ticket includes:
+- Clear, descriptive title
+- Full description of the issue
+- Step-by-step reproduction steps
+- Expected vs actual behavior
+- Severity level (Critical, High, Medium, Low)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Who It's For
+
+**Developers**
+Quickly turn screenshots of errors, crashes, and unexpected behavior into professional Jira tickets. No more retyping error messages or guessing what information to include.
+
+**QA Testers**
+Document test failures with complete context. Every ticket has reproduction steps, expected results, and actual results—making tickets actionable immediately.
+
+**Agencies**
+Convert client feedback screenshots into structured tasks for your team. No back-and-forth clarifications needed—the screenshot says it all, TixlyAI structures it.
+
+**Product Teams**
+Capture product discussions, design feedback, and UI issues without manual formatting. Turn visual context into trackable tickets in seconds.
+
+## Integrations
+
+- **Jira** — Direct export with proper formatting
+- **Linear** — One-click ticket creation
+- **Notion** — Structured pages ready to use
+- **Slack** — Share tickets in channels
+
+## Why Teams Choose Tixly
+
+- **Save 15-30 minutes per issue** — Multiply that across dozens of tickets per week
+- **Consistent ticket quality** — Every ticket follows the same structured format
+- **Works with any screenshot** — Bugs, UI issues, client feedback, product discussions
+- **No tool switching** — Export directly to where your team already works
+
+## The Bottom Line
+
+TixlyAI transforms visual context into actionable tickets in seconds. It's the fastest path from "I found an issue" to "the ticket is ready."
+
+Stop rewriting. Start generating.
+
+---
+
+[Generate your first ticket →](/demo)
