@@ -10,14 +10,14 @@ import { eq, sql } from "drizzle-orm";
 export async function GET() {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await getOrCreateUser(userId, "");
     const planInfo = await getUserPlanInfo(userId);
-    
+
     const userTickets = await db
       .select()
       .from(tickets)
@@ -25,20 +25,23 @@ export async function GET() {
       .orderBy(sql`${tickets.createdAt} DESC`)
       .limit(50);
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       tickets: userTickets,
       plan: planInfo,
     });
   } catch (error) {
     console.error("Error fetching tickets:", error);
-    return NextResponse.json({ error: "Failed to fetch tickets" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch tickets" },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -46,16 +49,20 @@ export async function POST(request: Request) {
     const { ocrText, note, screenshotUrl } = await request.json();
 
     if (!ocrText) {
-      return NextResponse.json({ error: "No OCR text provided" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No OCR text provided" },
+        { status: 400 },
+      );
     }
 
     // Check ticket limits based on plan
     const { allowed, remaining, plan } = await canGenerateTicket(userId);
 
     if (!allowed) {
-      const upgradeMessage = plan === "free" 
-        ? "Daily limit reached. Upgrade to Basic for 50 tickets/day."
-        : "Daily limit reached. Upgrade to Pro for unlimited tickets.";
+      const upgradeMessage =
+        plan === "free"
+          ? "Daily limit reached. Upgrade to Basic for 50 tickets/day."
+          : "Daily limit reached. Upgrade to Pro for unlimited tickets.";
       return NextResponse.json({ error: upgradeMessage }, { status: 429 });
     }
 
@@ -64,32 +71,54 @@ export async function POST(request: Request) {
     if (!apiKey || apiKey === "your_openai_api_key_here") {
       return NextResponse.json(
         { error: "OpenAI API key not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    const prompt = `You are a bug triaging assistant. Based on the following screenshot text${note ? ` and user note: "${note}"` : ""}, create a structured bug ticket.
+    const prompt = `
+You are a workflow extraction assistant.
 
-SCREENSHOT TEXT:
+Your task is to analyze OCR text from a screenshot${note ? ` and a user note: "${note}"` : ""} and convert it into a structured bug report.
+
+Rules:
+- Use only information clearly present in the OCR text and user note.
+- Do not invent missing details.
+- If information is unclear or missing, leave it empty or state "Not specified".
+- Keep the output concise, factual, and actionable.
+- Write in a professional tone suitable for issue tracking systems (Jira, Linear, GitHub).
+
+OCR TEXT:
 ${ocrText}
 
-Generate a clear, actionable bug report in this format:
+Output format:
 
-🐛 Title: [brief description]
-📊 Priority: [High/Medium/Low]
+Title:
+[A short, specific summary of the issue]
 
-📝 Description:
-[What happened and where]
+Priority:
+[High | Medium | Low | Not specified]
 
-🔄 Steps to Reproduce:
-1. [step 1]
-2. [step 2]
-3. [step 3]
+Description:
+[A clear explanation of the issue, including context if available]
 
-✅ Expected: [what should happen]
-❌ Actual: [what actually happened]
+Steps to Reproduce:
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+(Only include steps if they can be inferred)
 
-Keep it concise. Use bullet points. No markdown.`;
+Expected Behavior:
+[What should happen]
+
+Actual Behavior:
+[What actually happens]
+
+Environment:
+[Device, browser, OS, or app context if available]
+
+Additional Notes:
+[Any extra relevant details or "Not specified"]
+`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -110,7 +139,8 @@ Keep it concise. Use bullet points. No markdown.`;
     }
 
     const data = await response.json();
-    const ticket = data.choices[0]?.message?.content || "Failed to generate ticket";
+    const ticket =
+      data.choices[0]?.message?.content || "Failed to generate ticket";
 
     const user = await getOrCreateUser(userId, "");
 
@@ -124,16 +154,19 @@ Keep it concise. Use bullet points. No markdown.`;
       })
       .returning();
 
-    return NextResponse.json({ 
-      ticket, 
+    return NextResponse.json({
+      ticket,
       id: savedTicket.id,
       remaining,
     });
   } catch (error) {
     console.error("Error generating ticket:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to generate ticket" },
-      { status: 500 }
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to generate ticket",
+      },
+      { status: 500 },
     );
   }
 }

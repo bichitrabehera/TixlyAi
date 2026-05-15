@@ -6,7 +6,7 @@ import { isBasic } from "@/lib/plan";
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -15,8 +15,11 @@ export async function POST(request: Request) {
     const basicUser = await isBasic(userId);
     if (!basicUser) {
       return NextResponse.json(
-        { error: "Slack integration is a Basic feature. Upgrade to Basic to use Slack." },
-        { status: 403 }
+        {
+          error:
+            "Slack integration is a Basic feature. Upgrade to Basic to use Slack.",
+        },
+        { status: 403 },
       );
     }
 
@@ -34,55 +37,76 @@ export async function POST(request: Request) {
     if (!token || !slackUserId) {
       return NextResponse.json(
         { error: "Slack not connected. Please connect Slack first." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // Step 1: Open DM conversation
-    const openResponse = await fetch("https://slack.com/api/conversations.open", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+    const openResponse = await fetch(
+      "https://slack.com/api/conversations.open",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ users: slackUserId }),
       },
-      body: JSON.stringify({ users: slackUserId }),
-    });
+    );
 
     const openData = await openResponse.json();
 
     if (!openData.ok) {
       console.error("conversations.open error:", openData);
-      return NextResponse.json({ error: openData.error || "Failed to open conversation" }, { status: 500 });
+      return NextResponse.json(
+        { error: openData.error || "Failed to open conversation" },
+        { status: 500 },
+      );
     }
 
     const channelId = openData.channel?.id;
     if (!channelId) {
-      return NextResponse.json({ error: "Could not open DM channel" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Could not open DM channel" },
+        { status: 500 },
+      );
     }
 
     // Step 2: Send message
-    const messageResponse = await fetch("https://slack.com/api/chat.postMessage", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+    const messageResponse = await fetch(
+      "https://slack.com/api/chat.postMessage",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          channel: channelId,
+          text: `🐞 *New Bug Report*\n\n${text}`,
+        }),
       },
-      body: JSON.stringify({
-        channel: channelId,
-        text: `🐞 *New Bug Report*\n\n${text}`,
-      }),
-    });
+    );
 
     const messageData = await messageResponse.json();
 
     if (!messageData.ok) {
       console.error("chat.postMessage error:", messageData);
-      return NextResponse.json({ error: messageData.error || "Failed to send message" }, { status: 500 });
+      return NextResponse.json(
+        { error: messageData.error || "Failed to send message" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Slack error:", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to send to Slack" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to send to Slack",
+      },
+      { status: 500 },
+    );
   }
 }
