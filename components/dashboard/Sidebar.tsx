@@ -105,13 +105,10 @@ export function Sidebar() {
         </Link>
 
         <SignOutButton>
-          <a
-            href="/sign-out"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[var(--text)]/70 hover:bg-[var(--border)] hover:text-[var(--text)] transition-colors"
-          >
+          <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[var(--text)]/70 hover:bg-[var(--border)] hover:text-[var(--text)] transition-colors">
             <LogOut className="w-4 h-4" />
             Sign Out
-          </a>
+          </div>
         </SignOutButton>
       </div>
     </aside>
