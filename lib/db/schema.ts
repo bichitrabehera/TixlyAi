@@ -5,6 +5,7 @@ export const users = pgTable("users", {
   clerkUserId: text("clerk_user_id").notNull().unique(),
   email: text("email").notNull(),
   plan: text("plan").notNull().default("free"),
+  planStartedAt: timestamp("plan_started_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

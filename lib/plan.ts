@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { users } from "./db/schema";
+import { users, type User } from "./db/schema";
 import { eq, and, gte, lt, sql } from "drizzle-orm";
 import { tickets } from "./db/schema";
 
@@ -13,7 +13,7 @@ export const PLAN_LIMITS = {
 export const PLAN_DURATION_DAYS = 30;
 
 export async function getUserPlan(clerkUserId: string): Promise<Plan> {
-  const user = await db.select().from(users).where(eq(users.clerkUserId, clerkUserId)).then(r => r[0]);
+  const user = (await db.select().from(users).where(eq(users.clerkUserId, clerkUserId)).then(r => r[0])) as User | undefined;
   
   if (!user) {
     return "free";
@@ -65,7 +65,7 @@ export async function getTodayTicketCount(userId: number): Promise<number> {
 }
 
 export async function canGenerateTicket(clerkUserId: string): Promise<{ allowed: boolean; remaining: number; plan: Plan }> {
-  const user = await db.select().from(users).where(eq(users.clerkUserId, clerkUserId)).then(r => r[0]);
+  const user = (await db.select().from(users).where(eq(users.clerkUserId, clerkUserId)).then(r => r[0])) as User | undefined;
   
   if (!user) {
     return { allowed: true, remaining: PLAN_LIMITS.free, plan: "free" };
@@ -84,7 +84,7 @@ export async function canGenerateTicket(clerkUserId: string): Promise<{ allowed:
 }
 
 export async function upgradeToBasic(clerkUserId: string): Promise<boolean> {
-  const user = await db.select().from(users).where(eq(users.clerkUserId, clerkUserId)).then(r => r[0]);
+  const user = (await db.select().from(users).where(eq(users.clerkUserId, clerkUserId)).then(r => r[0])) as User | undefined;
   
   if (!user) {
     return false;
@@ -105,7 +105,7 @@ export async function getUserPlanInfo(clerkUserId: string): Promise<{
   dailyLimit: number;
   todayUsage: number;
 }> {
-  const user = await db.select().from(users).where(eq(users.clerkUserId, clerkUserId)).then(r => r[0]);
+  const user = (await db.select().from(users).where(eq(users.clerkUserId, clerkUserId)).then(r => r[0])) as User | undefined;
   
   if (!user) {
     return { plan: "free", planStartedAt: null, daysRemaining: null, dailyLimit: PLAN_LIMITS.free, todayUsage: 0 };
