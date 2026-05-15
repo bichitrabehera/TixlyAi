@@ -6,11 +6,11 @@ export async function GET(request: Request) {
   const error = searchParams.get("error");
 
   if (error) {
-    return NextResponse.redirect(new URL(`/generate?error=slack_${error}`, request.url));
+    return NextResponse.redirect(new URL(`/dashboard/generate?error=slack_${error}`, request.url));
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL("/generate?error=no_code", request.url));
+    return NextResponse.redirect(new URL("/dashboard/generate?error=no_code", request.url));
   }
 
   const clientId = process.env.SLACK_CLIENT_ID;
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   const redirectUri = `${baseUrl}/api/slack/callback`;
 
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(new URL("/generate?error=missing_config", request.url));
+    return NextResponse.redirect(new URL("/dashboard/generate?error=missing_config", request.url));
   }
 
   try {
@@ -42,23 +42,22 @@ export async function GET(request: Request) {
 
     if (!data.ok) {
       console.error("Slack OAuth error:", data);
-      return NextResponse.redirect(new URL("/generate?error=oauth_failed", request.url));
+      return NextResponse.redirect(new URL("/dashboard/generate?error=oauth_failed", request.url));
     }
 
     // Save token in cookies (browser storage)
-    const isProduction = !isLocalhost;
-    const redirectResponse = NextResponse.redirect(new URL("/generate?slack_connected=true", request.url));
+    const redirectResponse = NextResponse.redirect(new URL("/dashboard/generate?slack_connected=true", request.url));
 
     redirectResponse.cookies.set("slack_token", data.access_token, {
       httpOnly: false,
-      secure: isProduction,
+      secure: !isLocalhost,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30,
       path: "/",
     });
     redirectResponse.cookies.set("slack_user_id", data.authed_user?.id, {
       httpOnly: false,
-      secure: isProduction,
+      secure: !isLocalhost,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30,
       path: "/",
@@ -69,6 +68,6 @@ export async function GET(request: Request) {
     return redirectResponse;
   } catch (error) {
     console.error("OAuth exception:", error);
-    return NextResponse.redirect(new URL("/generate?error=oauth_exception", request.url));
+    return NextResponse.redirect(new URL("/dashboard/generate?error=oauth_exception", request.url));
   }
 }

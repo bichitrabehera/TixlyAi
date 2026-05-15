@@ -1,5 +1,5 @@
 {
-  "name": "codesnap",
+  "name": "tixly-ai",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,12 +9,16 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.3.4",
+    "@neondatabase/serverless": "^1.1.0",
     "@vercel/analytics": "^2.0.1",
     "better-sqlite3": "^12.9.0",
     "developer-icons": "^6.0.5",
     "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.14.0",
     "next": "16.2.6",
+    "next-themes": "^0.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-icons": "^5.6.0",
@@ -26,6 +30,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",

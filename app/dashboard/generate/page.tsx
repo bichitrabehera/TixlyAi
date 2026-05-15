@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import Tesseract from "tesseract.js";
 import { Toast } from "@/components/Toast";
-import { Header } from "@/components/Header";
 import { InputPanel } from "@/components/InputPanel";
 import { OutputPanel } from "@/components/OutputPanel";
 import { Slack } from "developer-icons";
-
-const USAGE_LIMIT = 3;
+import { History } from "lucide-react";
+import Link from "next/link";
+import Header from "@/components/dashboard/Header";
 
 async function copyTicketAndImage(
   text: string,
@@ -30,7 +31,8 @@ async function copyTicketAndImage(
   await navigator.clipboard.writeText(text);
 }
 
-export default function Demo() {
+export default function DashboardGenerate() {
+  const { user } = useUser();
   const [image, setImage] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [ticket, setTicket] = useState("");
@@ -42,41 +44,10 @@ export default function Demo() {
   const [slackSent, setSlackSent] = useState(false);
   const [slackConnected, setSlackConnected] = useState(false);
   const [usageCount, setUsageCount] = useState(0);
+  const [limitReached, setLimitReached] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check usage limit on mount
   useEffect(() => {
-    const stored = localStorage.getItem("usage_count");
-    const count = stored ? parseInt(stored, 10) : 0;
-    setUsageCount(count);
-  }, []);
-
-  const incrementUsage = () => {
-    const newCount = usageCount + 1;
-    setUsageCount(newCount);
-    localStorage.setItem("usage_count", newCount.toString());
-  };
-
-  const limitReached = usageCount >= USAGE_LIMIT;
-
-  const showToast = (message: string) => {
-    setToast(message);
-    setTimeout(() => setToast(""), 2000);
-  };
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("slack_connected") === "true") {
-      setSlackConnected(true);
-      showToast("Slack connected!");
-      // Clean URL
-      window.history.replaceState({}, "", "/generate");
-    }
-    if (params.get("error")) {
-      showToast(params.get("error") || "Something went wrong");
-      window.history.replaceState({}, "", "/generate");
-    }
-
     // Check Slack connection status
     fetch("/api/slack/status")
       .then((res) => res.json())
@@ -84,7 +55,51 @@ export default function Demo() {
         setSlackConnected(data.connected);
       })
       .catch(() => {});
+
+    // Handle OAuth callback params
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("slack_connected") === "true") {
+      setSlackConnected(true);
+      showToast("Slack connected!");
+      window.history.replaceState({}, "", "/dashboard/generate");
+    }
+    if (params.get("error")) {
+      showToast(params.get("error") || "Something went wrong");
+      window.history.replaceState({}, "", "/dashboard/generate");
+    }
   }, []);
+
+  const checkUsageCount = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tickets");
+      const data = await res.json();
+
+      if (data.tickets) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStart = today.toISOString();
+
+        const todayTickets = data.tickets.filter(
+          (t: { createdAt: string }) =>
+            new Date(t.createdAt) >= new Date(todayStart),
+        );
+
+        setUsageCount(todayTickets.length);
+        setLimitReached(todayTickets.length >= 10);
+      }
+    } catch (e) {
+      console.error("Failed to check usage", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkUsageCount();
+  }, [checkUsageCount]);
+
+  const showToast = (message: string) => {
+    setToast(message);
+    setTimeout(() => setToast(""), 2000);
+  };
 
   const connectSlack = () => {
     const clientId =
@@ -111,7 +126,7 @@ export default function Demo() {
         throw new Error(data.error || "Failed to send");
       }
       setSlackSent(true);
-      showToast("Sent to Slack! ✅");
+      showToast("Sent to Slack!");
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Failed to send to Slack");
     } finally {
@@ -124,6 +139,11 @@ export default function Demo() {
 
     if (!img) {
       setError("Paste a screenshot first");
+      return;
+    }
+
+    if (limitReached) {
+      setError("Daily limit reached. Upgrade to Pro for unlimited tickets.");
       return;
     }
 
@@ -144,50 +164,55 @@ export default function Demo() {
 
       setStatus("Generating ticket...");
 
-      const response = await fetch("/api/ticket", {
+      const response = await fetch("/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ocrText: text, note }),
+        body: JSON.stringify({ ocrText: text, note, screenshotUrl: img }),
       });
 
-      if (!response.ok) throw new Error("Failed to generate ticket");
+      if (response.status === 429) {
+        setLimitReached(true);
+        setError("Daily limit reached. Upgrade to Pro for unlimited tickets.");
+        setLoading(false);
+        setStatus("");
+        return;
+      }
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Failed to generate ticket");
+      }
 
       const data = await response.json();
       setTicket(data.ticket);
       setStatus("");
 
-      // Increment usage count
-      if (!limitReached) {
-        incrementUsage();
-      }
-
       await copyTicketAndImage(data.ticket, img);
       showToast("Copied to clipboard!");
+
+      checkUsageCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setStatus("");
     } finally {
       setLoading(false);
     }
-  }, [image, note, limitReached, incrementUsage]);
+  }, [image, note, limitReached, checkUsageCount]);
 
-  const handleFile = useCallback(
-    (file: File) => {
-      if (file && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = e.target?.result as string;
-          setImage(img);
-          setTicket("");
-          setSlackSent(false);
-          setStatus("");
-        };
-        reader.readAsDataURL(file);
-        setError("");
-      }
-    },
-    [generateTicket],
-  );
+  const handleFile = useCallback((file: File) => {
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = e.target?.result as string;
+        setImage(img);
+        setTicket("");
+        setSlackSent(false);
+        setStatus("");
+      };
+      reader.readAsDataURL(file);
+      setError("");
+    }
+  }, []);
 
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
@@ -241,14 +266,26 @@ export default function Demo() {
   };
 
   return (
-    <div className="min-h-screen">
-      <Header />
+    <div className="min-h-screen p-6 lg:p-8">
+      <div className="max-w-8xl mx-auto">
+        <Header
+          title="Generate Ticket"
+          subtitle="Convert screenshots into structured tickets"
+        >
+          <Link
+            href="/dashboard/history"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium 
+    bg-[var(--card)] border border-[var(--border)] 
+    text-[var(--text)]/80 hover:bg-[var(--card-2)] transition"
+          >
+            <History className="w-4 h-4" />
+            History
+          </Link>
+        </Header>
 
-      <main className="mx-auto max-w-6xl px-6 py-12 lg:px-8">
-        {/* Connect Tools Bar */}
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
-            <span className="pl-3 text-sm font-medium text-slate-600">
+        <div className="mb-6">
+          <div className="inline-flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1.5 shadow-sm">
+            <span className="pl-3 text-sm font-medium text-[var(--text)]/60">
               Connect:
             </span>
 
@@ -266,6 +303,10 @@ export default function Demo() {
                 Connect <Slack className="h-4 w-4" />
               </button>
             )}
+          </div>
+
+          <div className="mt-3 text-sm text-[var(--text)]/60">
+            Usage today: {usageCount}/10 (Free plan)
           </div>
         </div>
 
@@ -298,7 +339,7 @@ export default function Demo() {
             disabled={!ticket || loading}
           />
         </div>
-      </main>
+      </div>
 
       <Toast message={toast} show={!!toast} />
     </div>
