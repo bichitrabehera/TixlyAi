@@ -3,10 +3,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
-import { getOrCreateUser, getUserPlan } from "@/lib/db/users";
-import { eq, and, gte, lt, sql } from "drizzle-orm";
-
-const FREE_LIMIT = 10;
+import { getOrCreateUser } from "@/lib/db/users";
+import { canGenerateTicket, getUserPlanInfo } from "@/lib/plan";
+import { eq, sql } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -17,6 +16,7 @@ export async function GET() {
     }
 
     const user = await getOrCreateUser(userId, "");
+    const planInfo = await getUserPlanInfo(userId);
     
     const userTickets = await db
       .select()
@@ -25,7 +25,10 @@ export async function GET() {
       .orderBy(sql`${tickets.createdAt} DESC`)
       .limit(50);
 
-    return NextResponse.json({ tickets: userTickets });
+    return NextResponse.json({ 
+      tickets: userTickets,
+      plan: planInfo,
+    });
   } catch (error) {
     console.error("Error fetching tickets:", error);
     return NextResponse.json({ error: "Failed to fetch tickets" }, { status: 500 });
@@ -46,33 +49,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No OCR text provided" }, { status: 400 });
     }
 
-    const user = await getOrCreateUser(userId, "");
-    const plan = await getUserPlan(userId);
+    // Check ticket limits based on plan
+    const { allowed, remaining, plan } = await canGenerateTicket(userId);
 
-    if (plan === "free") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const todayStart = new Date(today);
-      const tomorrowStart = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-
-      const todayCount = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(tickets)
-        .where(
-          and(
-            eq(tickets.userId, user.id),
-            gte(tickets.createdAt, todayStart),
-            lt(tickets.createdAt, tomorrowStart)
-          )
-        );
-
-      if (todayCount[0].count >= FREE_LIMIT) {
-        return NextResponse.json(
-          { error: "Daily limit reached. Upgrade to Pro for unlimited tickets." },
-          { status: 429 }
-        );
-      }
+    if (!allowed) {
+      const upgradeMessage = plan === "free" 
+        ? "Daily limit reached. Upgrade to Basic for 50 tickets/day."
+        : "Daily limit reached. Upgrade to Pro for unlimited tickets.";
+      return NextResponse.json({ error: upgradeMessage }, { status: 429 });
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
@@ -128,6 +112,8 @@ Keep it concise. Use bullet points. No markdown.`;
     const data = await response.json();
     const ticket = data.choices[0]?.message?.content || "Failed to generate ticket";
 
+    const user = await getOrCreateUser(userId, "");
+
     const [savedTicket] = await db
       .insert(tickets)
       .values({
@@ -138,7 +124,11 @@ Keep it concise. Use bullet points. No markdown.`;
       })
       .returning();
 
-    return NextResponse.json({ ticket, id: savedTicket.id });
+    return NextResponse.json({ 
+      ticket, 
+      id: savedTicket.id,
+      remaining,
+    });
   } catch (error) {
     console.error("Error generating ticket:", error);
     return NextResponse.json(

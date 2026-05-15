@@ -45,6 +45,9 @@ export default function DashboardGenerate() {
   const [slackConnected, setSlackConnected] = useState(false);
   const [usageCount, setUsageCount] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
+  const [plan, setPlan] = useState<string>("free");
+  const [dailyLimit, setDailyLimit] = useState(10);
+  const [isBasic, setIsBasic] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -69,21 +72,27 @@ export default function DashboardGenerate() {
     }
   }, []);
 
-  const checkUsageCount = useCallback(async () => {
+const checkUsageCount = useCallback(async () => {
     try {
       const res = await fetch("/api/tickets");
       const data = await res.json();
-
-      if (data.tickets) {
+      
+      if (data.plan) {
+        setPlan(data.plan.plan);
+        setDailyLimit(data.plan.dailyLimit);
+        setIsBasic(data.plan.plan === "basic");
+        setUsageCount(data.plan.todayUsage);
+        setLimitReached(data.plan.todayUsage >= data.plan.dailyLimit);
+      } else if (data.tickets) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const todayStart = today.toISOString();
-
+        
         const todayTickets = data.tickets.filter(
           (t: { createdAt: string }) =>
             new Date(t.createdAt) >= new Date(todayStart),
         );
-
+        
         setUsageCount(todayTickets.length);
         setLimitReached(todayTickets.length >= 10);
       }
@@ -295,18 +304,28 @@ export default function DashboardGenerate() {
                 <Slack className="h-4 w-4" />
                 connected
               </div>
-            ) : (
+            ) : isBasic ? (
               <button
                 onClick={connectSlack}
                 className="inline-flex items-center gap-2 rounded-full bg-[#4A154B] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
               >
                 Connect <Slack className="h-4 w-4" />
               </button>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-4 py-2 text-sm text-[var(--text)]/50">
+                <Slack className="h-4 w-4" />
+                <span className="text-xs">Basic feature</span>
+              </div>
             )}
           </div>
 
           <div className="mt-3 text-sm text-[var(--text)]/60">
-            Usage today: {usageCount}/10 (Free plan)
+            Usage today: {usageCount}/{dailyLimit} ({plan} plan)
+            {!isBasic && (
+              <Link href="/pricing" className="ml-2 text-[var(--primary)] hover:underline">
+                Upgrade
+              </Link>
+            )}
           </div>
         </div>
 

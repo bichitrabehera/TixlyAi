@@ -165,6 +165,8 @@ export const FOOTER = {
   links: [
     { label: "How it works", href: "#how" },
     { label: "Generate ticket", href: "/generate" },
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms & Conditions", href: "/terms" },
   ],
   builtBy: "Bichitra Behera",
   copyright: "© 2026 TixlyAi. All rights reserved.",

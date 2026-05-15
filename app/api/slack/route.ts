@@ -1,8 +1,25 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
+import { isBasic } from "@/lib/plan";
 
 export async function POST(request: Request) {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user is on Basic plan
+    const basicUser = await isBasic(userId);
+    if (!basicUser) {
+      return NextResponse.json(
+        { error: "Slack integration is a Basic feature. Upgrade to Basic to use Slack." },
+        { status: 403 }
+      );
+    }
+
     const { text } = await request.json();
 
     if (!text) {
@@ -12,9 +29,9 @@ export async function POST(request: Request) {
     // Read token from cookies (browser storage)
     const cookieStore = await cookies();
     const token = cookieStore.get("slack_token")?.value;
-    const userId = cookieStore.get("slack_user_id")?.value;
+    const slackUserId = cookieStore.get("slack_user_id")?.value;
 
-    if (!token || !userId) {
+    if (!token || !slackUserId) {
       return NextResponse.json(
         { error: "Slack not connected. Please connect Slack first." },
         { status: 401 }
@@ -28,7 +45,7 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ users: userId }),
+      body: JSON.stringify({ users: slackUserId }),
     });
 
     const openData = await openResponse.json();

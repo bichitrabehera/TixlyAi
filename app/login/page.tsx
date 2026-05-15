@@ -13,9 +13,10 @@ export default function LoginPage() {
             },
           },
         }}
+        routing="hash"
         signUpUrl="/signup"
-        routing="path"
-        path="/login"
+        afterSignInUrl="/dashboard"
+        afterSignUpUrl="/dashboard"
       />
     </div>
   );
