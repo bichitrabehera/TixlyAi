@@ -35,23 +35,13 @@ export function HowItWorks() {
         </div>
 
         {/* Preview */}
-        <div className="mb-16 overflow-hidden rounded-2xl border border-slate-200 bg-neutral-950 shadow-sm">
-          <div className="flex items-center border-b border-neutral-800 px-4 py-3">
-            <div className="flex gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-              <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-              <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-            </div>
-
-            <div className="ml-4 flex-1 rounded-md bg-neutral-800 px-3 py-1.5 text-xs text-neutral-400">
-            /dashboard/generate
-            </div>
-          </div>
+        <div className="mb-16 overflow-hidden rounded-xl shadow-green-950 border border-slate-200 shadow-sm">
+          
 
           <img
             src="/Banner.jpeg"
             alt="Tixly dashboard preview"
-            className="w-full object-cover"
+            className="w-full object-cover rounded-xl"
           />
         </div>
 

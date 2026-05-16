@@ -43,7 +43,7 @@ export function Sidebar() {
     <aside className="w-64 fixed z-50 min-h-screen bg-(--card) border-r border-(--border) flex flex-col">
       <div className="p-4 border-b border-(--border)">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="font-bold text-(--text)">TixlyAi</span>
+          <span className="font-bold text-(--text)">Tixly</span>
         </Link>
       </div>
 

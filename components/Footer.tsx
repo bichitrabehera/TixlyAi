@@ -3,8 +3,7 @@ import { SOCIALS, FOOTER, SITE } from "@/lib/data";
 import type { ComponentType } from "react";
 
 export function Footer() {
-  // Map of platform names to developer-icons components
-  const iconMap: Record<string, ComponentType<{ className?: string }>> = {
+  const iconMap = {
     github: GitHubDark,
     linkedin: LinkedIn,
     x: XDark,
@@ -12,58 +11,90 @@ export function Footer() {
 
   return (
     <footer className="border-t border-slate-200">
-      <div className="mx-auto max-w-6xl px-6 py-12 lg:px-8">
-        <div className="flex flex-col items-center gap-8">
-          {/* Brand */}
-          <div className="text-center">
-            <div className="mb-2 font-bold text-xl tracking-tight text-slate-900">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12 lg:py-16">
+        {/* TOP GRID */}
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {/* BRAND */}
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">
               {SITE.name}
-            </div>
-            <p className="text-sm text-slate-600">{SITE.tagline}</p>
+            </h3>
+            <p className="mt-3 text-sm text-slate-600 max-w-xs">
+              {SITE.tagline}
+            </p>
           </div>
 
-          <nav className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm">
-            {FOOTER.links.map((link) => (
-              <a
-                href={link.href}
-                key={link.label}
-                className="text-slate-600 hover:text-slate-900 transition-colors font-medium"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-6">
-            {SOCIALS.map((social, index) => {
-              const IconComponent = iconMap[social.platform.toLowerCase()];
-              return (
+          {/* LINKS */}
+          <div>
+            <h4 className="text-sm font-semibold text-slate-900 mb-3">
+              Product
+            </h4>
+            <div className="flex flex-col gap-2 text-sm">
+              {FOOTER.links.map((link) => (
                 <a
-                  key={index}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group transition-all"
-                  aria-label={social.platform}
+                  key={link.label}
+                  href={link.href}
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition-all group-hover:bg-white shadow-2xs">
-                    {IconComponent ? (
-                      <IconComponent className="h-5 w-5" />
-                    ) : null}
-                  </div>
+                  {link.label}
                 </a>
-              );
-            })}
+              ))}
+            </div>
           </div>
 
-          <p className="text-sm text-slate-500 text-center">
-            Built with <span className="text-red-500 inline-block">❤️</span> by{" "}
-            <span className="font-semibold text-slate-700">
-              {FOOTER.builtBy}
-            </span>
+          {/* SOCIAL */}
+          <div>
+            <h4 className="text-sm font-semibold text-slate-900 mb-3">
+              Connect
+            </h4>
+
+            <div className="flex gap-3">
+              {SOCIALS.map((social, index) => {
+                const Icon = iconMap[social.platform.toLowerCase()];
+                return (
+                  <a
+                    key={index}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group"
+                  >
+                    <div
+                      className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-all 
+                      hover:-translate-y-0.5 hover:shadow-md hover:text-slate-900"
+                    >
+                      {Icon && <Icon className="h-4 w-4" />}
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* EXTRA / TRUST */}
+          <div>
+            <h4 className="text-sm font-semibold text-slate-900 mb-3">
+              Built for
+            </h4>
+            <p className="text-sm text-slate-600">
+              Developers, startups, and teams who hate slow workflows.
+            </p>
+          </div>
+        </div>
+
+        {/* DIVIDER */}
+        <div className="my-10 h-px bg-slate-200" />
+
+        {/* BOTTOM */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+          <p className="text-slate-500 text-center sm:text-left">
+            © {new Date().getFullYear()} {SITE.name}. All rights reserved.
           </p>
 
-          <div className="text-xs text-slate-400">{FOOTER.copyright}</div>
+          <p className="text-slate-500 text-center">
+            Built with <span className="text-red-500">♥</span> by{" "}
+            <span className="font-medium text-slate-700">{FOOTER.builtBy}</span>
+          </p>
         </div>
       </div>
     </footer>

@@ -16,7 +16,7 @@ export default function Home() {
       <UseCases />
       <Features />
       <ComparisonPage />
-      <CallToAction />
+      {/* <CallToAction /> */}
       <Footer />
     </div>
   );

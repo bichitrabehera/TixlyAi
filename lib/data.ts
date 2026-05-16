@@ -164,7 +164,7 @@ export const CALL_TO_ACTION = {
 export const FOOTER = {
   links: [
     { label: "How it works", href: "#how" },
-    { label: "Generate ticket", href: "/generate" },
+    { label: "Generate ticket", href: "/dashboard/generate" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms & Conditions", href: "/terms" },
   ],

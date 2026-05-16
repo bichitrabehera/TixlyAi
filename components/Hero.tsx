@@ -7,7 +7,7 @@ import { CgLinear } from "react-icons/cg";
 
 export function Hero() {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-16 lg:py-24">
+    <section className="mx-auto max-w-6xl px-6 pb-12 pt-40 ">
       <div className="text-center">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 rounded-xl bg-green-200 px-4 py-1.5 text-sm font-medium text-neutral-700 mb-8">

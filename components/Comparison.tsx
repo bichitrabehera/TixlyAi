@@ -6,7 +6,7 @@ export default function ComparisonPage() {
     <section className="py-16 lg:py-24 border-t border-slate-200">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold tracking-tight mb-4 sm:text-5xl lg:text-6xl text-slate-900">
+          <h1 className="text-4xl font-bold tracking-tight mb-4 sm:text-5xl lg:text-5xl text-slate-900">
             {COMPARISON.title}
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
