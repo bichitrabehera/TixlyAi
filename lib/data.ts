@@ -181,7 +181,7 @@ export const SOCIALS = [
   {
     platform: "LinkedIn",
     handle: "linkedin",
-    url: "https://linkedin.com/in/bichitradotdev",
+    url: "https://linkedin.com/in/bichitrabehera",
   },
   {
     platform: "GitHub",
