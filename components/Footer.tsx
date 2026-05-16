@@ -3,7 +3,7 @@ import { SOCIALS, FOOTER, SITE } from "@/lib/data";
 import type { ComponentType } from "react";
 
 export function Footer() {
-  const iconMap = {
+  const iconMap: Record<string, ComponentType<{ className?: string }>> = {
     github: GitHubDark,
     linkedin: LinkedIn,
     x: XDark,
@@ -71,7 +71,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* EXTRA / TRUST */}
           <div>
             <h4 className="text-sm font-semibold text-slate-900 mb-3">
               Built for
@@ -82,10 +81,8 @@ export function Footer() {
           </div>
         </div>
 
-        {/* DIVIDER */}
         <div className="my-10 h-px bg-slate-200" />
 
-        {/* BOTTOM */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
           <p className="text-slate-500 text-center sm:text-left">
             © {new Date().getFullYear()} {SITE.name}. All rights reserved.
