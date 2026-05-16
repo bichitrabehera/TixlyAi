@@ -85,82 +85,74 @@ export function TicketCard({ ticketText }: { ticketText: string }) {
 
   return (
     <div className="space-y-5">
-      <div className="rounded border border-(--border) bg-(--bg) p-6">
+      {/* Title + Priority */}
+      <div className="space-y-2">
         {ticket.title && (
-          <div className="mb-5">
-            <h3 className="text-xl font-semibold text-(--text)">
-              {ticket.title}
-            </h3>
-          </div>
+          <h2 className="text-base font-medium text-[var(--text)]">
+            {ticket.title}
+          </h2>
         )}
 
         {ticket.priority && (
-          <div className="mb-5">
-            <span
-              className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${
-                priorityColors[ticket.priority] ||
-                "bg-(--border)/40 text-(--text)/70"
-              }`}
-            >
-              {ticket.priority}
-            </span>
-          </div>
-        )}
-
-        {ticket.description && (
-          <div className="mb-5">
-            <p className="mb-2 text-xs uppercase tracking-wider text-(--text)/40">
-              Description
-            </p>
-            <p className="text-sm leading-7 text-(--text)/80">
-              {ticket.description}
-            </p>
-          </div>
-        )}
-
-        {ticket.steps && ticket.steps.length > 0 && (
-          <div className="mb-5">
-            <p className="mb-3 text-xs uppercase tracking-wider text-(--text)/40">
-              Steps to Reproduce
-            </p>
-            <div className="space-y-3">
-              {ticket.steps.map((step, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 text-sm text-(--text)/80"
-                >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-(--primary)/10 text-xs font-medium text-(--primary)">
-                    {i + 1}
-                  </div>
-                  <p>{step}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {(ticket.expected || ticket.actual) && (
-          <div className="grid gap-4 md:grid-cols-2">
-            {ticket.expected && (
-              <div className="rounded-xl border border-(--border) p-4">
-                <p className="mb-2 text-xs uppercase tracking-wider text-green-500">
-                  Expected
-                </p>
-                <p className="text-sm text-(--text)/80">{ticket.expected}</p>
-              </div>
-            )}
-
-            {ticket.actual && (
-              <div className="rounded-xl border border-(--border) p-4">
-                <p className="mb-2 text-xs uppercase tracking-wider text-red-500">
-                  Actual
-                </p>
-                <p className="text-sm text-(--text)/80">{ticket.actual}</p>
-              </div>
-            )}
-          </div>
+          <span
+            className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
+              priorityColors[ticket.priority] ||
+              "bg-[var(--border)]/40 text-[var(--text)]/70"
+            }`}
+          >
+            {ticket.priority}
+          </span>
         )}
       </div>
+
+      {/* Description */}
+      {ticket.description && (
+        <p className="text-sm text-[var(--text)]/90 leading-relaxed">
+          {ticket.description}
+        </p>
+      )}
+
+      {/* Steps */}
+      {ticket.steps && ticket.steps.length > 0 && (
+        <div className="space-y-2.5">
+          <p className="text-xs font-medium text-[var(--muted)]">
+            Steps to reproduce
+          </p>
+
+          <ol className="space-y-2 list-decimal list-inside text-sm text-[var(--text)]/90 leading-relaxed marker:text-[var(--muted)]">
+            {ticket.steps.map((step, i) => (
+              <li key={i} className="pl-1">
+                {step}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {/* Expected vs Actual */}
+      {(ticket.expected || ticket.actual) && (
+        <div className="grid gap-3">
+          {ticket.expected && (
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-[var(--muted)]">
+                Expected
+              </p>
+              <p className="text-sm text-[var(--text)]/90 leading-relaxed">
+                {ticket.expected}
+              </p>
+            </div>
+          )}
+
+          {ticket.actual && (
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-[var(--muted)]">Actual</p>
+              <p className="text-sm text-[var(--text)]/90 leading-relaxed">
+                {ticket.actual}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

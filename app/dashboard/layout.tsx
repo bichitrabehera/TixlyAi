@@ -16,10 +16,18 @@ export default async function DashboardLayout({
 
   return (
     <ThemeProvider>
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <main className="flex-1 ml-64 px-20">
-          <div className="min-h-screen">{children}</div>
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar (fixed) */}
+        <div className="w-68 shrink-0 border-r border-[var(--border)] bg-[var(--card)]">
+          <Sidebar />
+        </div>
+
+        {/* Main */}
+        <main className="flex-1 flex flex-col bg-[var(--bg)]">
+          {/* Top content (scrollable only here) */}
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="max-w-8xl mx-auto">{children}</div>
+          </div>
         </main>
       </div>
     </ThemeProvider>

@@ -95,99 +95,98 @@ export default function IntegrationsPage() {
         subtitle="Connect your tools to send tickets directly"
       />
 
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-3xl mx-auto space-y-4">
         {/* Slack */}
-        <div className="rounded border border-(--border) bg-(--card) p-6">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl  text-white text-lg">
-                <Slack className="w-5 h-5" />{" "}
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#4A154B] text-white">
+                <Slack className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-(--text)">Slack</h3>
-                <p className="mt-0.5 text-sm text-(--text)/50">
+                <h3 className="text-sm font-medium text-[var(--text)]">
+                  Slack
+                </h3>
+                <p className="text-xs text-[var(--muted)] mt-0.5">
                   Send tickets to your Slack DM
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {slackConnected ? (
+
+            {slackConnected ? (
+              <button
+                onClick={disconnectSlack}
+                disabled={disconnecting === "slack"}
+                className="px-4 py-2 text-sm rounded-lg text-[var(--muted)] hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+              >
+                {disconnecting === "slack" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Disconnect"
+                )}
+              </button>
+            ) : (
+              process.env.NEXT_PUBLIC_SLACK_CLIENT_ID && (
                 <button
-                  onClick={disconnectSlack}
-                  disabled={disconnecting === "slack"}
-                  className="rounded border border-red-500/30 px-5 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10 disabled:opacity-50"
+                  onClick={connectSlack}
+                  className="px-4 py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-white hover:opacity-90 transition-opacity"
                 >
-                  {disconnecting === "slack" ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Disconnect"
-                  )}
+                  Connect
                 </button>
-              ) : (
-                process.env.NEXT_PUBLIC_SLACK_CLIENT_ID && (
-                  <button
-                    onClick={connectSlack}
-                    className="rounded bg-(--text) px-5 py-2.5 text-sm font-medium text-(--card) transition-opacity hover:opacity-90"
-                  >
-                    Connect
-                  </button>
-                )
-              )}
-            </div>
+              )
+            )}
           </div>
         </div>
 
         {/* Linear */}
-        <div className="rounded border border-(--border) bg-(--card) p-6">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl text-white text-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#5E6AD2] text-white">
                 <CgLinear className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-(--text)">
+                <h3 className="text-sm font-medium text-[var(--text)]">
                   Linear
                 </h3>
-                <p className="mt-0.5 text-sm text-(--text)/50">
-                  Create Linear issues from tickets
+                <p className="text-xs text-[var(--muted)] mt-0.5">
+                  Create issues from tickets
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {linearConnected && (
-                <button
-                  onClick={disconnectLinear}
-                  disabled={disconnecting === "linear"}
-                  className="rounded border border-red-500/30 px-5 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10 disabled:opacity-50"
-                >
-                  {disconnecting === "linear" ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Disconnect"
-                  )}
-                </button>
-              )}
-            </div>
+
+            {linearConnected && (
+              <button
+                onClick={disconnectLinear}
+                disabled={disconnecting === "linear"}
+                className="px-4 py-2 text-sm rounded-lg text-[var(--muted)] hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+              >
+                {disconnecting === "linear" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Disconnect"
+                )}
+              </button>
+            )}
           </div>
 
           {!linearConnected && (
-            <div className="mt-6 space-y-4">
-              <p className="text-sm text-(--text)/50">
-                Paste your Linear personal API key. You can create one in Linear
-                → Settings → API → Personal API Key.
+            <div className="mt-4 space-y-3">
+              <p className="text-xs text-[var(--muted)]">
+                Create a Personal API Key in Linear → Settings → API
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <input
                   type="password"
                   value={linearKey}
                   onChange={(e) => setLinearKey(e.target.value)}
                   placeholder="lin_api_..."
-                  className="flex-1 rounded border border-(--border) bg-(--bg) px-4 py-3 text-sm text-(--text) placeholder:text-(--text)/30 outline-none transition-all focus:border-(--primary)"
+                  className="flex-1 rounded-lg border border-[var(--border)] bg-transparent px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--muted)] outline-none focus:border-[var(--primary)] transition-colors"
                 />
                 <button
                   onClick={saveLinearKey}
                   disabled={saving || !linearKey.trim()}
-                  className="rounded-xl bg-(--text) px-5 py-3 text-sm font-medium text-(--card) transition-opacity hover:opacity-90 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-white hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
                   {saving ? "Saving..." : "Connect"}
                 </button>

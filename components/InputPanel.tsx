@@ -16,7 +16,6 @@ interface InputPanelProps {
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   limitReached?: boolean;
   onGenerateSuccess?: () => void;
-  // Manual OCR fallback
   ocrFailed?: boolean;
   manualOcrText?: string;
   onManualOcrChange?: (value: string) => void;
@@ -43,88 +42,44 @@ export function InputPanel({
 }: InputPanelProps) {
   const isDisabled = loading || !image || limitReached;
 
-  const buttonText = () => {
-    if (loading) return status || "Processing...";
-    if (limitReached) return "Limit reached";
-    if (!image) return "Upload an image to generate";
-    return "Generate Ticket ✨";
-  };
-
   return (
-    <section className="flex flex-col h-full rounded bg-(--card) border border-(--border) overflow-hidden">
-      <div className="flex-1 overflow-auto p-6 space-y-5">
-        {/* Screenshot Upload */}
-        <div>
-          <label className="block text-sm font-medium text-(--text)/80 mb-2">
-            Screenshot
-          </label>
-          <div
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            onClick={onClickDropzone}
-            className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-300 ${
-              image
-                ? "border-[#001d52] bg-[#001d52]/5"
-                : "border-(--border) hover:border-[#001d52]/50 hover:bg-(--bg)"
-            }`}
-          >
-            {image ? (
-              <div className="relative p-4">
-                <div className="relative rounded-lg overflow-hidden bg-(--bg)">
-                  <img
-                    src={image}
-                    alt="Screenshot preview"
-                    className="w-full h-auto max-h-40 object-contain"
-                  />
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveImage();
-                  }}
-                  className="absolute top-2 right-2 rounded-full bg-(--text)/80 text-white p-1.5 hover:bg-red-500 transition-colors"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 px-4">
-                <div className="mb-3 p-3 rounded-xl bg-[#001d52]/10">
-                  <svg
-                    className="w-8 h-8 text-[#001d52]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <p className="text-(--text) font-medium text-center">
-                  Drag & drop screenshot or click to upload
-                </p>
-                <p className="text-xs text-(--text)/40 mt-1">
-                  PNG, JPG, WebP supported
-                </p>
-              </div>
-            )}
+    <div className=" bg-[var(--background)]">
+      <div className="max-w-3xl mx-auto px-4 py-4">
+        {/* Image preview - shows above input like Claude */}
+        {image && (
+          <div className="mb-3 w-fit flex items-start gap-3 p-3 rounded-lg bg-[var(--card)] border border-[var(--border)]">
+            <img
+              src={image}
+              alt="Uploaded"
+              className="w-16 h-16 object-cover rounded-md border border-[var(--border)]"
+            />
+
+            <button
+              onClick={onRemoveImage}
+              className="text-[var(--muted)] hover:text-[var(--text)] transition-colors p-1"
+              disabled={loading}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 4L4 12M4 4L12 12"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
           </div>
+        )}
+
+        {/* Main input container */}
+        <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm focus-within:border-[var(--primary)] focus-within:shadow-md transition-all">
+          {/* Hidden file input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -132,113 +87,102 @@ export function InputPanel({
             onChange={onFileChange}
             className="hidden"
           />
-        </div>
 
-        {/* Context Textarea */}
-        <div>
-          <label className="block text-sm font-medium text-(--text)/80 mb-2">
-            Describe the issue
-          </label>
           <textarea
             value={note}
             onChange={(e) => onNoteChange(e.target.value)}
-            placeholder="What happened? Where did you see it? Any additional context..."
+            placeholder="Describe the issue or paste context..."
             disabled={loading || limitReached}
-            className="w-full rounded-xl border border-(--border) bg-(--bg) p-4 text-sm placeholder:text-(--text)/30 focus:border-(--primary) focus:ring-1 focus:ring-(--primary)/20 focus:outline-none disabled:opacity-50 text-(--text) resize-none transition-all"
-            rows={4}
+            rows={1}
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = "auto";
+              target.style.height = Math.min(target.scrollHeight, 200) + "px";
+            }}
+            className="w-full px-4 py-3 pr-24 bg-transparent outline-none text-[15px] resize-none text-[var(--text)] placeholder:text-[var(--muted)] min-h-[52px] max-h-[200px]"
+            style={{ lineHeight: "1" }}
           />
+
+          {/* Bottom toolbar */}
+          <div className="flex items-center justify-between px-2 pb-2">
+            {/* Left: Attach button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={loading || limitReached}
+              className="p-2 rounded-lg hover:bg-[var(--border)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Attach image"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-[var(--muted)]"
+              >
+                <path
+                  d="M17.5 8.33334V14.1667C17.5 15.5 16.5 16.6667 15 16.6667H5C3.5 16.6667 2.5 15.5 2.5 14.1667V5.83334C2.5 4.5 3.5 3.33334 5 3.33334H10.8333"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M13.3333 2.5L17.5 6.66667L10 14.1667L6.66667 14.5833L7.08333 11.25L13.3333 2.5Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+
+            <button
+              onClick={onGenerate}
+              disabled={isDisabled}
+              className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>{status || "Processing..."}</span>
+                </>
+              ) : (
+                <>
+                  <span>{limitReached ? "Limit reached" : "Send"}</span>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M14.5 1.5L7 9M14.5 1.5L10 14.5L7 9M14.5 1.5L1.5 6L7 9"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Error Message */}
+        {/* Error message */}
         {error && !limitReached && (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
-            {error}
-          </div>
+          <p className="mt-2 text-xs text-red-500 px-1">{error}</p>
         )}
 
-        {/* OCR fallback: allow manual paste when OCR fails */}
-        {ocrFailed && (
-          <div className="rounded-lg bg-yellow-50 border border-amber-200 p-3 text-sm text-amber-700">
-            <p className="font-medium mb-2">OCR failed — paste text manually</p>
-            <textarea
-              value={manualOcrText}
-              onChange={(e) => onManualOcrChange?.(e.target.value)}
-              placeholder="Paste the extracted text here..."
-              className="w-full rounded-xl border border-(--border) bg-(--bg) p-3 text-sm resize-none"
-              rows={4}
-            />
-          </div>
-        )}
-
-        {/* Limit Reached */}
-        {limitReached && (
-          <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-4 text-center">
-            <p className="text-sm font-medium text-amber-400">
-              You&apos;ve reached the free limit
-            </p>
-            <p className="text-xs text-(--text)/50 mt-1">
-              Upgrade to Pro for unlimited tickets
-            </p>
-          </div>
+        {/* Hint text */}
+        {!image && !error && (
+          <p className="mt-2 text-xs text-[var(--muted)] px-1">
+            Attach a screenshot or image to generate a ticket
+          </p>
         )}
       </div>
-
-      {/* Generate Button */}
-      <div className="p-6 pt-0">
-        <button
-          onClick={onGenerate}
-          disabled={isDisabled}
-          className={` mx-auto relative overflow-hidden rounded-xl px-5 py-2 w-fit text-white transition-all duration-300 ${
-            isDisabled
-              ? "bg-(--text)/20 cursor-not-allowed"
-              : "bg-linear-to-r from-(--primary) to-(--primary)/80 hover:from-(--primary)/90 hover:to-(--primary)/70 shadow-lg shadow-(--primary)/20 hover:shadow-(--primary)/30 hover:scale-[1.01] active:scale-[0.99]"
-          }`}
-        >
-          <span className="relative z-10 flex items-center justify-center gap-2">
-            {loading ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                {status || "Processing..."}
-              </>
-            ) : (
-              <>
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-                {buttonText()}
-              </>
-            )}
-          </span>
-        </button>
-      </div>
-    </section>
+    </div>
   );
 }

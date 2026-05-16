@@ -81,7 +81,6 @@ export default function DashboardGenerate() {
   const [dailyLimit, setDailyLimit] = useState(10);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Restore session on mount (like ChatGPT)
   useEffect(() => {
     const session = loadSession();
     if (session) {
@@ -91,7 +90,6 @@ export default function DashboardGenerate() {
     }
   }, []);
 
-  // Save session whenever state changes
   useEffect(() => {
     if (ticket || image || note) {
       saveSession(image, ticket, note);
@@ -222,7 +220,6 @@ export default function DashboardGenerate() {
       let text = useText;
 
       if (!text && img) {
-        // For remote URLs, fetch the image first for OCR
         let ocrSource = img;
         if (img.startsWith("http")) {
           const blob = await fetch(img).then((r) => r.blob());
@@ -296,7 +293,10 @@ export default function DashboardGenerate() {
         setImage(screenshotUrl);
       }
 
-      await copyTicketAndImage(ticketToPlainText(data.ticket), screenshotUrl || img);
+      await copyTicketAndImage(
+        ticketToPlainText(data.ticket),
+        screenshotUrl || img,
+      );
       showToast("Copied to clipboard!");
 
       checkUsageCount();
@@ -310,7 +310,6 @@ export default function DashboardGenerate() {
 
   const handleFile = useCallback((file: File) => {
     if (file && file.type.startsWith("image/")) {
-      // Clear session since user is starting fresh
       clearSession();
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -386,57 +385,66 @@ export default function DashboardGenerate() {
       >
         <Link
           href="/dashboard/history"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-(--card) border border-(--border) text-(--text)/70 hover:bg-(--border)/60 transition-all"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-(--muted) hover:text-(--text) transition"
         >
           <History className="w-4 h-4" />
           History
         </Link>
       </Header>
 
-      <div className="mb-6">
-        <div className="text-sm text-(--text)/50">
-          Usage today: <span className="font-semibold text-(--text)">{usageCount}/{dailyLimit}</span>
-        </div>
+      <div className="text-sm text-(--muted)">
+        Usage today:{" "}
+        <span className="text-(--text) font-medium">
+          {usageCount}/{dailyLimit}
+        </span>
       </div>
 
-      <div className="grid mx-auto gap-6 lg:grid-cols-2 max-w-8xl">
-        <InputPanel
-          image={image}
-          note={note}
-          loading={loading}
-          status={status}
-          error={error}
-          fileInputRef={fileInputRef}
-          onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
-          onClickDropzone={() => fileInputRef.current?.click()}
-          onRemoveImage={() => {
-            clearSession();
-            setImage(null);
-          }}
-          onNoteChange={setNote}
-          onGenerate={() => generateTicket()}
-          onFileChange={handleFileChange}
-          limitReached={limitReached}
-          ocrFailed={ocrFailed}
-          manualOcrText={manualOcrText}
-          onManualOcrChange={setManualOcrText}
-        />
+      <div className="flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden pb-64">
+          <div className="mx-auto max-w-3xl px-4 py-6 space-y-10">
+            <OutputPanel
+              ticket={ticket}
+              onCopy={copyToClipboard}
+              onReset={reset}
+              onSendToSlack={sendToSlack}
+              slackLoading={slackLoading}
+              slackSent={slackSent}
+              slackConnected={slackConnected}
+              onSendToLinear={sendToLinear}
+              linearLoading={linearLoading}
+              linearSent={linearSent}
+              linearConnected={linearConnected}
+              disabled={!ticket || loading}
+            />
+          </div>
+        </div>
 
-        <OutputPanel
-          ticket={ticket}
-          onCopy={copyToClipboard}
-          onReset={reset}
-          onSendToSlack={sendToSlack}
-          slackLoading={slackLoading}
-          slackSent={slackSent}
-          slackConnected={slackConnected}
-          onSendToLinear={sendToLinear}
-          linearLoading={linearLoading}
-          linearSent={linearSent}
-          linearConnected={linearConnected}
-          disabled={!ticket || loading}
-        />
+        <div className="fixed bottom-0 left-64 right-0 z-30">
+          <div className="mx-auto max-w-3xl px-4 py-4">
+            <InputPanel
+              image={image}
+              note={note}
+              loading={loading}
+              status={status}
+              error={error}
+              fileInputRef={fileInputRef}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+              onClickDropzone={() => fileInputRef.current?.click()}
+              onRemoveImage={() => {
+                clearSession();
+                setImage(null);
+              }}
+              onNoteChange={setNote}
+              onGenerate={() => generateTicket()}
+              onFileChange={handleFileChange}
+              limitReached={limitReached}
+              ocrFailed={ocrFailed}
+              manualOcrText={manualOcrText}
+              onManualOcrChange={setManualOcrText}
+            />
+          </div>
+        </div>
       </div>
 
       <Toast message={toast} show={!!toast} />

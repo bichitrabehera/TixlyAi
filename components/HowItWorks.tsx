@@ -39,7 +39,7 @@ export function HowItWorks() {
           
 
           <img
-            src="/Banner.jpeg"
+            src="/Banner1.jpeg"
             alt="Tixly dashboard preview"
             className="w-full object-cover rounded-xl"
           />
