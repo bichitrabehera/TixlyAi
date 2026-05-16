@@ -16,6 +16,10 @@ interface InputPanelProps {
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   limitReached?: boolean;
   onGenerateSuccess?: () => void;
+  // Manual OCR fallback
+  ocrFailed?: boolean;
+  manualOcrText?: string;
+  onManualOcrChange?: (value: string) => void;
 }
 
 export function InputPanel({
@@ -33,6 +37,9 @@ export function InputPanel({
   onGenerate,
   onFileChange,
   limitReached = false,
+  ocrFailed = false,
+  manualOcrText = "",
+  onManualOcrChange,
 }: InputPanelProps) {
   const isDisabled = loading || !image || limitReached;
 
@@ -44,19 +51,11 @@ export function InputPanel({
   };
 
   return (
-    <section className="flex flex-col h-full rounded-2xl bg-[var(--card)] border border-[var(--border)] overflow-hidden">
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-[var(--border)]/50">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Input</h2>
-        <p className="text-sm text-[var(--text)]/50 mt-1">
-          Provide details or upload screenshot
-        </p>
-      </div>
-
+    <section className="flex flex-col h-full rounded bg-(--card) border border-(--border) overflow-hidden">
       <div className="flex-1 overflow-auto p-6 space-y-5">
         {/* Screenshot Upload */}
         <div>
-          <label className="block text-sm font-medium text-[var(--text)]/80 mb-2">
+          <label className="block text-sm font-medium text-(--text)/80 mb-2">
             Screenshot
           </label>
           <div
@@ -65,13 +64,13 @@ export function InputPanel({
             onClick={onClickDropzone}
             className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-300 ${
               image
-                ? "border-[var(--primary)] bg-[var(--primary)]/5"
-                : "border-[var(--border)] hover:border-[var(--primary)]/50 hover:bg-[var(--bg)]"
+                ? "border-[#001d52] bg-[#001d52]/5"
+                : "border-(--border) hover:border-[#001d52]/50 hover:bg-(--bg)"
             }`}
           >
             {image ? (
               <div className="relative p-4">
-                <div className="relative rounded-lg overflow-hidden bg-[var(--bg)]">
+                <div className="relative rounded-lg overflow-hidden bg-(--bg)">
                   <img
                     src={image}
                     alt="Screenshot preview"
@@ -83,7 +82,7 @@ export function InputPanel({
                     e.stopPropagation();
                     onRemoveImage();
                   }}
-                  className="absolute top-2 right-2 rounded-full bg-[var(--text)]/80 text-white p-1.5 hover:bg-red-500 transition-colors"
+                  className="absolute top-2 right-2 rounded-full bg-(--text)/80 text-white p-1.5 hover:bg-red-500 transition-colors"
                 >
                   <svg
                     className="w-4 h-4"
@@ -101,10 +100,10 @@ export function InputPanel({
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-10 px-4">
-                <div className="mb-3 p-3 rounded-xl bg-[var(--primary)]/10">
+              <div className="flex flex-col items-center justify-center py-20 px-4">
+                <div className="mb-3 p-3 rounded-xl bg-[#001d52]/10">
                   <svg
-                    className="w-8 h-8 text-[var(--primary)]"
+                    className="w-8 h-8 text-[#001d52]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -117,10 +116,10 @@ export function InputPanel({
                     />
                   </svg>
                 </div>
-                <p className="text-[var(--text)] font-medium text-center">
+                <p className="text-(--text) font-medium text-center">
                   Drag & drop screenshot or click to upload
                 </p>
-                <p className="text-xs text-[var(--text)]/40 mt-1">
+                <p className="text-xs text-(--text)/40 mt-1">
                   PNG, JPG, WebP supported
                 </p>
               </div>
@@ -137,7 +136,7 @@ export function InputPanel({
 
         {/* Context Textarea */}
         <div>
-          <label className="block text-sm font-medium text-[var(--text)]/80 mb-2">
+          <label className="block text-sm font-medium text-(--text)/80 mb-2">
             Describe the issue
           </label>
           <textarea
@@ -145,7 +144,7 @@ export function InputPanel({
             onChange={(e) => onNoteChange(e.target.value)}
             placeholder="What happened? Where did you see it? Any additional context..."
             disabled={loading || limitReached}
-            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm placeholder:text-[var(--text)]/30 focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/20 focus:outline-none disabled:opacity-50 text-[var(--text)] resize-none transition-all"
+            className="w-full rounded-xl border border-(--border) bg-(--bg) p-4 text-sm placeholder:text-(--text)/30 focus:border-(--primary) focus:ring-1 focus:ring-(--primary)/20 focus:outline-none disabled:opacity-50 text-(--text) resize-none transition-all"
             rows={4}
           />
         </div>
@@ -157,13 +156,27 @@ export function InputPanel({
           </div>
         )}
 
+        {/* OCR fallback: allow manual paste when OCR fails */}
+        {ocrFailed && (
+          <div className="rounded-lg bg-yellow-50 border border-amber-200 p-3 text-sm text-amber-700">
+            <p className="font-medium mb-2">OCR failed — paste text manually</p>
+            <textarea
+              value={manualOcrText}
+              onChange={(e) => onManualOcrChange?.(e.target.value)}
+              placeholder="Paste the extracted text here..."
+              className="w-full rounded-xl border border-(--border) bg-(--bg) p-3 text-sm resize-none"
+              rows={4}
+            />
+          </div>
+        )}
+
         {/* Limit Reached */}
         {limitReached && (
           <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-4 text-center">
             <p className="text-sm font-medium text-amber-400">
               You&apos;ve reached the free limit
             </p>
-            <p className="text-xs text-[var(--text)]/50 mt-1">
+            <p className="text-xs text-(--text)/50 mt-1">
               Upgrade to Pro for unlimited tickets
             </p>
           </div>
@@ -175,10 +188,10 @@ export function InputPanel({
         <button
           onClick={onGenerate}
           disabled={isDisabled}
-          className={`w-full relative overflow-hidden rounded-xl px-5 py-4 font-semibold text-white transition-all duration-300 ${
+          className={` mx-auto relative overflow-hidden rounded-xl px-5 py-2 w-fit text-white transition-all duration-300 ${
             isDisabled
-              ? "bg-[var(--text)]/20 cursor-not-allowed"
-              : "bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/80 hover:from-[var(--primary)]/90 hover:to-[var(--primary)]/70 shadow-lg shadow-[var(--primary)]/20 hover:shadow-[var(--primary)]/30 hover:scale-[1.01] active:scale-[0.99]"
+              ? "bg-(--text)/20 cursor-not-allowed"
+              : "bg-linear-to-r from-(--primary) to-(--primary)/80 hover:from-(--primary)/90 hover:to-(--primary)/70 shadow-lg shadow-(--primary)/20 hover:shadow-(--primary)/30 hover:scale-[1.01] active:scale-[0.99]"
           }`}
         >
           <span className="relative z-10 flex items-center justify-center gap-2">

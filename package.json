@@ -10,19 +10,23 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.3.4",
+    "@imagekit/nodejs": "^7.6.0",
     "@neondatabase/serverless": "^1.1.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "better-sqlite3": "^12.9.0",
     "developer-icons": "^6.0.5",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.14.0",
-    "next": "16.2.6",
+    "next": "^16.2.6",
     "next-themes": "^0.4.6",
+    "posthog-js": "^1.373.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-icons": "^5.6.0",
-    "tesseract.js": "^7.0.0"
+    "tesseract.js": "^7.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

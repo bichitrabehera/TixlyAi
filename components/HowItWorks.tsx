@@ -1,59 +1,86 @@
-import { ArrowRight, ClipboardCheck, ClipboardPaste, Sparkles } from "lucide-react";
+import { ClipboardPaste, Sparkles, Send } from "lucide-react";
 import { HOW_IT_WORKS } from "@/lib/data";
 
-const icons = [ClipboardPaste, Sparkles, ClipboardCheck];
+const steps = [
+  {
+    icon: ClipboardPaste,
+    title: HOW_IT_WORKS.steps[0].title,
+    description: HOW_IT_WORKS.steps[0].description,
+  },
+  {
+    icon: Sparkles,
+    title: HOW_IT_WORKS.steps[1].title,
+    description: HOW_IT_WORKS.steps[1].description,
+  },
+  {
+    icon: Send,
+    title: HOW_IT_WORKS.steps[2].title,
+    description: HOW_IT_WORKS.steps[2].description,
+  },
+];
 
 export function HowItWorks() {
   return (
-    <section id="how" className="border-t border-slate-200 py-16 lg:py-24">
+    <section id="how" className="border-t border-slate-200 py-20 lg:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        <div className="text-center mb-20">
-          <p className="text-sm font-semibold tracking-wide text-slate-500 uppercase mb-3">
+        {/* Header */}
+        <div className="mx-auto mb-14 max-w-2xl text-center">
+          <span className="inline-flex rounded-full border border-slate-200 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
             How it works
-          </p>
-          <h2 className="text-4xl font-bold text-slate-900 tracking-tight lg:text-5xl">
+          </span>
+
+          <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-900 lg:text-4xl">
             {HOW_IT_WORKS.title}
           </h2>
-          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-            {HOW_IT_WORKS.subtitle}
-          </p>
         </div>
 
-        <div className="grid gap-12 sm:grid-cols-3 relative">
-          {HOW_IT_WORKS.steps.map((item, idx) => (
-            <div key={item.step} className="relative">
-              <div className="flex flex-col items-center text-center">
-                <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-white border-2 border-slate-900 text-slate-900 shadow-lg mb-6">
-                  {(() => {
-                    const Icon = icons[idx];
-                    return <Icon className="h-8 w-8" />;
-                  })()}
-                </div>
+        {/* Preview */}
+        <div className="mb-16 overflow-hidden rounded-2xl border border-slate-200 bg-neutral-950 shadow-sm">
+          <div className="flex items-center border-b border-neutral-800 px-4 py-3">
+            <div className="flex gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
+            </div>
 
-                <div className="text-sm font-bold text-slate-400 tracking-wider mb-3">
-                  STEP {item.step}
-                </div>
+            <div className="ml-4 flex-1 rounded-md bg-neutral-800 px-3 py-1.5 text-xs text-neutral-400">
+            /dashboard/generate
+            </div>
+          </div>
 
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                  {item.title}
+          <img
+            src="/Banner.jpeg"
+            alt="Tixly dashboard preview"
+            className="w-full object-cover"
+          />
+        </div>
+
+        {/* Steps */}
+        <div className="grid gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 sm:grid-cols-3">
+          {steps.map(({ icon: Icon, title, description }, index) => (
+            <div
+              key={title}
+              className="bg-white p-8 transition-colors hover:bg-slate-50"
+            >
+              <span className="text-xs font-medium text-slate-400">
+                0{index + 1}
+              </span>
+
+              <div className="mt-4 flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
+                <Icon className="h-5 w-5 text-slate-700" />
+              </div>
+
+              <div className="mt-5">
+                <h3 className="text-base font-semibold text-slate-900">
+                  {title}
                 </h3>
 
-                <p className="text-slate-600 leading-relaxed max-w-xs">
-                  {item.description}
+                <p className="mt-2 text-sm leading-7 text-slate-500">
+                  {description}
                 </p>
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="mt-20 text-center">
-          <a
-            href="/generate"
-            className="group inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition-colors hover:text-slate-700"
-          >
-            {HOW_IT_WORKS.bottomLink}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </a>
         </div>
       </div>
     </section>

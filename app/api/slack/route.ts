@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { auth } from "@clerk/nextjs/server";
-import { isBasic } from "@/lib/plan";
+import { decryptToken } from "@/lib/slack";
+import { getSlackTokens } from "@/lib/db/users";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
@@ -11,35 +12,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is on Basic plan
-    const basicUser = await isBasic(userId);
-    if (!basicUser) {
-      return NextResponse.json(
-        {
-          error:
-            "Slack integration is a Basic feature. Upgrade to Basic to use Slack.",
-        },
-        { status: 403 },
-      );
-    }
-
     const { text } = await request.json();
 
     if (!text) {
       return NextResponse.json({ error: "No text provided" }, { status: 400 });
     }
 
-    // Read token from cookies (browser storage)
-    const cookieStore = await cookies();
-    const token = cookieStore.get("slack_token")?.value;
-    const slackUserId = cookieStore.get("slack_user_id")?.value;
+    const rateCheck = checkRateLimit(`slack:${userId}`, "free");
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rateCheck.resetIn / 1000)),
+          },
+        },
+      );
+    }
 
-    if (!token || !slackUserId) {
+    const tokens = await getSlackTokens(userId);
+    if (!tokens) {
       return NextResponse.json(
         { error: "Slack not connected. Please connect Slack first." },
         { status: 401 },
       );
     }
+
+    const token = decryptToken(tokens.encryptedToken);
+    const slackUserId = tokens.slackUserId;
 
     // Step 1: Open DM conversation
     const openResponse = await fetch(

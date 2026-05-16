@@ -16,9 +16,11 @@ export default async function DashboardLayout({
 
   return (
     <ThemeProvider>
-      <div className="flex min-h-screen bg-(--bg)">
+      <div className="flex min-h-screen">
         <Sidebar />
-        <main className="flex-1 bg-(--bg)">{children}</main>
+        <main className="flex-1 ml-64 px-20">
+          <div className="min-h-screen">{children}</div>
+        </main>
       </div>
     </ThemeProvider>
   );

@@ -1,5 +1,5 @@
 export const SITE = {
-  name: "TixlyAi",
+  name: "Tixly",
   tagline: "Screenshot to ticket, instantly.",
   description: "Turn screenshots into structured tickets in seconds.",
 };
@@ -20,7 +20,7 @@ export const HERO = {
   cta: "Generate ticket",
   secondaryCta: "Learn how",
   integrationsLabel: "Works with your existing tools",
-  integrations: ["Slack", "Jira", "Notion"],
+  integrations: ["Slack", "Linear"],
 };
 
 export const HOW_IT_WORKS = {
@@ -44,7 +44,7 @@ export const HOW_IT_WORKS = {
       step: "03",
       title: "Export or copy",
       description:
-        "Copy the formatted ticket or export directly to Jira, Linear, Notion, or Slack.",
+        "Copy the formatted ticket or export directly to  Linear, Slack.",
     },
   ],
   bottomLink: "Generate your first ticket",
@@ -138,7 +138,7 @@ export const COMPARISON = {
   tixly: {
     price: "Affordable",
     platform: "Web (all apps)",
-    integrations: "Jira, Linear, Notion, Slack",
+    integrations: " Linear, Slack",
     advantage: "5-second ticket generation",
   },
   benefits: [

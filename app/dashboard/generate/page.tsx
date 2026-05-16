@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
 import Tesseract from "tesseract.js";
 import { Toast } from "@/components/Toast";
 import { InputPanel } from "@/components/InputPanel";
 import { OutputPanel } from "@/components/OutputPanel";
-import { Slack } from "developer-icons";
 import { History } from "lucide-react";
 import Link from "next/link";
 import Header from "@/components/dashboard/Header";
+import { ticketToPlainText } from "@/lib/tickets/format";
+
+const SESSION_KEY = "tixly_session";
 
 async function copyTicketAndImage(
   text: string,
@@ -31,70 +32,93 @@ async function copyTicketAndImage(
   await navigator.clipboard.writeText(text);
 }
 
+function saveSession(image: string | null, ticket: string, note: string) {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ image, ticket, note }));
+  } catch {}
+}
+
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+  } catch {}
+}
+
+interface SessionData {
+  image: string | null;
+  ticket: string;
+  note: string;
+}
+
+function loadSession(): SessionData | null {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 export default function DashboardGenerate() {
-  const { user } = useUser();
   const [image, setImage] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [ticket, setTicket] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+  const [ocrFailed, setOcrFailed] = useState(false);
+  const [manualOcrText, setManualOcrText] = useState("");
   const [toast, setToast] = useState("");
   const [slackLoading, setSlackLoading] = useState(false);
   const [slackSent, setSlackSent] = useState(false);
   const [slackConnected, setSlackConnected] = useState(false);
+  const [linearLoading, setLinearLoading] = useState(false);
+  const [linearSent, setLinearSent] = useState(false);
+  const [linearConnected, setLinearConnected] = useState(false);
   const [usageCount, setUsageCount] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
-  const [plan, setPlan] = useState<string>("free");
   const [dailyLimit, setDailyLimit] = useState(10);
-  const [isBasic, setIsBasic] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Restore session on mount (like ChatGPT)
   useEffect(() => {
-    // Check Slack connection status
-    fetch("/api/slack/status")
-      .then((res) => res.json())
-      .then((data) => {
-        setSlackConnected(data.connected);
-      })
-      .catch(() => {});
-
-    // Handle OAuth callback params
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("slack_connected") === "true") {
-      setSlackConnected(true);
-      showToast("Slack connected!");
-      window.history.replaceState({}, "", "/dashboard/generate");
-    }
-    if (params.get("error")) {
-      showToast(params.get("error") || "Something went wrong");
-      window.history.replaceState({}, "", "/dashboard/generate");
+    const session = loadSession();
+    if (session) {
+      setImage(session.image);
+      setNote(session.note);
+      setTicket(session.ticket);
     }
   }, []);
 
-const checkUsageCount = useCallback(async () => {
+  // Save session whenever state changes
+  useEffect(() => {
+    if (ticket || image || note) {
+      saveSession(image, ticket, note);
+    }
+  }, [image, ticket, note]);
+
+  useEffect(() => {
+    fetch("/api/slack/status")
+      .then((res) => res.json())
+      .then((data) => setSlackConnected(data.connected))
+      .catch(() => {});
+
+    fetch("/api/integrations/linear/keys")
+      .then((res) => res.json())
+      .then((data) => setLinearConnected(data.connected))
+      .catch(() => {});
+  }, []);
+
+  const checkUsageCount = useCallback(async () => {
     try {
       const res = await fetch("/api/tickets");
       const data = await res.json();
-      
-      if (data.plan) {
-        setPlan(data.plan.plan);
-        setDailyLimit(data.plan.dailyLimit);
-        setIsBasic(data.plan.plan === "basic");
-        setUsageCount(data.plan.todayUsage);
-        setLimitReached(data.plan.todayUsage >= data.plan.dailyLimit);
-      } else if (data.tickets) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayStart = today.toISOString();
-        
-        const todayTickets = data.tickets.filter(
-          (t: { createdAt: string }) =>
-            new Date(t.createdAt) >= new Date(todayStart),
-        );
-        
-        setUsageCount(todayTickets.length);
-        setLimitReached(todayTickets.length >= 10);
+
+      if (data.usage) {
+        setDailyLimit(data.usage.dailyLimit);
+        setUsageCount(data.usage.todayUsage);
+        setLimitReached(data.usage.todayUsage >= data.usage.dailyLimit);
       }
     } catch (e) {
       console.error("Failed to check usage", e);
@@ -102,7 +126,9 @@ const checkUsageCount = useCallback(async () => {
   }, []);
 
   useEffect(() => {
-    checkUsageCount();
+    setTimeout(() => {
+      checkUsageCount();
+    }, 0);
   }, [checkUsageCount]);
 
   const showToast = (message: string) => {
@@ -110,25 +136,16 @@ const checkUsageCount = useCallback(async () => {
     setTimeout(() => setToast(""), 2000);
   };
 
-  const connectSlack = () => {
-    const clientId =
-      process.env.NEXT_PUBLIC_SLACK_CLIENT_ID ||
-      "11092752722018.11086391247955";
-    const baseUrl = window.location.origin;
-    const redirectUri = `${baseUrl}/api/slack/callback`;
-    const url = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=chat:write,im:write,im:read,users:read&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    window.location.href = url;
-  };
-
   const sendToSlack = async () => {
     if (!ticket) return;
     setSlackLoading(true);
     setSlackSent(false);
     try {
+      const text = ticketToPlainText(ticket);
       const response = await fetch("/api/slack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: ticket }),
+        body: JSON.stringify({ text }),
       });
       const data = await response.json();
       if (!response.ok || !data.success) {
@@ -143,11 +160,52 @@ const checkUsageCount = useCallback(async () => {
     }
   };
 
+  const sendToLinear = async () => {
+    if (!ticket) return;
+    setLinearLoading(true);
+    setLinearSent(false);
+    try {
+      const response = await fetch("/api/integrations/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tool: "linear", ticketText: ticket }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Failed to send");
+      }
+      setLinearSent(true);
+      showToast("Sent to Linear!");
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Failed to send to Linear",
+      );
+    } finally {
+      setLinearLoading(false);
+    }
+  };
+
+  const uploadImage = async (base64Data: string): Promise<string | null> => {
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ base64: base64Data }),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.url;
+    } catch {
+      return null;
+    }
+  };
+
   const generateTicket = useCallback(async () => {
     const img = image;
+    const useText = manualOcrText || null;
 
-    if (!img) {
-      setError("Paste a screenshot first");
+    if (!img && !useText) {
+      setError("Paste a screenshot first or enter text manually");
       return;
     }
 
@@ -161,22 +219,60 @@ const checkUsageCount = useCallback(async () => {
     setError("");
 
     try {
-      const {
-        data: { text },
-      } = await Tesseract.recognize(img, "eng", {
-        logger: (m) => {
-          if (m.status === "recognizing text") {
-            setStatus(`OCR ${Math.round(m.progress * 100)}%`);
+      let text = useText;
+
+      if (!text && img) {
+        // For remote URLs, fetch the image first for OCR
+        let ocrSource = img;
+        if (img.startsWith("http")) {
+          const blob = await fetch(img).then((r) => r.blob());
+          ocrSource = URL.createObjectURL(blob);
+        }
+
+        try {
+          const {
+            data: { text: ocrText },
+          } = await Tesseract.recognize(ocrSource, "eng", {
+            logger: (m) => {
+              if (m.status === "recognizing text") {
+                setStatus(`OCR ${Math.round(m.progress * 100)}%`);
+              }
+            },
+          });
+          text = ocrText;
+          setOcrFailed(false);
+
+          if (ocrSource !== img) {
+            URL.revokeObjectURL(ocrSource);
           }
-        },
-      });
+        } catch {
+          setOcrFailed(true);
+          setLoading(false);
+          setStatus("");
+          setError("OCR failed. Please paste text manually below.");
+          return;
+        }
+      }
+
+      setStatus("Uploading image...");
+      let screenshotUrl: string | null = null;
+
+      if (img?.startsWith("data:") || img?.startsWith("blob:")) {
+        screenshotUrl = await uploadImage(img);
+      } else if (img) {
+        screenshotUrl = img;
+      }
 
       setStatus("Generating ticket...");
 
       const response = await fetch("/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ocrText: text, note, screenshotUrl: img }),
+        body: JSON.stringify({
+          ocrText: text,
+          note,
+          screenshotUrl,
+        }),
       });
 
       if (response.status === 429) {
@@ -196,7 +292,11 @@ const checkUsageCount = useCallback(async () => {
       setTicket(data.ticket);
       setStatus("");
 
-      await copyTicketAndImage(data.ticket, img);
+      if (screenshotUrl) {
+        setImage(screenshotUrl);
+      }
+
+      await copyTicketAndImage(ticketToPlainText(data.ticket), screenshotUrl || img);
       showToast("Copied to clipboard!");
 
       checkUsageCount();
@@ -206,10 +306,12 @@ const checkUsageCount = useCallback(async () => {
     } finally {
       setLoading(false);
     }
-  }, [image, note, limitReached, checkUsageCount]);
+  }, [image, note, limitReached, checkUsageCount, manualOcrText]);
 
   const handleFile = useCallback((file: File) => {
     if (file && file.type.startsWith("image/")) {
+      // Clear session since user is starting fresh
+      clearSession();
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = e.target?.result as string;
@@ -257,16 +359,18 @@ const checkUsageCount = useCallback(async () => {
 
   const copyToClipboard = async () => {
     if (!ticket) return;
+    const text = ticketToPlainText(ticket);
     try {
-      await copyTicketAndImage(ticket, image);
+      await copyTicketAndImage(text, image);
       showToast(image ? "Copied image and ticket!" : "Copied ticket!");
     } catch {
-      await navigator.clipboard.writeText(ticket);
+      await navigator.clipboard.writeText(text);
       showToast("Copied ticket!");
     }
   };
 
   const reset = () => {
+    clearSession();
     setImage(null);
     setNote("");
     setTicket("");
@@ -275,92 +379,67 @@ const checkUsageCount = useCallback(async () => {
   };
 
   return (
-    <div className="min-h-screen p-6 lg:p-8">
-      <div className="max-w-8xl mx-auto">
-        <Header
-          title="Generate Ticket"
-          subtitle="Convert screenshots into structured tickets"
+    <>
+      <Header
+        title="Generate Ticket"
+        subtitle="Convert screenshots into structured tickets"
+      >
+        <Link
+          href="/dashboard/history"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-(--card) border border-(--border) text-(--text)/70 hover:bg-(--border)/60 transition-all"
         >
-          <Link
-            href="/dashboard/history"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium 
-    bg-[var(--card)] border border-[var(--border)] 
-    text-[var(--text)]/80 hover:bg-[var(--card-2)] transition"
-          >
-            <History className="w-4 h-4" />
-            History
-          </Link>
-        </Header>
+          <History className="w-4 h-4" />
+          History
+        </Link>
+      </Header>
 
-        <div className="mb-6">
-          <div className="inline-flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1.5 shadow-sm">
-            <span className="pl-3 text-sm font-medium text-[var(--text)]/60">
-              Connect:
-            </span>
-
-            {slackConnected ? (
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-1.5 text-sm font-medium text-emerald-700">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <Slack className="h-4 w-4" />
-                connected
-              </div>
-            ) : isBasic ? (
-              <button
-                onClick={connectSlack}
-                className="inline-flex items-center gap-2 rounded-full bg-[#4A154B] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
-              >
-                Connect <Slack className="h-4 w-4" />
-              </button>
-            ) : (
-              <div className="inline-flex items-center gap-2 px-4 py-2 text-sm text-[var(--text)]/50">
-                <Slack className="h-4 w-4" />
-                <span className="text-xs">Basic feature</span>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-3 text-sm text-[var(--text)]/60">
-            Usage today: {usageCount}/{dailyLimit} ({plan} plan)
-            {!isBasic && (
-              <Link href="/pricing" className="ml-2 text-[var(--primary)] hover:underline">
-                Upgrade
-              </Link>
-            )}
-          </div>
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-2">
-          <InputPanel
-            image={image}
-            note={note}
-            loading={loading}
-            status={status}
-            error={error}
-            fileInputRef={fileInputRef}
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-            onClickDropzone={() => fileInputRef.current?.click()}
-            onRemoveImage={() => setImage(null)}
-            onNoteChange={setNote}
-            onGenerate={() => generateTicket()}
-            onFileChange={handleFileChange}
-            limitReached={limitReached}
-          />
-
-          <OutputPanel
-            ticket={ticket}
-            onCopy={copyToClipboard}
-            onReset={reset}
-            onSendToSlack={sendToSlack}
-            slackLoading={slackLoading}
-            slackSent={slackSent}
-            slackConnected={slackConnected}
-            disabled={!ticket || loading}
-          />
+      <div className="mb-6">
+        <div className="text-sm text-(--text)/50">
+          Usage today: <span className="font-semibold text-(--text)">{usageCount}/{dailyLimit}</span>
         </div>
       </div>
 
+      <div className="grid mx-auto gap-6 lg:grid-cols-2 max-w-8xl">
+        <InputPanel
+          image={image}
+          note={note}
+          loading={loading}
+          status={status}
+          error={error}
+          fileInputRef={fileInputRef}
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onClickDropzone={() => fileInputRef.current?.click()}
+          onRemoveImage={() => {
+            clearSession();
+            setImage(null);
+          }}
+          onNoteChange={setNote}
+          onGenerate={() => generateTicket()}
+          onFileChange={handleFileChange}
+          limitReached={limitReached}
+          ocrFailed={ocrFailed}
+          manualOcrText={manualOcrText}
+          onManualOcrChange={setManualOcrText}
+        />
+
+        <OutputPanel
+          ticket={ticket}
+          onCopy={copyToClipboard}
+          onReset={reset}
+          onSendToSlack={sendToSlack}
+          slackLoading={slackLoading}
+          slackSent={slackSent}
+          slackConnected={slackConnected}
+          onSendToLinear={sendToLinear}
+          linearLoading={linearLoading}
+          linearSent={linearSent}
+          linearConnected={linearConnected}
+          disabled={!ticket || loading}
+        />
+      </div>
+
       <Toast message={toast} show={!!toast} />
-    </div>
+    </>
   );
 }

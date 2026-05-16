@@ -1,27 +1,25 @@
 "use client";
-
-import { Zap } from "lucide-react";
 import Link from "next/link";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg)] py-16 px-6">
+    <div className="min-h-screen bg-[#ecfff1] py-16 px-6">
       <div className="max-w-3xl mx-auto">
         <Link href="/" className="flex items-center gap-2 mb-8 w-fit">
-          <span className="text-2xl font-bold text-[var(--text)]">Tixly</span>
+          <span className="text-2xl font-bold text-[(--text)]">Tixly</span>
         </Link>
 
-        <p className="text-sm text-[var(--muted)] mb-8">
+        <p className="text-sm text-[(--muted)] mb-8">
           Last updated: May 16, 2026
         </p>
 
-        <h1 className="text-3xl font-bold text-[var(--text)] mb-8">
+        <h1 className="text-3xl font-bold text-[(--text)] mb-8">
           Terms & Conditions
         </h1>
 
-        <div className="space-y-8 text-[var(--text)]/80">
+        <div className="space-y-8 text-[(--text)]/80">
           <section>
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
               Use of Service
             </h2>
             <p>
@@ -33,7 +31,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
               User Responsibilities
             </h2>
             <p className="mb-2">You agree to:</p>
@@ -46,7 +44,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
               Acceptable Use
             </h2>
             <p className="mb-2">You may NOT use our service to:</p>
@@ -62,7 +60,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
               AI Limitations Disclaimer
             </h2>
             <p>
@@ -75,7 +73,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
               Payment Terms
             </h2>
             <p>
@@ -87,7 +85,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
               Termination Rights
             </h2>
             <p>
@@ -99,7 +97,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
               Limitation of Liability
             </h2>
             <p>
@@ -112,7 +110,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
               Contact Us
             </h2>
             <p>
@@ -120,7 +118,7 @@ export default function TermsPage() {
               contact us at{" "}
               <a
                 href="mailto:bichitrabehera.345@gmail.com"
-                className="text-[var(--primary)] hover:underline"
+                className="text-[(--primary)] hover:underline"
               >
                 bichitrabehera.345@gmail.com
               </a>

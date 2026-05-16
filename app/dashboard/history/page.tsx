@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Ticket, Copy, Zap } from "lucide-react";
+import { Ticket, Copy, Check, Zap } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/dashboard/Header";
+import { TicketCard } from "@/components/TicketCard";
+import { ticketToPlainText } from "@/lib/tickets/format";
+import { Image as ImageIcon } from "lucide-react";
 
 interface TicketData {
   id: number;
@@ -13,11 +17,32 @@ interface TicketData {
   createdAt: string;
 }
 
+function extractTicketTitle(ticket: string): string {
+  try {
+    const parsed = JSON.parse(ticket);
+    if (parsed.title) return parsed.title;
+  } catch {}
+  const match = ticket.match(/🐛\s*(.*)/);
+  if (match) return match[1];
+  return ticket.slice(0, 60) + (ticket.length > 60 ? "..." : "");
+}
+
+function formatDate(dateString: string) {
+  const d = new Date(dateString);
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function DashboardHistory() {
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [showScreenshot, setShowScreenshot] = useState(false);
 
   const fetchTickets = useCallback(async () => {
     try {
@@ -35,181 +60,168 @@ export default function DashboardHistory() {
   }, [selectedTicket]);
 
   useEffect(() => {
-    fetchTickets();
+    setTimeout(() => fetchTickets(), 0);
   }, [fetchTickets]);
 
   const copyToClipboard = async () => {
     if (!selectedTicket) return;
-    await navigator.clipboard.writeText(selectedTicket.generatedTicket);
+    await navigator.clipboard.writeText(
+      ticketToPlainText(selectedTicket.generatedTicket),
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  };
-
-  const extractTitle = (ticket: string) => {
-    const match = ticket.match(/🐛 Title: (.*)/);
-    return match ? match[1] : ticket.slice(0, 50) + "...";
-  };
-
   if (loading) {
     return (
-      <div className="p-6 lg:p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-[var(--text)]/60">Loading tickets...</div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-(--text)/60">Loading tickets...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6 lg:p-8">
-      <div className="max-w-8xl mx-auto">
-        <Header
-          title="Ticket History"
-          subtitle={`${tickets.length} tickets generated`}
+    <>
+      <Header
+        title="Ticket History"
+        subtitle={
+          tickets.length === 1
+            ? "1 ticket generated"
+            : `${tickets.length} tickets generated`
+        }
+      >
+        <Link
+          href="/dashboard/generate"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#001d52] text-white hover:opacity-90 transition-all"
         >
-          <Link
-            href="/dashboard/generate"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium 
-    bg-[var(--primary)] text-black hover:opacity-90 transition"
-          >
-            <Zap className="w-4 h-4" />
-            New Ticket
-          </Link>
-        </Header>
+          <Zap className="w-4 h-4" />
+          New Ticket
+        </Link>
+      </Header>
 
-        {tickets.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 bg-[var(--border)] rounded-full flex items-center justify-center mb-4">
-              <Ticket className="w-8 h-8 text-[var(--text)]/40" />
-            </div>
-            <h3 className="text-lg font-medium text-[var(--text)] mb-2">
-              No tickets yet
-            </h3>
-            <p className="text-[var(--text)]/60 mb-6">
-              Generate your first ticket to see it here
-            </p>
+      {tickets.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#001d52]/10">
+            <Ticket className="w-7 h-7 text-[#001d52]" />
+          </div>
+          <h3 className="text-lg font-semibold text-(--text) mb-2">
+            No tickets yet
+          </h3>
+          <p className="text-sm text-(--text)/50 max-w-md mb-6">
+            Upload a screenshot on the Generate page to create your first
+            structured ticket.
+          </p>
+          <div className="flex gap-3">
             <Link
               href="/dashboard/generate"
-              className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-colors"
+              className="px-5 py-2.5 bg-[#001d52] text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all"
             >
               Generate Ticket
             </Link>
           </div>
-        ) : (
-          <div className="grid lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 space-y-2 ">
-              {tickets.map((ticket) => (
+        </div>
+      ) : (
+        <div className="grid lg:grid-cols-[280px_1fr] gap-6">
+          {/* Sidebar list */}
+          <div className="space-y-1">
+            {tickets.map((ticket) => {
+              const isSelected = selectedTicket?.id === ticket.id;
+              return (
                 <button
                   key={ticket.id}
                   onClick={() => setSelectedTicket(ticket)}
-                  className={`w-full text-left p-4 rounded-xl border transition-all ${
-                    selectedTicket?.id === ticket.id
-                      ? "bg-[var(--primary)] border-[var(--primary)] text-white"
-                      : "bg-[var(--card)] border-[var(--border)] hover:border-[var(--primary)]"
+                  className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors ${
+                    isSelected
+                      ? "bg-[#001d52] text-white"
+                      : "hover:bg-(--border)/40 text-(--text)/70"
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p
-                        className={`font-medium text-sm truncate ${
-                          selectedTicket?.id === ticket.id
-                            ? "text-white"
-                            : "text-[var(--text)]"
-                        }`}
-                      >
-                        {extractTitle(ticket.generatedTicket)}
-                      </p>
-                      <p
-                        className={`text-xs mt-1 ${
-                          selectedTicket?.id === ticket.id
-                            ? "text-white/90"
-                            : "text-[var(--text)]/60"
-                        }`}
-                      >
-                        {formatDate(ticket.createdAt)}
-                      </p>
-                    </div>
-                    {selectedTicket?.id === ticket.id && (
-                      <div className="w-2 h-2 bg-white rounded-full flex-shrink-0 mt-2" />
-                    )}
-                  </div>
+                  <p className="text-sm font-medium truncate">
+                    {extractTicketTitle(ticket.generatedTicket)}
+                  </p>
+                  <p className="text-xs mt-0.5 text-white/40">
+                    {formatDate(ticket.createdAt)}
+                  </p>
                 </button>
-              ))}
-            </div>
-
-            <div className="lg:col-span-2">
-              {selectedTicket ? (
-                <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      
-                      <p className="text font-bold text-[var(--text)]/60">
-                        {extractTitle(selectedTicket.generatedTicket)}
-                      </p>
-                    </div>
-                    <button
-                      onClick={copyToClipboard}
-                      className="flex items-center gap-2 px-4 py-2 bg-[var(--border)] hover:bg-[var(--text)]/10 text-[var(--text)]/80 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      <Copy className="w-4 h-4" />
-                      {copied ? "Copied!" : "Copy"}
-                    </button>
-                  </div>
-
-                  {selectedTicket.screenshotUrl && (
-                    <div className="mb-6">
-                      <p className="text-xs font-medium text-[var(--text)]/60 uppercase mb-2">
-                        Screenshot
-                      </p>
-                      <div className="border border-[var(--border)] rounded-lg overflow-hidden max-w-md">
-                        <img
-                          src={selectedTicket.screenshotUrl}
-                          alt="Screenshot"
-                          className="w-full h-auto"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedTicket.inputText && (
-                    <div className="mb-6">
-                      <p className="text-xs font-medium text-[var(--text)]/60 uppercase mb-2">
-                        Note
-                      </p>
-                      <p className="text-sm text-[var(--text)] bg-[var(--bg)] rounded-lg p-3">
-                        {selectedTicket.inputText}
-                      </p>
-                    </div>
-                  )}
-
-                  <div>
-                    <p className="text-xs font-medium text-[var(--text)]/60 uppercase mb-2">
-                      Generated Ticket
-                    </p>
-                    <pre className="text-sm text-[var(--text)] whitespace-pre-wrap font-sans bg-[var(--bg)] rounded-lg p-4">
-                      {selectedTicket.generatedTicket}
-                    </pre>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full min-h-[400px] text-[var(--text)]/40">
-                  Select a ticket to view details
-                </div>
-              )}
-            </div>
+              );
+            })}
           </div>
-        )}
-      </div>
-    </div>
+
+          {/* Main content */}
+          <div className="lg:col-span-1 mx-auto">
+            {selectedTicket ? (
+              <div className="max-w-3xl">
+                {/* Header with actions */}
+                <div className="flex items-center gap-2 mb-6">
+                  {selectedTicket.screenshotUrl && (
+                    <button
+                      onClick={() => setShowScreenshot(!showScreenshot)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-(--border) hover:bg-(--border)/40 text-(--text)/70 transition-colors"
+                    >
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      {showScreenshot ? "Hide" : "Show"} Screenshot
+                    </button>
+                  )}
+                  <button
+                    onClick={copyToClipboard}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-(--border) hover:bg-(--border)/40 text-(--text)/70 transition-colors"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Screenshot (collapsible) */}
+                {showScreenshot && selectedTicket.screenshotUrl && (
+                  <div className="mb-6 p-3 bg-(--bg) rounded-lg border border-(--border)">
+                    <Image
+                      src={selectedTicket.screenshotUrl}
+                      alt="Screenshot"
+                      width={800}
+                      height={450}
+                      className="rounded w-full h-auto"
+                      unoptimized
+                    />
+                  </div>
+                )}
+
+                {/* Note */}
+                {selectedTicket.inputText && (
+                  <div className="mb-6 pb-6 border-b border-(--border)">
+                    <p className="text-xs font-medium text-(--text)/40 mb-2">
+                      Note
+                    </p>
+                    <p className="text-sm text-(--text)/80 leading-relaxed">
+                      {selectedTicket.inputText}
+                    </p>
+                  </div>
+                )}
+
+                {/* Ticket */}
+                <div>
+                  <p className="text-xs font-medium text-(--text)/40 mb-3">
+                    Ticket Details
+                  </p>
+                  <TicketCard ticketText={selectedTicket.generatedTicket} />
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full min-h-[400px] text-(--text)/30 text-sm">
+                Select a ticket to view details
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

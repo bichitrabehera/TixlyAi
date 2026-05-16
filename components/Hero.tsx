@@ -1,7 +1,9 @@
+"use client";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Slack, Jira, Notion } from "developer-icons";
 import { HERO } from "@/lib/data";
+import { CgLinear } from "react-icons/cg";
 
 export function Hero() {
   return (
@@ -33,7 +35,7 @@ export function Hero() {
         {/* CTA */}
         <div className="mt-12 flex gap-4 sm:flex-row justify-center items-center">
           <Link
-            href="/signin"
+            href="/dashboard/generate"
             className="group relative inline-flex items-center rounded-xl bg-green-700 px-4 py-2 font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-green-600 hover:shadow-lg hover:shadow-green-900/10"
           >
             {HERO.cta}
@@ -41,7 +43,9 @@ export function Hero() {
           </Link>
 
           <a
-            href={HERO.secondaryCta.startsWith("#") ? HERO.secondaryCta : "#how"}
+            href={
+              HERO.secondaryCta.startsWith("#") ? HERO.secondaryCta : "#how"
+            }
             className="rounded-xl border-2 border-slate-300 px-4 py-2 font-semibold text-slate-700 transition-all hover:border-slate-400"
           >
             {HERO.secondaryCta}
@@ -49,9 +53,7 @@ export function Hero() {
         </div>
 
         {/* Integration icons */}
-        <p className="mt-8 text-sm text-slate-500">
-          {HERO.integrationsLabel}
-        </p>
+        <p className="mt-8 text-sm text-slate-500">{HERO.integrationsLabel}</p>
 
         <div className="mt-8 flex items-center justify-center gap-6">
           {HERO.integrations.map((name) => (
@@ -60,9 +62,18 @@ export function Hero() {
               className="group flex flex-col items-center gap-2 cursor-pointer"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white transition-all group-hover:border-slate-900 group-hover:bg-slate-50 group-hover:shadow-md group-hover:-translate-y-1">
-                {name === "Slack" && <Slack className="h-6 w-6 text-slate-400 group-hover:text-slate-900" />}
-                {name === "Jira" && <Jira className="h-6 w-6 text-slate-400 group-hover:text-slate-900" />}
-                {name === "Notion" && <Notion className="h-6 w-6 text-slate-400 group-hover:text-slate-900" />}
+                {name === "Slack" && (
+                  <Slack className="h-6 w-6 text-slate-400 group-hover:text-slate-900" />
+                )}
+                {name === "Jira" && (
+                  <Jira className="h-6 w-6 text-slate-400 group-hover:text-slate-900" />
+                )}
+                {name === "Notion" && (
+                  <Notion className="h-6 w-6 text-slate-400 group-hover:text-slate-900" />
+                )}
+                {name === "Linear" && (
+                  <CgLinear className="h-6 w-6 text-black group-hover:text-slate-900" />
+                )}
               </div>
               <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700 transition-colors">
                 {name}

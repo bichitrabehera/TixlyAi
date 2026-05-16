@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
+import { getSlackTokens } from "@/lib/db/users";
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("slack_token")?.value;
-  const userId = cookieStore.get("slack_user_id")?.value;
+  const { userId } = await auth();
 
-  return NextResponse.json({ connected: !!(token && userId) });
+  if (!userId) {
+    return NextResponse.json({ connected: false });
+  }
+
+  const tokens = await getSlackTokens(userId);
+
+  return NextResponse.json({ connected: tokens !== null });
 }

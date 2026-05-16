@@ -10,15 +10,15 @@ const Header = ({
   children?: React.ReactNode;
 }) => {
   return (
-    <div className="mb-8">
+    <div className=" py-6">
       <div className="flex items-center justify-between gap-4">
         {/* LEFT */}
         <div>
-          <h1 className="text-2xl font-semibold text-[var(--text)] tracking-tight">
+          <h1 className="text-2xl font-semibold text-[(--text)] tracking-tight">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-sm text-[var(--muted)] mt-1">{subtitle}</p>
+            <p className="text-sm text-[(--muted)] mt-1">{subtitle}</p>
           )}
         </div>
 
@@ -27,7 +27,7 @@ const Header = ({
       </div>
 
       {/* subtle divider */}
-      <div className="mt-6 h-px bg-[var(--border)]/60" />
+      <div className="mt-6 h-px bg-[(--border)]/60" />
     </div>
   );
 };
