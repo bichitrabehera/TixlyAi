@@ -24,12 +24,6 @@ export function Header() {
             >
               How it works
             </Link>
-            <Link
-              href="/pricing"
-              className="md:flex hidden text-sm font-medium text-slate-700 px-4 py-2 rounded-full transition-all hover:bg-green-100/80 hover:text-slate-900"
-            >
-              Pricing
-            </Link>
 
             {!isLoaded ? (
               <div className="w-8 h-8" />

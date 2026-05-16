@@ -9,7 +9,7 @@ import ComparisonPage from "@/components/Comparison";
 
 export default function Home() {
   return (
-    <div>
+    <div className="bg-[#ecfff1]">
       <Header />
       <Hero />
       <HowItWorks />
