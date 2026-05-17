@@ -1,3 +1,5 @@
+import { RATE_LIMIT_WINDOW_MS, RATE_LIMIT_TIERS, RATE_LIMIT_CLEANUP_INTERVAL_MS } from "./constants";
+
 interface RateLimitEntry {
   count: number;
   resetAt: number;
@@ -5,12 +7,9 @@ interface RateLimitEntry {
 
 const store = new Map<string, RateLimitEntry>();
 
-const WINDOW_MS = 60 * 1000;
+const WINDOW_MS = RATE_LIMIT_WINDOW_MS;
 
-const LIMITS: Record<string, number> = {
-  free: 10,
-  basic: 30,
-};
+const LIMITS = RATE_LIMIT_TIERS;
 
 setInterval(() => {
   const now = Date.now();
@@ -19,7 +18,7 @@ setInterval(() => {
       store.delete(key);
     }
   }
-}, 60_000);
+}, RATE_LIMIT_CLEANUP_INTERVAL_MS);
 
 export function checkRateLimit(
   userId: string,

@@ -8,6 +8,7 @@ import Header from "@/components/dashboard/Header";
 import { TicketCard } from "@/components/TicketCard";
 import { ticketToPlainText } from "@/lib/tickets/format";
 import { Image as ImageIcon } from "lucide-react";
+import { TICKET_TITLE_TRUNCATE_LENGTH, TOAST_DISMISS_MS } from "@/lib/constants";
 
 interface TicketData {
   id: number;
@@ -24,7 +25,7 @@ function extractTicketTitle(ticket: string): string {
   } catch {}
   const match = ticket.match(/🐛\s*(.*)/);
   if (match) return match[1];
-  return ticket.slice(0, 60) + (ticket.length > 60 ? "..." : "");
+  return ticket.slice(0, TICKET_TITLE_TRUNCATE_LENGTH) + (ticket.length > TICKET_TITLE_TRUNCATE_LENGTH ? "..." : "");
 }
 
 function formatDate(dateString: string) {
@@ -69,7 +70,7 @@ export default function DashboardHistory() {
       ticketToPlainText(selectedTicket.generatedTicket),
     );
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), TOAST_DISMISS_MS);
   };
 
   if (loading) {

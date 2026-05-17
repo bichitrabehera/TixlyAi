@@ -5,6 +5,7 @@ import Header from "@/components/dashboard/Header";
 import { Loader2 } from "lucide-react";
 import { Slack } from "developer-icons";
 import { CgLinear } from "react-icons/cg";
+import { SLACK_OAUTH_SCOPES } from "@/lib/constants";
 
 export default function IntegrationsPage() {
   const [linearKey, setLinearKey] = useState("");
@@ -38,7 +39,7 @@ export default function IntegrationsPage() {
   const connectSlack = () => {
     const baseUrl = window.location.origin;
     const redirectUri = `${baseUrl}/api/slack/callback`;
-    const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.NEXT_PUBLIC_SLACK_CLIENT_ID}&scope=chat:write,im:write,im:read,users:read&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.NEXT_PUBLIC_SLACK_CLIENT_ID}&scope=${SLACK_OAUTH_SCOPES}&redirect_uri=${encodeURIComponent(redirectUri)}`;
     window.location.href = url;
   };
 

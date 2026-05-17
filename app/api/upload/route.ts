@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { IMAGEKIT_UPLOAD_URL } from "@/lib/constants";
 
 export async function POST(request: Request) {
   try {
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
     formData.append("useUniqueFileName", "true");
     formData.append("folder", `/tickets/${userId}`);
 
-    const res = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+    const res = await fetch(IMAGEKIT_UPLOAD_URL, {
       method: "POST",
       headers: {
         Authorization: `Basic ${Buffer.from(`${privateKey}:`).toString("base64")}`,

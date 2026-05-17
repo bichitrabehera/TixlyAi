@@ -4,8 +4,9 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
 import { getOrCreateUser } from "@/lib/db/users";
-import { canGenerateTicket, getUsageInfo } from "@/lib/plan";
+import { canGenerateTicket, getUsageInfo, incrementTodayTicketCount } from "@/lib/plan";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { DAILY_LIMIT, OPENAI_API_URL, OPENAI_MODEL, OPENAI_API_KEY_PATTERN, TICKET_HISTORY_PAGE_SIZE } from "@/lib/constants";
 import { eq, sql } from "drizzle-orm";
 import { TicketRequestSchema, TicketOutputSchema, type TicketRequest } from "@/lib/tickets/schemas";
 import { buildPrompt } from "@/lib/tickets/prompt";
@@ -26,7 +27,7 @@ export async function GET() {
       .from(tickets)
       .where(eq(tickets.userId, user.clerkUserId))
       .orderBy(sql`${tickets.createdAt} DESC`)
-      .limit(50);
+      .limit(TICKET_HISTORY_PAGE_SIZE);
 
     return NextResponse.json({
       tickets: userTickets,
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
 
     if (!allowed) {
       return NextResponse.json(
-        { error: "Daily limit reached. You can generate up to 10 tickets per day." },
+        { error: `Daily limit reached. You can generate up to ${DAILY_LIMIT} tickets per day.` },
         { status: 429 },
       );
     }
@@ -87,7 +88,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKeyPattern = /^sk-[A-Za-z0-9-_]{20,}$/;
+    const apiKeyPattern = OPENAI_API_KEY_PATTERN;
     if (!apiKeyPattern.test(apiKey)) {
       console.error("OpenAI API key appears misconfigured");
       return NextResponse.json(
@@ -98,14 +99,14 @@ export async function POST(request: Request) {
 
     const { system, user: userContent, temperature } = buildPrompt(req);
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch(OPENAI_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: OPENAI_MODEL,
         messages: [
           { role: "system", content: system },
           { role: "user", content: userContent },
@@ -153,10 +154,12 @@ export async function POST(request: Request) {
       })
       .returning();
 
+    await incrementTodayTicketCount(user.clerkUserId);
+
     return NextResponse.json({
       ticket: validatedOutput ? JSON.stringify(validatedOutput) : raw,
       id: savedTicket.id,
-      remaining,
+      remaining: Math.max(0, remaining - 1),
       needsReview: needsReview || undefined,
     });
   } catch (error) {

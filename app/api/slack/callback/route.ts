@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { encryptToken } from "@/lib/slack";
 import { updateSlackTokens } from "@/lib/db/users";
+import { SLACK_API_BASE } from "@/lib/constants";
 
 export async function GET(request: Request) {
   const { userId } = await auth();
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch("https://slack.com/api/oauth.v2.access", {
+    const response = await fetch(`${SLACK_API_BASE}/oauth.v2.access`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",

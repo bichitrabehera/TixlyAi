@@ -1,19 +1,20 @@
 import type { Ticket, SendResult } from "./types";
+import { LINEAR_API_URL, LINEAR_TITLE_MAX_LENGTH, LINEAR_DESCRIPTION_MAX_LENGTH } from "@/lib/constants";
 
-const LINEAR_API = "https://api.linear.app/graphql";
+const LINEAR_API = LINEAR_API_URL;
 
 function extractTitle(raw: string): string {
   const titleMatch = raw.match(/^(?:Title:|🐛)\s*(.+)/m);
   if (titleMatch) return titleMatch[1].trim();
   const lines = raw.trim().split("\n").filter(Boolean);
-  return lines[0]?.slice(0, 100) || "Untitled ticket";
+  return lines[0]?.slice(0, LINEAR_TITLE_MAX_LENGTH) || "Untitled ticket";
 }
 
 function extractDescription(raw: string): string {
   const descMatch = raw.match(/^(?:Description:|📝)\s*([\s\S]*?)(?=^(?:Steps to Reproduce:|🔄|Expected Behavior:|✅|Actual Behavior:|❌|Environment:|🌍|Additional Notes:|📌|Priority:|📊))/m);
   if (descMatch) return descMatch[1].trim();
   const lines = raw.trim().split("\n");
-  return lines.slice(1).join("\n").trim().slice(0, 5000) || raw;
+  return lines.slice(1).join("\n").trim().slice(0, LINEAR_DESCRIPTION_MAX_LENGTH) || raw;
 }
 
 function formatForLinear(ticket: Ticket): { title: string; description: string } {
@@ -28,7 +29,7 @@ function formatForLinear(ticket: Ticket): { title: string; description: string }
     });
   }
   return {
-    title: ticket.title.slice(0, 255),
+    title: ticket.title.slice(0, LINEAR_TITLE_MAX_LENGTH),
     description,
   };
 }

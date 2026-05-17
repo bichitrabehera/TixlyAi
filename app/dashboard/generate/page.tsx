@@ -9,8 +9,8 @@ import { History } from "lucide-react";
 import Link from "next/link";
 import Header from "@/components/dashboard/Header";
 import { ticketToPlainText } from "@/lib/tickets/format";
+import { DAILY_LIMIT, SESSION_KEY, TOAST_DISMISS_MS, OCR_LANGUAGE } from "@/lib/constants";
 
-const SESSION_KEY = "tixly_session";
 
 async function copyTicketAndImage(
   text: string,
@@ -78,7 +78,7 @@ export default function DashboardGenerate() {
   const [linearConnected, setLinearConnected] = useState(false);
   const [usageCount, setUsageCount] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
-  const [dailyLimit, setDailyLimit] = useState(10);
+  const [dailyLimit, setDailyLimit] = useState(DAILY_LIMIT);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -131,7 +131,7 @@ export default function DashboardGenerate() {
 
   const showToast = (message: string) => {
     setToast(message);
-    setTimeout(() => setToast(""), 2000);
+    setTimeout(() => setToast(""), TOAST_DISMISS_MS);
   };
 
   const sendToSlack = async () => {
@@ -229,7 +229,7 @@ export default function DashboardGenerate() {
         try {
           const {
             data: { text: ocrText },
-          } = await Tesseract.recognize(ocrSource, "eng", {
+          } = await Tesseract.recognize(ocrSource, OCR_LANGUAGE, {
             logger: (m) => {
               if (m.status === "recognizing text") {
                 setStatus(`OCR ${Math.round(m.progress * 100)}%`);
@@ -288,6 +288,11 @@ export default function DashboardGenerate() {
       const data = await response.json();
       setTicket(data.ticket);
       setStatus("");
+
+      if (data.remaining !== undefined) {
+        setUsageCount(DAILY_LIMIT - data.remaining);
+        setLimitReached(data.remaining <= 0);
+      }
 
       if (screenshotUrl) {
         setImage(screenshotUrl);

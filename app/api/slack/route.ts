@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { decryptToken } from "@/lib/slack";
 import { getSlackTokens } from "@/lib/db/users";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { SLACK_API_BASE } from "@/lib/constants";
 
 export async function POST(request: Request) {
   try {
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
 
     // Step 1: Open DM conversation
     const openResponse = await fetch(
-      "https://slack.com/api/conversations.open",
+      `${SLACK_API_BASE}/conversations.open`,
       {
         method: "POST",
         headers: {
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
 
     // Step 2: Send message
     const messageResponse = await fetch(
-      "https://slack.com/api/chat.postMessage",
+      `${SLACK_API_BASE}/chat.postMessage`,
       {
         method: "POST",
         headers: {

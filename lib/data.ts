@@ -12,7 +12,7 @@ export const NAV = {
 };
 
 export const HERO = {
-  badge: "Structured tickets in 5 seconds",
+  badge: "Generate upto 5 tickets per day",
   title: "Turn any screenshot into",
   titleHighlight: "actionable tickets.",
   description:

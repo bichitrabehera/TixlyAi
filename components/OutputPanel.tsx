@@ -4,6 +4,7 @@ import { Slack } from "developer-icons";
 import { RotateCcw, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { TicketCard } from "@/components/TicketCard";
+import { TOAST_DISMISS_MS } from "@/lib/constants";
 
 interface OutputPanelProps {
   ticket: string;
@@ -39,7 +40,7 @@ export function OutputPanel({
   const handleCopy = async () => {
     await onCopy();
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), TOAST_DISMISS_MS);
   };
 
   return (

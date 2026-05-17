@@ -1,19 +1,8 @@
 import { TicketRequest } from "./schemas";
+import { TEMPERATURE_MAP, PRIORITIES, TICKET_TITLE_MAX_LENGTH } from "@/lib/constants";
 
 export function determineTemperature(preferredPriority?: string) {
-  // Lower temperature for critical issues for deterministic output
-  switch (preferredPriority) {
-    case "CRITICAL":
-      return 0.0;
-    case "HIGH":
-      return 0.1;
-    case "MEDIUM":
-      return 0.3;
-    case "LOW":
-      return 0.5;
-    default:
-      return 0.3;
-  }
+  return preferredPriority ? TEMPERATURE_MAP[preferredPriority] ?? 0.3 : 0.3;
 }
 
 export function buildPrompt(req: TicketRequest) {
@@ -28,8 +17,8 @@ Input fields:
 - SCREENSHOT_URL: optional image URL
 
 Produce a JSON object with the following fields:
-- title: short summary (max 80 chars)
-- priority: one of CRITICAL|HIGH|MEDIUM|LOW
+- title: short summary (max ${TICKET_TITLE_MAX_LENGTH} chars)
+- priority: one of ${PRIORITIES.join("|")}
 - description: 2-3 sentence explanation
 - steps: array of up to 5 reproducible steps (optional)
 - expected: expected behavior (optional)

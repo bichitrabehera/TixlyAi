@@ -1,6 +1,7 @@
 import type { SendResult } from "./types";
 import { decryptToken } from "@/lib/slack";
 import { getSlackTokens } from "@/lib/db/users";
+import { SLACK_API_BASE } from "@/lib/constants";
 
 export async function sendToSlack(
   rawTicket: string,
@@ -14,7 +15,7 @@ export async function sendToSlack(
   const botToken = decryptToken(tokens.encryptedToken);
   const slackUserId = tokens.slackUserId;
 
-  const openRes = await fetch("https://slack.com/api/conversations.open", {
+  const openRes = await fetch(`${SLACK_API_BASE}/conversations.open`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${botToken}`,
@@ -33,7 +34,7 @@ export async function sendToSlack(
   }
 
   const msg = `🐞 *New Bug Report*\n\n${rawTicket}`;
-  const msgRes = await fetch("https://slack.com/api/chat.postMessage", {
+  const msgRes = await fetch(`${SLACK_API_BASE}/chat.postMessage`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${botToken}`,
