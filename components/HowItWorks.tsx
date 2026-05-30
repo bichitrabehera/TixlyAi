@@ -34,17 +34,6 @@ export function HowItWorks() {
           </h2>
         </div>
 
-        {/* Preview */}
-        <div className="mb-16 overflow-hidden rounded-xl shadow-green-950 border border-slate-200 shadow-sm">
-          
-
-          <img
-            src="/Banner1.jpeg"
-            alt="Tixly dashboard preview"
-            className="w-full object-cover rounded-xl"
-          />
-        </div>
-
         {/* Steps */}
         <div className="grid gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 sm:grid-cols-3">
           {steps.map(({ icon: Icon, title, description }, index) => (

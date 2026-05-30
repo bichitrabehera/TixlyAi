@@ -48,7 +48,7 @@ export function Sidebar() {
       </div>
 
       <div className="p-4 border-b border-(--border)">
-        <div className="flex items-center gap-3 p-2 rounded-lg bg-(--bg)">
+        <div className="flex items-center gap-3 p-2 rounded-lg">
           <Image
             src={user?.imageUrl || "https://ui-avatars.com/api/?name=User"}
             alt="Profile"

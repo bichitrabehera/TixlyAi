@@ -9,8 +9,12 @@ import { History } from "lucide-react";
 import Link from "next/link";
 import Header from "@/components/dashboard/Header";
 import { ticketToPlainText } from "@/lib/tickets/format";
-import { DAILY_LIMIT, SESSION_KEY, TOAST_DISMISS_MS, OCR_LANGUAGE } from "@/lib/constants";
-
+import {
+  DAILY_LIMIT,
+  SESSION_KEY,
+  TOAST_DISMISS_MS,
+  OCR_LANGUAGE,
+} from "@/lib/constants";
 
 async function copyTicketAndImage(
   text: string,
@@ -298,12 +302,6 @@ export default function DashboardGenerate() {
         setImage(screenshotUrl);
       }
 
-      await copyTicketAndImage(
-        ticketToPlainText(data.ticket),
-        screenshotUrl || img,
-      );
-      showToast("Copied to clipboard!");
-
       checkUsageCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -364,6 +362,7 @@ export default function DashboardGenerate() {
   const copyToClipboard = async () => {
     if (!ticket) return;
     const text = ticketToPlainText(ticket);
+
     try {
       await copyTicketAndImage(text, image);
       showToast(image ? "Copied image and ticket!" : "Copied ticket!");

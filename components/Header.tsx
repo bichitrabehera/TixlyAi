@@ -31,7 +31,7 @@ export function Header() {
               <>
                 <Link
                   href="/dashboard"
-                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-700"
+                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-700"
                 >
                   Dashboard
                 </Link>

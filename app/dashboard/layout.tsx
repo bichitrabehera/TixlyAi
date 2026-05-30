@@ -18,7 +18,7 @@ export default async function DashboardLayout({
     <ThemeProvider>
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar (fixed) */}
-        <div className="w-68 shrink-0 border-r border-[var(--border)] bg-[var(--card)]">
+        <div className="w-64 shrink-0 border-r border-[var(--border)] bg-[var(--card)]">
           <Sidebar />
         </div>
 

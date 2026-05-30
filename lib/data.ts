@@ -58,7 +58,7 @@ export const FEATURES = {
     {
       title: "Screenshot to ticket",
       description:
-        "Transform any screenshot—bugs, UI issues, feedback, or discussion notes—into a complete, structured ticket",
+        "Transform any screenshot bugs, UI issues, feedback, or discussion notes into a complete, structured ticket",
     },
     {
       title: "Works everywhere",
