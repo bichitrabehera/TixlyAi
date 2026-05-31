@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Slack, Jira, Notion } from "developer-icons";
 import { CgLinear } from "react-icons/cg";
 import { HERO } from "@/lib/data";
+import TixlyCard from "./TixlyCard";
 
 const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
   Slack: <Slack className="h-5 w-5" />,
@@ -68,7 +69,9 @@ export function Hero() {
           </a>
         </div>
 
-        <div className="relative mt-20">
+        <TixlyCard />
+
+        <div className="relative mt-10">
           <div className="mb-16 overflow-hidden rounded-xl shadow-green-950 border border-slate-200 shadow-sm">
             <img
               src="/Banner1.jpeg"

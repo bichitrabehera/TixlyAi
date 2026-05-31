@@ -13,6 +13,10 @@ const nextConfig = {
         hostname: "img.clerk.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "ph-files.imgix.net",
+      },
     ],
   },
 };
