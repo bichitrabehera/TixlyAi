@@ -8,7 +8,10 @@ import Header from "@/components/dashboard/Header";
 import { TicketCard } from "@/components/TicketCard";
 import { ticketToPlainText } from "@/lib/tickets/format";
 import { Image as ImageIcon } from "lucide-react";
-import { TICKET_TITLE_TRUNCATE_LENGTH, TOAST_DISMISS_MS } from "@/lib/constants";
+import {
+  TICKET_TITLE_TRUNCATE_LENGTH,
+  TOAST_DISMISS_MS,
+} from "@/lib/constants";
 
 interface TicketData {
   id: number;
@@ -25,7 +28,10 @@ function extractTicketTitle(ticket: string): string {
   } catch {}
   const match = ticket.match(/🐛\s*(.*)/);
   if (match) return match[1];
-  return ticket.slice(0, TICKET_TITLE_TRUNCATE_LENGTH) + (ticket.length > TICKET_TITLE_TRUNCATE_LENGTH ? "..." : "");
+  return (
+    ticket.slice(0, TICKET_TITLE_TRUNCATE_LENGTH) +
+    (ticket.length > TICKET_TITLE_TRUNCATE_LENGTH ? "..." : "")
+  );
 }
 
 function formatDate(dateString: string) {
@@ -40,10 +46,13 @@ function formatDate(dateString: string) {
 
 export default function DashboardHistory() {
   const [tickets, setTickets] = useState<TicketData[]>([]);
-  const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showScreenshot, setShowScreenshot] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   const fetchTickets = useCallback(async () => {
     try {
@@ -73,6 +82,71 @@ export default function DashboardHistory() {
     setTimeout(() => setCopied(false), TOAST_DISMISS_MS);
   };
 
+  const ticketDetail = selectedTicket ? (
+    <div className="max-w-3xl border border-(--border) p-4 rounded-xl">
+      <div className="flex items-center gap-2 mb-6">
+        {selectedTicket.screenshotUrl && (
+          <button
+            onClick={() => setShowScreenshot(!showScreenshot)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border border-(--border) hover:bg-(--border)/40 text-(--text)/70 transition-colors"
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+            {showScreenshot ? "Hide" : "Show"} Screenshot
+          </button>
+        )}
+        <button
+          onClick={copyToClipboard}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border border-(--border) hover:bg-(--border)/40 text-(--text)/70 transition-colors"
+        >
+          {copied ? (
+            <>
+              <Check className="w-3.5 h-3.5" />
+              Copied
+            </>
+          ) : (
+            <>
+              <Copy className="w-3.5 h-3.5" />
+              Copy
+            </>
+          )}
+        </button>
+      </div>
+
+      {showScreenshot && selectedTicket.screenshotUrl && (
+        <div className="mb-6 p-3 bg-(--bg) rounded-lg border border-(--border)">
+          <Image
+            src={selectedTicket.screenshotUrl}
+            alt="Screenshot"
+            width={800}
+            height={450}
+            className="rounded w-full h-auto"
+            unoptimized
+          />
+        </div>
+      )}
+
+      {selectedTicket.inputText && (
+        <div className="mb-6 pb-6 border-b border-(--border)">
+          <p className="text-xs font-medium text-(--text)/40 mb-2">Note</p>
+          <p className="text-sm text-(--text)/80 leading-relaxed">
+            {selectedTicket.inputText}
+          </p>
+        </div>
+      )}
+
+      <div>
+        <p className="text-xs font-medium text-(--text)/40 mb-3">
+          Ticket Details
+        </p>
+        <TicketCard ticketText={selectedTicket.generatedTicket} />
+      </div>
+    </div>
+  ) : (
+    <div className="flex items-center justify-center h-full min-h-[400px] text-(--text)/30 text-sm">
+      Select a ticket to view details
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -93,7 +167,7 @@ export default function DashboardHistory() {
       >
         <Link
           href="/dashboard/generate"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#001d52] text-white hover:opacity-90 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[#001d52] text-white hover:opacity-90 transition-all"
         >
           <Zap className="w-4 h-4" />
           New Ticket
@@ -115,113 +189,76 @@ export default function DashboardHistory() {
           <div className="flex gap-3">
             <Link
               href="/dashboard/generate"
-              className="px-5 py-2.5 bg-[#001d52] text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all"
+              className="px-5 py-3 bg-[#001d52] text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all"
             >
               Generate Ticket
             </Link>
           </div>
         </div>
       ) : (
-        <div className="grid lg:grid-cols-[280px_1fr] gap-6">
-          {/* Sidebar list */}
-          <div className="space-y-1">
-            {tickets.map((ticket) => {
-              const isSelected = selectedTicket?.id === ticket.id;
-              return (
-                <button
-                  key={ticket.id}
-                  onClick={() => setSelectedTicket(ticket)}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors ${
-                    isSelected
-                      ? "bg-[#001d52] text-white"
-                      : "hover:bg-(--border)/40 text-(--text)/70"
-                  }`}
-                >
-                  <p className="text-sm font-medium truncate">
-                    {extractTicketTitle(ticket.generatedTicket)}
-                  </p>
-                  <p className="text-xs mt-0.5 text-white/40">
-                    {formatDate(ticket.createdAt)}
-                  </p>
-                </button>
-              );
-            })}
+        <>
+          <div className="hidden lg:grid lg:grid-cols-[280px_1fr] gap-6">
+            <div className="space-y-1">
+              {tickets.map((ticket) => {
+                const isSelected = selectedTicket?.id === ticket.id;
+                return (
+                  <button
+                    key={ticket.id}
+                    onClick={() => setSelectedTicket(ticket)}
+                    className={`w-full text-left rounded-lg py-3 px-3 border border-(--border) transition-colors ${
+                      isSelected
+                        ? "bg-[#001d52] text-white"
+                        : "hover:bg-(--border)/40 text-(--text)/70"
+                    }`}
+                  >
+                    <p className="text-sm font-medium truncate">
+                      {extractTicketTitle(ticket.generatedTicket)}
+                    </p>
+                    <p className="text-xs mt-1 text-white/40">
+                      {formatDate(ticket.createdAt)}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mx-auto">{ticketDetail}</div>
           </div>
 
-          {/* Main content */}
-          <div className="lg:col-span-1 mx-auto">
-            {selectedTicket ? (
-              <div className="max-w-3xl">
-                {/* Header with actions */}
-                <div className="flex items-center gap-2 mb-6">
-                  {selectedTicket.screenshotUrl && (
-                    <button
-                      onClick={() => setShowScreenshot(!showScreenshot)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-(--border) hover:bg-(--border)/40 text-(--text)/70 transition-colors"
-                    >
-                      <ImageIcon className="w-3.5 h-3.5" />
-                      {showScreenshot ? "Hide" : "Show"} Screenshot
-                    </button>
-                  )}
+          <div className="lg:hidden">
+            {!showDetail ? (
+              <div className="space-y-3">
+                {tickets.map((ticket) => (
                   <button
-                    onClick={copyToClipboard}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-(--border) hover:bg-(--border)/40 text-(--text)/70 transition-colors"
+                    key={ticket.id}
+                    onClick={() => {
+                      setSelectedTicket(ticket);
+                      setShowDetail(true);
+                    }}
+                    className="w-full text-left py-3 px-3 border border-(--border) rounded-lg transition-colors hover:bg-(--border)/40 text-(--text)/70"
                   >
-                    {copied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        Copy
-                      </>
-                    )}
+                    <p className="text-sm font-medium truncate">
+                      {extractTicketTitle(ticket.generatedTicket)}
+                    </p>
+                    <p className="text-xs mt-1 text-(--text)/40">
+                      {formatDate(ticket.createdAt)}
+                    </p>
                   </button>
-                </div>
-
-                {/* Screenshot (collapsible) */}
-                {showScreenshot && selectedTicket.screenshotUrl && (
-                  <div className="mb-6 p-3 bg-(--bg) rounded-lg border border-(--border)">
-                    <Image
-                      src={selectedTicket.screenshotUrl}
-                      alt="Screenshot"
-                      width={800}
-                      height={450}
-                      className="rounded w-full h-auto"
-                      unoptimized
-                    />
-                  </div>
-                )}
-
-                {/* Note */}
-                {selectedTicket.inputText && (
-                  <div className="mb-6 pb-6 border-b border-(--border)">
-                    <p className="text-xs font-medium text-(--text)/40 mb-2">
-                      Note
-                    </p>
-                    <p className="text-sm text-(--text)/80 leading-relaxed">
-                      {selectedTicket.inputText}
-                    </p>
-                  </div>
-                )}
-
-                {/* Ticket */}
-                <div>
-                  <p className="text-xs font-medium text-(--text)/40 mb-3">
-                    Ticket Details
-                  </p>
-                  <TicketCard ticketText={selectedTicket.generatedTicket} />
-                </div>
+                ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full min-h-[400px] text-(--text)/30 text-sm">
-                Select a ticket to view details
+              <div>
+                <button
+                  onClick={() => setShowDetail(false)}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-sm text-(--muted) hover:text-(--text) transition-colors mb-4"
+                >
+                  ← Back
+                </button>
+                {ticketDetail}
               </div>
             )}
           </div>
-        </div>
+        </>
       )}
     </>
   );

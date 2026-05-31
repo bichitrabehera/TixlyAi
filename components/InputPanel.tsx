@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface InputPanelProps {
   image: string | null;
@@ -40,43 +40,13 @@ export function InputPanel({
   manualOcrText = "",
   onManualOcrChange,
 }: InputPanelProps) {
+  const [showImagePreview, setShowImagePreview] = useState(false);
+
   const isDisabled = loading || !image || limitReached;
 
   return (
-    <div className=" bg-[var(--background)]">
-      <div className="max-w-3xl mx-auto px-4 py-4">
-        {/* Image preview - shows above input like Claude */}
-        {image && (
-          <div className="mb-3 w-fit flex items-start gap-3 p-3 rounded-lg bg-[var(--card)] border border-[var(--border)]">
-            <img
-              src={image}
-              alt="Uploaded"
-              className="w-16 h-16 object-cover rounded-md border border-[var(--border)]"
-            />
-
-            <button
-              onClick={onRemoveImage}
-              className="text-[var(--muted)] hover:text-[var(--text)] transition-colors p-1"
-              disabled={loading}
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 4L4 12M4 4L12 12"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-          </div>
-        )}
-
+    <div className="bg-[var(--background)]">
+      <div className="max-w-3xl mx-auto">
         {/* Main input container */}
         <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm focus-within:border-[var(--primary)] focus-within:shadow-md transition-all">
           {/* Hidden file input */}
@@ -97,7 +67,8 @@ export function InputPanel({
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement;
               target.style.height = "auto";
-              target.style.height = Math.min(target.scrollHeight, 200) + "px";
+              target.style.height =
+                Math.min(target.scrollHeight, 200) + "px";
             }}
             className="w-full px-4 py-3 pr-24 bg-transparent outline-none text-[15px] resize-none text-[var(--text)] placeholder:text-[var(--muted)] min-h-[52px] max-h-[200px]"
             style={{ lineHeight: "1" }}
@@ -105,38 +76,64 @@ export function InputPanel({
 
           {/* Bottom toolbar */}
           <div className="flex items-center justify-between px-2 pb-2">
-            {/* Left: Attach button */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={loading || limitReached}
-              className="p-2 rounded-lg hover:bg-[var(--border)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Attach image"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-[var(--muted)]"
+            {/* Left section */}
+            <div className="flex items-center gap-2">
+              {/* Attach button */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading || limitReached}
+                className="p-2 rounded-lg hover:bg-[var(--border)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Attach image"
               >
-                <path
-                  d="M17.5 8.33334V14.1667C17.5 15.5 16.5 16.6667 15 16.6667H5C3.5 16.6667 2.5 15.5 2.5 14.1667V5.83334C2.5 4.5 3.5 3.33334 5 3.33334H10.8333"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M13.3333 2.5L17.5 6.66667L10 14.1667L6.66667 14.5833L7.08333 11.25L13.3333 2.5Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-[var(--muted)]"
+                >
+                  <path
+                    d="M17.5 8.33334V14.1667C17.5 15.5 16.5 16.6667 15 16.6667H5C3.5 16.6667 2.5 15.5 2.5 14.1667V5.83334C2.5 4.5 3.5 3.33334 5 3.33334H10.8333"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M13.3333 2.5L17.5 6.66667L10 14.1667L6.66667 14.5833L7.08333 11.25L13.3333 2.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
 
+              {/* Image chip */}
+              {image && (
+                <div className="flex items-center gap-2 px-2 py-1 rounded-md border border-[var(--border)] bg-[var(--background)]">
+                  <button
+                    type="button"
+                    onClick={() => setShowImagePreview(true)}
+                    className="text-xs text-[var(--text)] hover:underline"
+                  >
+                    View image
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onRemoveImage}
+                    disabled={loading}
+                    className="text-xs text-[var(--muted)] hover:text-red-500 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Send button */}
             <button
               onClick={onGenerate}
               disabled={isDisabled}
@@ -144,7 +141,7 @@ export function InputPanel({
             >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/30 rounded-full animate-spin" />
                   <span>{status || "Processing..."}</span>
                 </>
               ) : (
@@ -171,16 +168,28 @@ export function InputPanel({
           </div>
         </div>
 
-        {/* Error message */}
-        {error && !limitReached && (
-          <p className="mt-2 text-xs text-red-500 px-1">{error}</p>
+        {/* Image Preview Modal */}
+        {showImagePreview && image && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+            onClick={() => setShowImagePreview(false)}
+          >
+            <div
+              className="max-w-4xl max-h-[85vh] p-2 rounded-xl bg-[var(--card)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={image}
+                alt="Uploaded"
+                className="max-w-full max-h-[80vh] rounded-lg"
+              />
+            </div>
+          </div>
         )}
 
-        {/* Hint text */}
-        {!image && !error && (
-          <p className="mt-2 text-xs text-[var(--muted)] px-1">
-            Attach a screenshot or image to generate a ticket
-          </p>
+        {/* Error */}
+        {error && !limitReached && (
+          <p className="mt-2 text-xs text-red-500 px-1">{error}</p>
         )}
       </div>
     </div>

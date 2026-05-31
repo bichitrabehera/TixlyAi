@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useUser, UserAvatar } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 export function Header() {
   const { user, isLoaded } = useUser();
@@ -18,20 +18,13 @@ export function Header() {
           </Link>
 
           <nav className="items-center flex gap-1">
-            <Link
-              href="#how"
-              className="md:flex hidden text-sm font-medium text-slate-700 px-4 py-2 rounded-full transition-all hover:bg-green-100/80 hover:text-slate-900"
-            >
-              How it works
-            </Link>
-
             {!isLoaded ? (
               <div className="w-8 h-8" />
             ) : user ? (
               <>
                 <Link
                   href="/dashboard"
-                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-700"
+                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-xl"
                 >
                   Dashboard
                 </Link>
@@ -40,7 +33,7 @@ export function Header() {
               <>
                 <Link
                   href="/login"
-                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-700"
+                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-700"
                 >
                   Sign In
                 </Link>

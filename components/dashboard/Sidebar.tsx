@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import { Ticket, History, Settings, LogOut, Link2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navItems = [
@@ -14,7 +14,13 @@ const navItems = [
   { href: "/dashboard/integrations", label: "Integrations", icon: Link2 },
 ];
 
-export function Sidebar() {
+export function Sidebar({
+  isOpen = false,
+  onClose,
+}: {
+  isOpen?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const { user } = useUser();
   const [slackConnected, setSlackConnected] = useState(false);
@@ -39,8 +45,33 @@ export function Sidebar() {
     return () => window.removeEventListener("focus", checkStatus);
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose?.();
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
+  const handleNavClick = useCallback(() => {
+    onClose?.();
+  }, [onClose]);
+
   return (
-    <aside className="w-64 fixed z-50 min-h-screen bg-(--card) border-r border-(--border) flex flex-col">
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`flex w-64 fixed z-50 min-h-screen bg-(--card) border-r border-(--border) flex-col transition-transform duration-200 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0`}>
       <div className="p-4 border-b border-(--border)">
         <Link href="/dashboard" className="flex items-center gap-2">
           <span className="font-bold text-(--text)">Tixly</span>
@@ -76,6 +107,7 @@ export function Sidebar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  onClick={handleNavClick}
                   className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-[#001d52] text-white"
@@ -101,11 +133,11 @@ export function Sidebar() {
             ].map(({ label, connected }) => (
               <div
                 key={label}
-                className="flex items-center justify-between py-1.5"
+                className="flex items-center justify-between py-2"
               >
                 <span className="text-sm text-(--text)/60">{label}</span>
                 <span
-                  className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  className={`text-xs font-medium px-2 py-1 rounded-full ${
                     connected
                       ? "bg-green-500/10 text-green-600 dark:text-green-400"
                       : "bg-(--text)/5 text-(--text)/30"
@@ -138,5 +170,6 @@ export function Sidebar() {
         </SignOutButton>
       </div>
     </aside>
+    </>
   );
 }

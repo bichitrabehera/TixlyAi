@@ -5,6 +5,7 @@ import { RotateCcw, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { TicketCard } from "@/components/TicketCard";
 import { TOAST_DISMISS_MS } from "@/lib/constants";
+import { CgLinear } from "react-icons/cg";
 
 interface OutputPanelProps {
   ticket: string;
@@ -52,62 +53,74 @@ export function OutputPanel({
             <TicketCard ticketText={ticket} />
           </div>
 
-          {/* Action buttons */}
           <div className="flex items-center gap-2 px-1">
+            {/* Copy */}
             <button
               onClick={handleCopy}
               disabled={disabled}
-              className="text-sm px-3 py-1.5 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
+              title="Copy ticket"
+              className="p-2 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
             >
-              {copied ? "✓ Copied" : "Copy"}
+              {copied ? (
+                <Check className="w-4 h-4 text-green-500" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
             </button>
 
+            {/* Send to label */}
+            {(slackConnected || linearConnected) && (
+              <span className="text-sm text-[var(--muted)] ml-2">
+                Send to
+              </span>
+            )}
+
+            {/* Slack */}
             {slackConnected && (
               <button
                 onClick={onSendToSlack}
                 disabled={disabled || slackLoading || slackSent}
-                className="text-sm px-3 py-1.5 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
+                title="Send to Slack"
+                className="p-2 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
               >
                 {slackLoading ? (
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin" />
-                    Sending...
-                  </span>
+                  <span className="w-4 h-4 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin block" />
                 ) : slackSent ? (
-                  "✓ Sent to Slack"
+                  <Check className="w-4 h-4 text-green-500" />
                 ) : (
-                  "Send to Slack"
+                  <Slack className="w-4 h-4" />
                 )}
               </button>
             )}
 
+            {/* Linear */}
             {linearConnected && (
               <button
                 onClick={onSendToLinear}
                 disabled={disabled || linearLoading || linearSent}
-                className="text-sm px-3 py-1.5 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
+                title="Create in Linear"
+                className="p-2 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
               >
                 {linearLoading ? (
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin" />
-                    Creating...
-                  </span>
+                  <span className="w-4 h-4 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin block" />
                 ) : linearSent ? (
-                  "✓ Created in Linear"
+                  <Check className="w-4 h-4 text-green-500" />
                 ) : (
-                  "Send to Linear"
+                  <CgLinear className="w-4 h-4" />
                 )}
               </button>
             )}
 
             <div className="flex-1" />
 
+            {/* New Ticket */}
             <button
               onClick={onReset}
               disabled={disabled}
-              className="text-sm px-3 py-1.5 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--muted)] hover:text-[var(--text)]"
+              title="New ticket"
+              className="p-2 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--muted)] hover:text-[var(--text)]"
             >
-              New ticket
+              <RotateCcw className="w-4 h-4" />
             </button>
           </div>
         </div>

@@ -38,7 +38,10 @@ async function copyTicketAndImage(
 
 function saveSession(image: string | null, ticket: string, note: string) {
   try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ image, ticket, note }));
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ image, ticket, note }),
+    );
   } catch {}
 }
 
@@ -156,7 +159,9 @@ export default function DashboardGenerate() {
       setSlackSent(true);
       showToast("Sent to Slack!");
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "Failed to send to Slack");
+      showToast(
+        err instanceof Error ? err.message : "Failed to send to Slack",
+      );
     } finally {
       setSlackLoading(false);
     }
@@ -187,7 +192,9 @@ export default function DashboardGenerate() {
     }
   };
 
-  const uploadImage = async (base64Data: string): Promise<string | null> => {
+  const uploadImage = async (
+    base64Data: string,
+  ): Promise<string | null> => {
     try {
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -212,7 +219,9 @@ export default function DashboardGenerate() {
     }
 
     if (limitReached) {
-      setError("Daily limit reached. Upgrade to Pro for unlimited tickets.");
+      setError(
+        "Daily limit reached. Upgrade to Pro for unlimited tickets.",
+      );
       return;
     }
 
@@ -278,7 +287,9 @@ export default function DashboardGenerate() {
 
       if (response.status === 429) {
         setLimitReached(true);
-        setError("Daily limit reached. Upgrade to Pro for unlimited tickets.");
+        setError(
+          "Daily limit reached. Upgrade to Pro for unlimited tickets.",
+        );
         setLoading(false);
         setStatus("");
         return;
@@ -383,29 +394,27 @@ export default function DashboardGenerate() {
 
   return (
     <>
-      <Header
-        title="Generate Ticket"
-        subtitle="Convert screenshots into structured tickets"
-      >
-        <Link
-          href="/dashboard/history"
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-(--muted) hover:text-(--text) transition"
-        >
-          <History className="w-4 h-4" />
-          History
-        </Link>
-      </Header>
+      <div className="flex h-[86dvh] flex-col overflow-hidden">
+        <Header title="Generate Ticket" subtitle="">
+          <Link
+            href="/dashboard/history"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-(--muted) hover:text-(--text) transition"
+          >
+            <History className="w-3.5 h-3.5" />
+            History
+          </Link>
+        </Header>
 
-      <div className="text-sm text-(--muted)">
-        Usage today:{" "}
-        <span className="text-(--text) font-medium">
-          {usageCount}/{dailyLimit}
-        </span>
-      </div>
+        <div className="px-4 py-1.5 text-xs text-(--muted)">
+          Usage today:{" "}
+          <span className="text-(--text) font-medium">
+            {usageCount}/{dailyLimit}
+          </span>
+        </div>
 
-      <div className="flex flex-col overflow-hidden">
-        <div className="flex-1 min-h-0 overflow-hidden pb-64">
-          <div className="mx-auto max-w-3xl px-4 py-6 space-y-10">
+        {/* Scrollable output area — fills remaining space between header and fixed input */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="mx-auto max-w-3xl py-4">
             <OutputPanel
               ticket={ticket}
               onCopy={copyToClipboard}
@@ -423,8 +432,9 @@ export default function DashboardGenerate() {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-64 right-0 z-30">
-          <div className="mx-auto max-w-3xl px-4 py-4">
+        {/* Composer — fixed to bottom, never scrolls away */}
+        <div className="shrink-0  bg-(--bg)">
+          <div className="mx-auto max-w-4xl px-4 pt-3">
             <InputPanel
               image={image}
               note={note}
@@ -450,7 +460,6 @@ export default function DashboardGenerate() {
           </div>
         </div>
       </div>
-
       <Toast message={toast} show={!!toast} />
     </>
   );

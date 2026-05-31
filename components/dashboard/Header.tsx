@@ -10,7 +10,7 @@ const Header = ({
   children?: React.ReactNode;
 }) => {
   return (
-    <div className="py-6">
+    <div className="py-4">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-semibold text-[(--text)] tracking-tight">

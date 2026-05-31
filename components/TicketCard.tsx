@@ -95,7 +95,7 @@ export function TicketCard({ ticketText }: { ticketText: string }) {
 
         {ticket.priority && (
           <span
-            className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
+            className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
               priorityColors[ticket.priority] ||
               "bg-[var(--border)]/40 text-[var(--text)]/70"
             }`}
@@ -114,7 +114,7 @@ export function TicketCard({ ticketText }: { ticketText: string }) {
 
       {/* Steps */}
       {ticket.steps && ticket.steps.length > 0 && (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           <p className="text-xs font-medium text-[var(--muted)]">
             Steps to reproduce
           </p>

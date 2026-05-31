@@ -110,7 +110,8 @@ export const COMPARISON = {
       price: "Unknown",
       platform: "Web",
       integrations: "GitHub only",
-      tixlyAdvantage: "Works across Jira, Linear, Notion + affordable pricing",
+      tixlyAdvantage:
+        "Works across Jira, Linear, Notion + affordable pricing",
     },
     {
       name: "BugShot AI",
@@ -139,7 +140,7 @@ export const COMPARISON = {
     price: "Affordable",
     platform: "Web (all apps)",
     integrations: " Linear, Slack",
-    advantage: "5-second ticket generation",
+    advantage: "Ticket generation in seconds",
   },
   benefits: [
     "5 seconds vs 15–30 minutes per ticket",

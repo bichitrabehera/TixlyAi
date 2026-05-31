@@ -14,7 +14,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-(--text)/55">
+      <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-(--text)/55">
         <div className="w-[18px] h-[18px]" />
       </div>
     );
