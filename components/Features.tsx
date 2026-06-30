@@ -1,7 +1,7 @@
-import { ClipboardList, Copy, Zap } from "lucide-react";
+import { ClipboardList, Key, Zap, Copy } from "lucide-react";
 import { FEATURES } from "@/lib/data";
 
-const icons = [ClipboardList, Zap, Copy];
+const icons = [ClipboardList, Key, Zap, Copy];
 
 export function Features() {
   return (

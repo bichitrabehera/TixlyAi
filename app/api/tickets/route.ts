@@ -3,14 +3,15 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
-import { getOrCreateUser } from "@/lib/db/users";
-import { canGenerateTicket, getUsageInfo, incrementTodayTicketCount } from "@/lib/plan";
+import { getOrCreateUser, getAiKey } from "@/lib/db/users";
+import { canGenerateTicket, getUsageInfo } from "@/lib/plan";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { DAILY_LIMIT, OPENAI_API_URL, OPENAI_MODEL, OPENAI_API_KEY_PATTERN, TICKET_HISTORY_PAGE_SIZE } from "@/lib/constants";
+import { TICKET_HISTORY_PAGE_SIZE } from "@/lib/constants";
 import { eq, sql } from "drizzle-orm";
 import { TicketRequestSchema, TicketOutputSchema, type TicketRequest } from "@/lib/tickets/schemas";
 import { buildPrompt } from "@/lib/tickets/prompt";
 import { flagForHumanReview } from "@/lib/tickets/humanInLoop";
+import { callAi } from "@/lib/ai";
 
 export async function GET() {
   try {
@@ -75,69 +76,44 @@ export async function POST(request: Request) {
 
     if (!allowed) {
       return NextResponse.json(
-        { error: `Daily limit reached. You can generate up to ${DAILY_LIMIT} tickets per day.` },
+        { error: "Monthly limit reached. Upgrade to Pro for unlimited tickets." },
         { status: 429 },
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
+    const aiKey = await getAiKey(userId);
+    if (!aiKey) {
       return NextResponse.json(
-        { error: "OpenAI API key not configured" },
-        { status: 500 },
-      );
-    }
-
-    const apiKeyPattern = OPENAI_API_KEY_PATTERN;
-    if (!apiKeyPattern.test(apiKey)) {
-      console.error("OpenAI API key appears misconfigured");
-      return NextResponse.json(
-        { error: "OpenAI API key misconfigured" },
-        { status: 500 },
+        { error: "No AI API key configured. Add one in Settings." },
+        { status: 400 },
       );
     }
 
     const { system, user: userContent, temperature } = buildPrompt(req);
 
-    const response = await fetch(OPENAI_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: userContent },
-        ],
-        temperature,
-      }),
+    const raw = await callAi(aiKey.encryptedKey, aiKey.provider, {
+      system,
+      user: userContent,
+      temperature,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "OpenAI API error");
-    }
-
-    const data = await response.json();
-    const raw = data.choices[0]?.message?.content?.trim() || "";
+    const rawClean = raw.replace(/```(?:json)?\s*([\s\S]*?)```/g, "$1").trim();
 
     let parsedOutput: unknown = null;
     let validatedOutput: unknown = null;
     let needsReview = false;
 
     try {
-      parsedOutput = JSON.parse(raw);
+      parsedOutput = JSON.parse(rawClean);
       validatedOutput = TicketOutputSchema.parse(parsedOutput);
     } catch {
       needsReview = true;
       const review = await flagForHumanReview({
         reason: "validation_failed",
-        rawOutput: raw,
+        rawOutput: rawClean,
         requestBody: req,
       });
-      parsedOutput = { rawOutput: raw, reviewId: review.reviewId };
+      parsedOutput = { rawOutput: rawClean, reviewId: review.reviewId };
     }
 
     const user = await getOrCreateUser(userId, "");
@@ -150,16 +126,14 @@ export async function POST(request: Request) {
         inputText: req.note || null,
         generatedTicket: validatedOutput
           ? JSON.stringify(validatedOutput)
-          : JSON.stringify(parsedOutput || raw),
+          : JSON.stringify(parsedOutput || rawClean),
       })
       .returning();
 
-    await incrementTodayTicketCount(user.clerkUserId);
-
     return NextResponse.json({
-      ticket: validatedOutput ? JSON.stringify(validatedOutput) : raw,
+      ticket: validatedOutput ? JSON.stringify(validatedOutput) : rawClean,
       id: savedTicket.id,
-      remaining: Math.max(0, remaining - 1),
+      remaining: Math.max(0, remaining === Infinity ? 999 : remaining - 1),
       needsReview: needsReview || undefined,
     });
   } catch (error) {

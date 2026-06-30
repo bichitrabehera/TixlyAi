@@ -17,7 +17,7 @@ export function CallToAction() {
           {CALL_TO_ACTION.description}
         </p>
         <Link
-          href="/generate"
+          href="/dashboard/generate"
           className="inline-flex items-center gap-2 rounded-xl bg-green-700 px-6 py-2 font-medium text-white transition hover:bg-green-600"
         >
           {CALL_TO_ACTION.button}

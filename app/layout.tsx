@@ -5,9 +5,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { RouteThemeGuard } from "@/components/RouteThemeGuard";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
-import { PostHogProvider } from "./providers";
-import { PostHogPageView } from "./PostHogPageView";
-import { Suspense } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -28,15 +25,10 @@ export default function RootLayout({
         <Analytics />
         <SpeedInsights />
         <body className={`${inter.className} min-h-full bg-(--bg) antialiased`}>
-          <PostHogProvider>
-            <ErrorBoundary>
-              <Suspense fallback={null}>
-                <PostHogPageView />
-              </Suspense>
-              <RouteThemeGuard />
-              {children}
-            </ErrorBoundary>
-          </PostHogProvider>
+          <ErrorBoundary>
+            <RouteThemeGuard />
+            {children}
+          </ErrorBoundary>
         </body>
       </html>
     </ClerkProvider>

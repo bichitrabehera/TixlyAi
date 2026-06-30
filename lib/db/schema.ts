@@ -9,6 +9,12 @@ export const users = pgTable("users", {
   slackEncryptedToken: text("slack_encrypted_token"),
   slackUserId: text("slack_user_id"),
   linearEncryptedKey: text("linear_encrypted_key"),
+  name: text("name"),
+  aiEncryptedKey: text("ai_encrypted_key"),
+  aiProvider: text("ai_provider"),
+  notificationEmail: text("notification_email").default("off"),
+  razorpaySubscriptionId: text("razorpay_subscription_id"),
+  razorpayCustomerId: text("razorpay_customer_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

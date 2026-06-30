@@ -1,11 +1,22 @@
-export const DAILY_LIMIT = 5;
+export const MONTHLY_LIMIT_FREE = 30;
 
 export const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 export const OPENAI_MODEL = "gpt-4o-mini";
 export const OPENAI_API_KEY_PATTERN = /^sk-[A-Za-z0-9-_]{20,}$/;
+
+export const OPENROUTER_API_URL =
+  "https://openrouter.ai/api/v1/chat/completions";
+export const OPENROUTER_KEY_PATTERN = /^sk-or-v1-[A-Za-z0-9-_]{20,}$/;
+
+export const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
+export const ANTHROPIC_KEY_PATTERN = /^sk-ant-[A-Za-z0-9-_]{20,}$/;
+
+export const AI_PROVIDERS = ["openai", "openrouter", "anthropic"] as const;
+export type AiProvider = (typeof AI_PROVIDERS)[number];
 export const LINEAR_API_URL = "https://api.linear.app/graphql";
 export const SLACK_API_BASE = "https://slack.com/api";
-export const IMAGEKIT_UPLOAD_URL = "https://upload.imagekit.io/api/v1/files/upload";
+export const IMAGEKIT_UPLOAD_URL =
+  "https://upload.imagekit.io/api/v1/files/upload";
 
 export const TICKET_HISTORY_PAGE_SIZE = 50;
 export const TICKET_TITLE_TRUNCATE_LENGTH = 60;

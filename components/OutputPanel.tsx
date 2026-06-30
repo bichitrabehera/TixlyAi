@@ -59,7 +59,7 @@ export function OutputPanel({
               onClick={handleCopy}
               disabled={disabled}
               title="Copy ticket"
-              className="p-2 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
+              className="p-2 rounded-lg hover:bg-blue-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)] "
             >
               {copied ? (
                 <Check className="w-4 h-4 text-green-500" />
@@ -68,48 +68,47 @@ export function OutputPanel({
               )}
             </button>
 
-            {/* Send to label */}
-            {(slackConnected || linearConnected) && (
-              <span className="text-sm text-[var(--muted)] ml-2">
-                Send to
-              </span>
-            )}
+            <div className="">
+              {(slackConnected || linearConnected) && (
+                <span className="text-sm text-[var(--muted)] ml-2">
+                  Send to
+                </span>
+              )}
 
-            {/* Slack */}
-            {slackConnected && (
-              <button
-                onClick={onSendToSlack}
-                disabled={disabled || slackLoading || slackSent}
-                title="Send to Slack"
-                className="p-2 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
-              >
-                {slackLoading ? (
-                  <span className="w-4 h-4 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin block" />
-                ) : slackSent ? (
-                  <Check className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Slack className="w-4 h-4" />
-                )}
-              </button>
-            )}
+              {slackConnected && (
+                <button
+                  onClick={onSendToSlack}
+                  disabled={disabled || slackLoading || slackSent}
+                  title="Send to Slack"
+                  className="p-2 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
+                >
+                  {slackLoading ? (
+                    <span className="w-4 h-4 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin block" />
+                  ) : slackSent ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Slack className="w-4 h-4" />
+                  )}
+                </button>
+              )}
 
-            {/* Linear */}
-            {linearConnected && (
-              <button
-                onClick={onSendToLinear}
-                disabled={disabled || linearLoading || linearSent}
-                title="Create in Linear"
-                className="p-2 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
-              >
-                {linearLoading ? (
-                  <span className="w-4 h-4 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin block" />
-                ) : linearSent ? (
-                  <Check className="w-4 h-4 text-green-500" />
-                ) : (
-                  <CgLinear className="w-4 h-4" />
-                )}
-              </button>
-            )}
+              {linearConnected && (
+                <button
+                  onClick={onSendToLinear}
+                  disabled={disabled || linearLoading || linearSent}
+                  title="Create in Linear"
+                  className="p-2 rounded-lg hover:bg-[var(--card)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text)]"
+                >
+                  {linearLoading ? (
+                    <span className="w-4 h-4 border-2 border-[var(--muted)] border-t-transparent rounded-full animate-spin block" />
+                  ) : linearSent ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <CgLinear className="w-4 h-4" />
+                  )}
+                </button>
+              )}
+            </div>
 
             <div className="flex-1" />
 

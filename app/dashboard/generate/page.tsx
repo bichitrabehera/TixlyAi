@@ -5,12 +5,12 @@ import Tesseract from "tesseract.js";
 import { Toast } from "@/components/Toast";
 import { InputPanel } from "@/components/InputPanel";
 import { OutputPanel } from "@/components/OutputPanel";
-import { History } from "lucide-react";
+import { History, Key, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Header from "@/components/dashboard/Header";
 import { ticketToPlainText } from "@/lib/tickets/format";
 import {
-  DAILY_LIMIT,
+  MONTHLY_LIMIT_FREE,
   SESSION_KEY,
   TOAST_DISMISS_MS,
   OCR_LANGUAGE,
@@ -38,10 +38,7 @@ async function copyTicketAndImage(
 
 function saveSession(image: string | null, ticket: string, note: string) {
   try {
-    localStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({ image, ticket, note }),
-    );
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ image, ticket, note }));
   } catch {}
 }
 
@@ -85,8 +82,19 @@ export default function DashboardGenerate() {
   const [linearConnected, setLinearConnected] = useState(false);
   const [usageCount, setUsageCount] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
-  const [dailyLimit, setDailyLimit] = useState(DAILY_LIMIT);
+  const [monthlyLimit, setMonthlyLimit] = useState(MONTHLY_LIMIT_FREE);
+  const [plan, setPlan] = useState("free");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [hasAiKey, setHasAiKey] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        setHasAiKey(data.hasAiKey);
+      })
+      .catch(() => setHasAiKey(false));
+  }, []);
 
   useEffect(() => {
     const session = loadSession();
@@ -121,9 +129,10 @@ export default function DashboardGenerate() {
       const data = await res.json();
 
       if (data.usage) {
-        setDailyLimit(data.usage.dailyLimit);
-        setUsageCount(data.usage.todayUsage);
-        setLimitReached(data.usage.todayUsage >= data.usage.dailyLimit);
+        setMonthlyLimit(data.usage.monthlyLimit);
+        setUsageCount(data.usage.monthlyUsage);
+        setLimitReached(data.usage.monthlyUsage >= data.usage.monthlyLimit);
+        setPlan(data.usage.plan);
       }
     } catch (e) {
       console.error("Failed to check usage", e);
@@ -159,9 +168,7 @@ export default function DashboardGenerate() {
       setSlackSent(true);
       showToast("Sent to Slack!");
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : "Failed to send to Slack",
-      );
+      showToast(err instanceof Error ? err.message : "Failed to send to Slack");
     } finally {
       setSlackLoading(false);
     }
@@ -192,9 +199,7 @@ export default function DashboardGenerate() {
     }
   };
 
-  const uploadImage = async (
-    base64Data: string,
-  ): Promise<string | null> => {
+  const uploadImage = async (base64Data: string): Promise<string | null> => {
     try {
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -219,9 +224,7 @@ export default function DashboardGenerate() {
     }
 
     if (limitReached) {
-      setError(
-        "Daily limit reached. Upgrade to Pro for unlimited tickets.",
-      );
+      setError("Daily limit reached. Upgrade to Pro for unlimited tickets.");
       return;
     }
 
@@ -287,9 +290,7 @@ export default function DashboardGenerate() {
 
       if (response.status === 429) {
         setLimitReached(true);
-        setError(
-          "Daily limit reached. Upgrade to Pro for unlimited tickets.",
-        );
+        setError("Daily limit reached. Upgrade to Pro for unlimited tickets.");
         setLoading(false);
         setStatus("");
         return;
@@ -305,7 +306,7 @@ export default function DashboardGenerate() {
       setStatus("");
 
       if (data.remaining !== undefined) {
-        setUsageCount(DAILY_LIMIT - data.remaining);
+        setUsageCount(MONTHLY_LIMIT_FREE - data.remaining);
         setLimitReached(data.remaining <= 0);
       }
 
@@ -392,9 +393,49 @@ export default function DashboardGenerate() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  if (hasAiKey === null) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-[var(--muted)]" />
+      </div>
+    );
+  }
+
+  if (!hasAiKey) {
+    return (
+      <>
+        <Header
+          title="Generate Ticket"
+          subtitle="Connect an AI provider to start generating tickets."
+        />
+
+        <div className="mx-auto flex h-[70vh] max-w-lg items-center justify-center px-4">
+          <div className="w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center">
+
+            <h2 className="text-xl font-semibold text-[var(--text)]">
+              Connect an AI Provider
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              You need an API key before you can generate tickets. Connect
+              OpenAI, OpenRouter or Anthropic from Settings.
+            </p>
+
+            <Link
+              href="/dashboard/settings?tab=ai"
+              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2 text-sm font-medium text-white hover:opacity-90"
+            >
+              Connect API Key
+            </Link>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <div className="flex h-[86dvh] flex-col overflow-hidden">
+      <div className="flex h-[95dvh] flex-col overflow-hidden">
         <Header title="Generate Ticket" subtitle="">
           <Link
             href="/dashboard/history"
@@ -406,9 +447,9 @@ export default function DashboardGenerate() {
         </Header>
 
         <div className="px-4 py-1.5 text-xs text-(--muted)">
-          Usage today:{" "}
+          Monthly usage:{" "}
           <span className="text-(--text) font-medium">
-            {usageCount}/{dailyLimit}
+            {usageCount}/{monthlyLimit}
           </span>
         </div>
 
@@ -422,18 +463,18 @@ export default function DashboardGenerate() {
               onSendToSlack={sendToSlack}
               slackLoading={slackLoading}
               slackSent={slackSent}
-              slackConnected={slackConnected}
+              slackConnected={plan === "pro" ? slackConnected : false}
               onSendToLinear={sendToLinear}
               linearLoading={linearLoading}
               linearSent={linearSent}
-              linearConnected={linearConnected}
+              linearConnected={plan === "pro" ? linearConnected : false}
               disabled={!ticket || loading}
             />
           </div>
         </div>
 
         {/* Composer — fixed to bottom, never scrolls away */}
-        <div className="shrink-0  bg-(--bg)">
+        <div className="shrink-0 bottom-0  bg-(--bg)">
           <div className="mx-auto max-w-4xl px-4 pt-3">
             <InputPanel
               image={image}

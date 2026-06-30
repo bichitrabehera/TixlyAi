@@ -7,16 +7,17 @@ export const SITE = {
 export const NAV = {
   links: [
     { label: "How it works", href: "#how" },
-    { label: "Generate ticket", href: "/generate" },
+    { label: "Generate ticket", href: "/dashboard/generate" },
+    { label: "Pricing", href: "#pricing" },
   ],
 };
 
 export const HERO = {
-  badge: "Generate upto 5 tickets per day",
+  badge: "Free: 30 tickets/mo  •  Pro: unlimited  •  BYOK",
   title: "Turn any screenshot into",
   titleHighlight: "actionable tickets.",
   description:
-    "Works for bugs, UI issues, client feedback, and product discussions. Paste a screenshot, get a structured ticket ready for Jira, Linear, or Slack. Save 15–30 minutes per issue.",
+    "Paste a screenshot, get a structured ticket ready for Slack or Linear. Bring your own AI key — your data stays yours. Save 15–30 minutes per issue.",
   cta: "Generate ticket",
   secondaryCta: "Learn how",
   integrationsLabel: "Works with your existing tools",
@@ -58,17 +59,22 @@ export const FEATURES = {
     {
       title: "Screenshot to ticket",
       description:
-        "Transform any screenshot bugs, UI issues, feedback, or discussion notes into a complete, structured ticket",
+        "Transform any screenshot into a complete, structured ticket with title, description, and context — in seconds.",
     },
     {
-      title: "Works everywhere",
+      title: "Your own AI key",
       description:
-        "Capture screenshots from web, mobile, or desktop apps. Works with any visual context you need to track",
+        "Bring your own OpenAI, OpenRouter, or Anthropic key. Encrypted at rest, never exposed. Your data stays yours.",
     },
     {
-      title: "Export anywhere",
+      title: "Export to Slack & Linear",
       description:
-        "Send directly to Jira, Linear, Notion, or Slack. One-click export with proper formatting",
+        "Send tickets directly to Slack DMs or create Linear issues with one click. More integrations coming.",
+    },
+    {
+      title: "30 free tickets per month",
+      description:
+        "Start for free with 30 tickets per month. Upgrade to Pro for unlimited generation at $5/month.",
     },
   ],
 };
@@ -100,33 +106,68 @@ export const USE_CASES = {
   ],
 };
 
+export const PRICING = {
+  title: "Simple pricing",
+  subtitle: "Free to start, cheap to scale. You bring your own AI key.",
+  plans: [
+    {
+      name: "Free",
+      price: "$0",
+      period: "/month",
+      description: "For individuals trying out Tixly.",
+      features: [
+        "30 tickets per month",
+        "Bring your own AI key",
+        "Clipboard copy",
+      ],
+      cta: "Get started",
+      href: "/signup",
+      highlighted: false,
+    },
+    {
+      name: "Pro",
+      price: "$5",
+      period: "/month",
+      description: "For power users and teams.",
+      features: [
+        "Unlimited tickets",
+        "Bring your own AI key",
+        "Slack integration",
+        "Linear integration",
+        "Priority support",
+      ],
+      cta: "Upgrade to Pro",
+      href: "/signup",
+      highlighted: true,
+    },
+  ],
+};
+
 export const COMPARISON = {
   title: "Why teams choose Tixly",
   subtitle:
-    "Turn screenshots into structured tickets in seconds faster than any existing workflow.",
+    "Screenshot to structured ticket in seconds — with your own AI key.",
   competitors: [
     {
       name: "SnapBug",
-      price: "Unknown",
+      price: "$$",
       platform: "Web",
       integrations: "GitHub only",
-      tixlyAdvantage:
-        "Works across Jira, Linear, Notion + affordable pricing",
+      tixlyAdvantage: "BYOK + Slack, Linear + 30 free tickets/mo",
     },
     {
       name: "BugShot AI",
-      price: "$$",
+      price: "$$$",
       platform: "Limited",
       integrations: "Generic",
-      tixlyAdvantage:
-        "Structured output + real integrations (Linear, Notion, Slack)",
+      tixlyAdvantage: "Your own AI key — privacy first",
     },
     {
       name: "BetterBugs",
       price: "Freemium",
       platform: "Chrome only",
       integrations: "Limited",
-      tixlyAdvantage: "Works across all apps (not just browser)",
+      tixlyAdvantage: "Works with any screenshot (web, mobile, desktop)",
     },
     {
       name: "TapperBox",
@@ -137,17 +178,18 @@ export const COMPARISON = {
     },
   ],
   tixly: {
-    price: "Affordable",
+    price: "$0/mo — $5/mo",
     platform: "Web (all apps)",
-    integrations: " Linear, Slack",
-    advantage: "Ticket generation in seconds",
+    integrations: "Slack, Linear",
+    advantage: "Bring your own AI key + 30 free tickets",
   },
   benefits: [
     "5 seconds vs 15–30 minutes per ticket",
     "AI generates title, repro steps, severity",
+    "Your own API key — encrypted and private",
     "Works with any screenshot (bugs, UI issues, feedback)",
     "Plug into your existing workflow (no switching tools)",
-    "Built for teams that care about speed + cost",
+    "Free tier: 30 tickets/month. Pro: unlimited.",
   ],
   ctaTitle: "Stop rewriting screenshots",
   ctaSubtitle: "Turn any screenshot into a ticket in 5 seconds",
@@ -155,16 +197,17 @@ export const COMPARISON = {
 };
 
 export const CALL_TO_ACTION = {
-  badge: "Save 15-30 minutes per issue",
-  title: "Start generating tickets",
+  badge: "30 free tickets to start",
+  title: "Try Tixly for free",
   description:
-    "Turn any screenshot into a structured, export-ready ticket in seconds.",
-  button: "Create your first ticket",
+    "Bring your own AI key, paste a screenshot, and get a structured ticket in seconds. No credit card required.",
+  button: "Generate your first ticket",
 };
 
 export const FOOTER = {
   links: [
     { label: "How it works", href: "#how" },
+    { label: "Pricing", href: "#pricing" },
     { label: "Generate ticket", href: "/dashboard/generate" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms & Conditions", href: "/terms" },
