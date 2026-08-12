@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Toast } from "@/components/Toast";
+import { Footer } from "@/components/Footer";
 import { OutputPanel } from "@/components/OutputPanel";
 import { ScreenshotDropzone } from "@/components/dashboard/ScreenshotDropzone";
 import { TicketTypeSelector } from "@/components/dashboard/TicketTypeSelector";
@@ -626,6 +627,7 @@ export default function DashboardGenerate() {
         </div>
       </div>
       <Toast message={toast} show={!!toast} />
+      <Footer />
     </>
   );
 }

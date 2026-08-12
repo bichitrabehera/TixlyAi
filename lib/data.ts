@@ -140,4 +140,14 @@ export const SOCIALS = [
     handle: "github",
     url: "https://github.com/bichitrabehera",
   },
+  {
+    platform: "Mail",
+    handle: "mail",
+    url: "mailto:bichitrabehera.345@gmail.com",
+  },
+  {
+    platform: "Portfolio",
+    handle: "portfolio",
+    url: "https://bichitrabehera.dev",
+  },
 ];

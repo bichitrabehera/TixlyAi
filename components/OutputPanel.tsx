@@ -59,7 +59,7 @@ export function OutputPanel({
   return (
     <div className="space-y-4">
       {loading && (
-        <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-6 py-10">
+        <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-6 pt-10 pb-20">
           <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary" />
           <p className="text-sm text-foreground">
             {status || "Generating ticket…"}
@@ -152,7 +152,7 @@ export function OutputPanel({
       )}
 
       {!loading && !ticket && !ocrFailed && (
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card mb-20">
           <div
             className="pointer-events-none absolute inset-0"
             style={{
