@@ -5,7 +5,7 @@ export type Ticket = {
   steps?: string[];
 };
 
-export type IntegrationTool = "slack" | "linear" | "jira";
+export type IntegrationTool = "slack" | "linear";
 
 export type SendResult = {
   success: boolean;

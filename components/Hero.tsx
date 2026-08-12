@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Slack, Jira, Notion } from "developer-icons";
 import { CgLinear } from "react-icons/cg";
 import { HERO } from "@/lib/data";
+import { Button } from "@/components/ui/button";
 import TixlyCard from "./TixlyCard";
 
 const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
@@ -41,19 +42,22 @@ export function Hero() {
 
         {/* CTAs */}
         <div className="mt-10 flex gap-3 justify-center items-center flex-wrap">
-          <Link
-            href="/dashboard/generate"
-            className="group inline-flex items-center gap-2 rounded-xl bg-green-700 px-7 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-green-600 hover:shadow-xl hover:shadow-green-900/20"
+          <Button
+            asChild
+            size="lg"
+            className="group gap-2 px-7 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-green-900/20"
           >
-            {HERO.cta}
-          </Link>
+            <Link href="/app/generate">{HERO.cta}</Link>
+          </Button>
 
-          <a
-            href="#how"
-            className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm"
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="bg-white px-7 font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5"
           >
-            {HERO.secondaryCta}
-          </a>
+            <a href="#how">{HERO.secondaryCta}</a>
+          </Button>
         </div>
 
         <TixlyCard />

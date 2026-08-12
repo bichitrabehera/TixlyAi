@@ -10,7 +10,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TixlyAi - Screenshot to Bug Ticket",
+  title: "Tixly - Screenshot to Bug Ticket",
   description: "Convert screenshots to structured bug tickets using OCR and AI",
 };
 

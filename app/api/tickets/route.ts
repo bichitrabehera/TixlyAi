@@ -4,7 +4,6 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
 import { getOrCreateUser, getAiKey } from "@/lib/db/users";
-import { canGenerateTicket, getUsageInfo } from "@/lib/plan";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { TICKET_HISTORY_PAGE_SIZE } from "@/lib/constants";
 import { eq, sql } from "drizzle-orm";
@@ -21,7 +20,6 @@ export async function GET() {
     }
 
     const user = await getOrCreateUser(userId, "");
-    const usage = await getUsageInfo(userId);
 
     const userTickets = await db
       .select()
@@ -32,7 +30,6 @@ export async function GET() {
 
     return NextResponse.json({
       tickets: userTickets,
-      usage,
     });
   } catch (error) {
     console.error("Error fetching tickets:", error);
@@ -59,9 +56,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const { allowed, remaining } = await canGenerateTicket(userId);
-
-    const rateCheck = checkRateLimit(`generate:${userId}`, "free");
+    const rateCheck = checkRateLimit(`generate:${userId}`);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: "Too many requests. Try again later." },
@@ -74,13 +69,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!allowed) {
-      return NextResponse.json(
-        { error: "Monthly limit reached. Upgrade to Pro for unlimited tickets." },
-        { status: 429 },
-      );
-    }
-
     const aiKey = await getAiKey(userId);
     if (!aiKey) {
       return NextResponse.json(
@@ -89,13 +77,40 @@ export async function POST(request: Request) {
       );
     }
 
+    const visionImage = req.screenshotUrl || req.imageDataUri || null;
+
+    if (!visionImage && !req.ocrText) {
+      return NextResponse.json(
+        { error: "Provide a screenshot or text" },
+        { status: 400 },
+      );
+    }
+
     const { system, user: userContent, temperature } = buildPrompt(req);
 
-    const raw = await callAi(aiKey.encryptedKey, aiKey.provider, {
-      system,
-      user: userContent,
-      temperature,
-    });
+    let raw: string;
+    try {
+      raw = await callAi(aiKey.encryptedKey, aiKey.provider, {
+        system,
+        user: userContent,
+        temperature,
+        ...(visionImage ? { imageUrl: visionImage } : {}),
+      });
+    } catch (visionError) {
+      if (!visionImage || !req.ocrText) {
+        throw visionError;
+      }
+      const textOnlyPrompt = buildPrompt({
+        ...req,
+        screenshotUrl: null,
+        imageDataUri: null,
+      });
+      raw = await callAi(aiKey.encryptedKey, aiKey.provider, {
+        system: textOnlyPrompt.system,
+        user: textOnlyPrompt.user,
+        temperature: textOnlyPrompt.temperature,
+      });
+    }
 
     const rawClean = raw.replace(/```(?:json)?\s*([\s\S]*?)```/g, "$1").trim();
 
@@ -118,10 +133,20 @@ export async function POST(request: Request) {
 
     const user = await getOrCreateUser(userId, "");
 
+    const ticketType =
+      req.ticketType ||
+      (validatedOutput &&
+      typeof validatedOutput === "object" &&
+      validatedOutput !== null &&
+      "type" in validatedOutput
+        ? (validatedOutput as { type?: string }).type
+        : null);
+
     const [savedTicket] = await db
       .insert(tickets)
       .values({
         userId: user.clerkUserId,
+        ticketType: ticketType || null,
         screenshotUrl: req.screenshotUrl || null,
         inputText: req.note || null,
         generatedTicket: validatedOutput
@@ -133,7 +158,6 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ticket: validatedOutput ? JSON.stringify(validatedOutput) : rawClean,
       id: savedTicket.id,
-      remaining: Math.max(0, remaining === Infinity ? 999 : remaining - 1),
       needsReview: needsReview || undefined,
     });
   } catch (error) {

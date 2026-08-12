@@ -29,7 +29,7 @@
 
 <p align="center">
   <strong>Turn any screenshot into a structured, actionable ticket in seconds.</strong><br>
-  Bring your own AI key (OpenAI, OpenRouter, or Anthropic). Free: 30 tickets/month. Pro: unlimited.
+  Free to use. Bring your own AI key (OpenAI, OpenRouter, or Anthropic).
 </p>
 
 <p align="center">
@@ -54,13 +54,14 @@ Every ticket includes:
 
 ## Pricing
 
-| | Free | Pro |
-|---|---|---|
-| Monthly tickets | 30 | Unlimited |
-| AI provider | BYOK (OpenAI / OpenRouter / Anthropic) | BYOK (OpenAI / OpenRouter / Anthropic) |
-| Slack integration | ✅ | ✅ |
-| Linear integration | ✅ | ✅ |
-| Price | $0 | $5/month (₹449) |
+Tixly is **free to use**. There are no plans, subscriptions, or billing — you bring your own AI API key and only ever pay your AI provider for the requests you make.
+
+| | Free |
+|---|---|
+| AI provider | BYOK (OpenAI / OpenRouter / Anthropic) |
+| Slack integration | ✅ |
+| Linear integration | ✅ |
+| Price | $0 |
 
 Your AI key is encrypted at rest using AES-256-GCM and never exposed to the client.
 
@@ -104,13 +105,12 @@ Every ticket is automatically copied to your clipboard along with the uploaded s
 
 ## Settings
 
-Five tabs in the settings page:
+The settings page lets you manage:
 
 | Tab | What you can do |
 |---|---|
 | **AI Provider** | Add/remove your OpenAI, OpenRouter, or Anthropic API key. Auto-detected from key prefix. |
 | **Integrations** | Connect Slack and Linear accounts. |
-| **Plan & Billing** | View your plan, upgrade to Pro via Razorpay, or cancel subscription. |
 | **Notifications** | Toggle email notification summaries. |
 | **Account** | Delete your data. |
 
@@ -138,7 +138,6 @@ Five tabs in the settings page:
 | OCR | Tesseract.js |
 | Slack | OAuth v2 + Web API |
 | Linear | GraphQL API |
-| Billing | Razorpay |
 | Encryption | AES-256-GCM |
 | Styling | Tailwind CSS |
 
@@ -169,8 +168,8 @@ ENCRYPTION_KEY=<openssl rand -hex 32>
 
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
 CLERK_SECRET_KEY=sk_...
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/app
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/app
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
 
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
@@ -199,23 +198,6 @@ npm run dev
    NEXT_PUBLIC_SLACK_CLIENT_ID=...
    SLACK_CLIENT_ID=...
    SLACK_CLIENT_SECRET=...
-   ```
-
-### Razorpay Billing (Optional)
-
-To enable Pro subscriptions:
-
-1. Create a Razorpay account at [dashboard.razorpay.com](https://dashboard.razorpay.com)
-2. Generate API keys in **Settings → API Keys**
-3. Create a monthly subscription plan in **Plans → Create Plan**
-4. Set up a webhook pointing to `https://your-domain.com/api/billing/webhook` for `subscription.charged` and `subscription.cancelled`
-5. Add to `.env`:
-   ```env
-   RAZORPAY_KEY_ID=rzp_live_xxxxx
-   NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_live_xxxxx
-   RAZORPAY_KEY_SECRET=...
-   RAZORPAY_PRO_PLAN_ID=plan_xxxxx
-   RAZORPAY_WEBHOOK_SECRET=...
    ```
 
 ---

@@ -1,11 +1,24 @@
+import { TICKET_TYPE_META } from "@/lib/constants";
+
 interface TicketData {
+  type?: string;
   title?: string;
   priority?: string;
+  severity?: string;
+  component?: string;
   description?: string;
   steps?: string[];
   expected?: string;
   actual?: string;
   environment?: string;
+  userStory?: string;
+  acceptanceCriteria?: string[];
+  scope?: string;
+  location?: string;
+  summary?: string;
+  sentiment?: string;
+  actionItems?: string[];
+  checklist?: string[];
   additionalNotes?: string;
 }
 
@@ -14,13 +27,28 @@ function parseTicketString(text: string): TicketData {
     const parsed = JSON.parse(text);
     if (parsed.title) {
       return {
+        type: parsed.type,
         title: parsed.title,
         priority: parsed.priority,
+        severity: parsed.severity,
+        component: parsed.component,
         description: parsed.description,
         steps: Array.isArray(parsed.steps) ? parsed.steps : undefined,
         expected: parsed.expected,
         actual: parsed.actual,
         environment: parsed.environment,
+        userStory: parsed.userStory,
+        acceptanceCriteria: Array.isArray(parsed.acceptanceCriteria)
+          ? parsed.acceptanceCriteria
+          : undefined,
+        scope: parsed.scope,
+        location: parsed.location,
+        summary: parsed.summary,
+        sentiment: parsed.sentiment,
+        actionItems: Array.isArray(parsed.actionItems)
+          ? parsed.actionItems
+          : undefined,
+        checklist: Array.isArray(parsed.checklist) ? parsed.checklist : undefined,
         additionalNotes: parsed.additionalNotes,
       };
     }
@@ -60,6 +88,10 @@ function parseTicketString(text: string): TicketData {
   return data;
 }
 
+function numberedList(items: string[]): string[] {
+  return items.map((item, i) => `  ${i + 1}. ${item}`);
+}
+
 export function ticketToPlainText(ticketText: string): string {
   const ticket = parseTicketString(ticketText);
 
@@ -69,8 +101,21 @@ export function ticketToPlainText(ticketText: string): string {
     lines.push(`Title: ${ticket.title}`);
   }
 
+  if (ticket.type) {
+    const label = TICKET_TYPE_META[ticket.type as keyof typeof TICKET_TYPE_META]?.label;
+    lines.push(`Type: ${label || ticket.type}`);
+  }
+
   if (ticket.priority) {
     lines.push(`Priority: ${ticket.priority}`);
+  }
+
+  if (ticket.severity) {
+    lines.push(`Severity: ${ticket.severity}`);
+  }
+
+  if (ticket.component) {
+    lines.push(`Component: ${ticket.component}`);
   }
 
   if (ticket.description) {
@@ -82,9 +127,7 @@ export function ticketToPlainText(ticketText: string): string {
   if (ticket.steps && ticket.steps.length > 0) {
     lines.push("");
     lines.push("Steps to Reproduce:");
-    ticket.steps.forEach((step, i) => {
-      lines.push(`  ${i + 1}. ${step}`);
-    });
+    lines.push(...numberedList(ticket.steps));
   }
 
   if (ticket.expected) {
@@ -102,6 +145,48 @@ export function ticketToPlainText(ticketText: string): string {
   if (ticket.environment) {
     lines.push("");
     lines.push(`Environment: ${ticket.environment}`);
+  }
+
+  if (ticket.userStory) {
+    lines.push("");
+    lines.push(`User Story: ${ticket.userStory}`);
+  }
+
+  if (ticket.acceptanceCriteria && ticket.acceptanceCriteria.length > 0) {
+    lines.push("");
+    lines.push("Acceptance Criteria:");
+    lines.push(...numberedList(ticket.acceptanceCriteria));
+  }
+
+  if (ticket.scope) {
+    lines.push("");
+    lines.push(`Scope: ${ticket.scope}`);
+  }
+
+  if (ticket.location) {
+    lines.push("");
+    lines.push(`Location: ${ticket.location}`);
+  }
+
+  if (ticket.summary) {
+    lines.push("");
+    lines.push(`Summary: ${ticket.summary}`);
+  }
+
+  if (ticket.sentiment) {
+    lines.push(`Sentiment: ${ticket.sentiment}`);
+  }
+
+  if (ticket.actionItems && ticket.actionItems.length > 0) {
+    lines.push("");
+    lines.push("Action Items:");
+    lines.push(...numberedList(ticket.actionItems));
+  }
+
+  if (ticket.checklist && ticket.checklist.length > 0) {
+    lines.push("");
+    lines.push("Checklist:");
+    lines.push(...numberedList(ticket.checklist));
   }
 
   if (ticket.additionalNotes) {

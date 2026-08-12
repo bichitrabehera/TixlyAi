@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No text provided" }, { status: 400 });
     }
 
-    const rateCheck = checkRateLimit(`slack:${userId}`, "free");
+    const rateCheck = checkRateLimit(`slack:${userId}`);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: "Too many requests. Try again later." },

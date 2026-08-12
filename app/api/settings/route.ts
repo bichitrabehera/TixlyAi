@@ -2,7 +2,6 @@ import "dotenv/config";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getUserByClerkId, updateProfile } from "@/lib/db/users";
-import { getPlan } from "@/lib/billing/plans";
 
 export async function GET() {
   try {
@@ -16,13 +15,9 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const plan = getPlan(user.plan);
-
     return NextResponse.json({
       name: user.name || "",
       email: user.email,
-      plan: user.plan,
-      planName: plan.name,
       aiProvider: user.aiProvider,
       hasAiKey: !!user.aiEncryptedKey,
       notificationEmail: user.notificationEmail === "on",

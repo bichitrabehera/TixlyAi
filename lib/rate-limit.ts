@@ -1,4 +1,4 @@
-import { RATE_LIMIT_WINDOW_MS, RATE_LIMIT_TIERS, RATE_LIMIT_CLEANUP_INTERVAL_MS } from "./constants";
+import { RATE_LIMIT_WINDOW_MS, RATE_LIMIT_CLEANUP_INTERVAL_MS } from "./constants";
 
 interface RateLimitEntry {
   count: number;
@@ -8,8 +8,7 @@ interface RateLimitEntry {
 const store = new Map<string, RateLimitEntry>();
 
 const WINDOW_MS = RATE_LIMIT_WINDOW_MS;
-
-const LIMITS = RATE_LIMIT_TIERS;
+const MAX_REQUESTS = 1;
 
 setInterval(() => {
   const now = Date.now();
@@ -21,12 +20,9 @@ setInterval(() => {
 }, RATE_LIMIT_CLEANUP_INTERVAL_MS);
 
 export function checkRateLimit(
-  userId: string,
-  plan: string = "free",
+  key: string,
 ): { allowed: boolean; remaining: number; resetIn: number } {
   const now = Date.now();
-  const key = `${plan}:${userId}`;
-  const limit = LIMITS[plan] || LIMITS.free;
 
   let entry = store.get(key);
 
@@ -36,11 +32,11 @@ export function checkRateLimit(
   }
 
   entry.count++;
-  const remaining = Math.max(0, limit - entry.count);
+  const remaining = Math.max(0, MAX_REQUESTS - entry.count);
   const resetIn = entry.resetAt - now;
 
   return {
-    allowed: entry.count <= limit,
+    allowed: entry.count <= MAX_REQUESTS,
     remaining,
     resetIn,
   };

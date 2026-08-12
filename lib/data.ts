@@ -7,13 +7,12 @@ export const SITE = {
 export const NAV = {
   links: [
     { label: "How it works", href: "#how" },
-    { label: "Generate ticket", href: "/dashboard/generate" },
-    { label: "Pricing", href: "#pricing" },
+    { label: "Generate ticket", href: "/app/generate" },
   ],
 };
 
 export const HERO = {
-  badge: "Free: 30 tickets/mo  •  Pro: unlimited  •  BYOK",
+  badge: "Free to use  •  Bring your own AI key",
   title: "Turn any screenshot into",
   titleHighlight: "actionable tickets.",
   description:
@@ -72,9 +71,9 @@ export const FEATURES = {
         "Send tickets directly to Slack DMs or create Linear issues with one click. More integrations coming.",
     },
     {
-      title: "30 free tickets per month",
+      title: "Free to use",
       description:
-        "Start for free with 30 tickets per month. Upgrade to Pro for unlimited generation at $5/month.",
+        "No subscription, no credit card. Bring your own AI key and generate as many tickets as you need.",
     },
   ],
 };
@@ -106,98 +105,8 @@ export const USE_CASES = {
   ],
 };
 
-export const PRICING = {
-  title: "Simple pricing",
-  subtitle: "Free to start, cheap to scale. You bring your own AI key.",
-  plans: [
-    {
-      name: "Free",
-      price: "$0",
-      period: "/month",
-      description: "For individuals trying out Tixly.",
-      features: [
-        "30 tickets per month",
-        "Bring your own AI key",
-        "Clipboard copy",
-      ],
-      cta: "Get started",
-      href: "/signup",
-      highlighted: false,
-    },
-    {
-      name: "Pro",
-      price: "$5",
-      period: "/month",
-      description: "For power users and teams.",
-      features: [
-        "Unlimited tickets",
-        "Bring your own AI key",
-        "Slack integration",
-        "Linear integration",
-        "Priority support",
-      ],
-      cta: "Upgrade to Pro",
-      href: "/signup",
-      highlighted: true,
-    },
-  ],
-};
-
-export const COMPARISON = {
-  title: "Why teams choose Tixly",
-  subtitle:
-    "Screenshot to structured ticket in seconds — with your own AI key.",
-  competitors: [
-    {
-      name: "SnapBug",
-      price: "$$",
-      platform: "Web",
-      integrations: "GitHub only",
-      tixlyAdvantage: "BYOK + Slack, Linear + 30 free tickets/mo",
-    },
-    {
-      name: "BugShot AI",
-      price: "$$$",
-      platform: "Limited",
-      integrations: "Generic",
-      tixlyAdvantage: "Your own AI key — privacy first",
-    },
-    {
-      name: "BetterBugs",
-      price: "Freemium",
-      platform: "Chrome only",
-      integrations: "Limited",
-      tixlyAdvantage: "Works with any screenshot (web, mobile, desktop)",
-    },
-    {
-      name: "TapperBox",
-      price: "$$",
-      platform: "Desktop",
-      integrations: "Linear, Jira",
-      tixlyAdvantage: "Cheaper + web-based + faster onboarding",
-    },
-  ],
-  tixly: {
-    price: "$0/mo — $5/mo",
-    platform: "Web (all apps)",
-    integrations: "Slack, Linear",
-    advantage: "Bring your own AI key + 30 free tickets",
-  },
-  benefits: [
-    "5 seconds vs 15–30 minutes per ticket",
-    "AI generates title, repro steps, severity",
-    "Your own API key — encrypted and private",
-    "Works with any screenshot (bugs, UI issues, feedback)",
-    "Plug into your existing workflow (no switching tools)",
-    "Free tier: 30 tickets/month. Pro: unlimited.",
-  ],
-  ctaTitle: "Stop rewriting screenshots",
-  ctaSubtitle: "Turn any screenshot into a ticket in 5 seconds",
-  ctaButton: "Use Tixly",
-};
-
 export const CALL_TO_ACTION = {
-  badge: "30 free tickets to start",
+  badge: "Free to use",
   title: "Try Tixly for free",
   description:
     "Bring your own AI key, paste a screenshot, and get a structured ticket in seconds. No credit card required.",
@@ -207,8 +116,7 @@ export const CALL_TO_ACTION = {
 export const FOOTER = {
   links: [
     { label: "How it works", href: "#how" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Generate ticket", href: "/dashboard/generate" },
+    { label: "Generate ticket", href: "/app/generate" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms & Conditions", href: "/terms" },
   ],

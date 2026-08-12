@@ -89,7 +89,7 @@ export function Footer() {
           </p>
 
           <p className="text-slate-500 text-center">
-            Built with <span className="text-red-500">♥</span> by{" "}
+            Built with <span className="text-[var(--muted)]">♥</span> by{" "}
             <span className="font-medium text-slate-700">{FOOTER.builtBy}</span>
           </p>
         </div>

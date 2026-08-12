@@ -11,7 +11,15 @@ export async function callOpenRouter(
   system: string,
   user: string,
   temperature: number,
+  imageUrl?: string,
 ): Promise<string> {
+  const userContent = imageUrl
+    ? [
+        { type: "text", text: user },
+        { type: "image_url", image_url: { url: imageUrl } },
+      ]
+    : user;
+
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
     headers: {
@@ -24,7 +32,7 @@ export async function callOpenRouter(
       model: "openrouter/auto",
       messages: [
         { role: "system", content: system },
-        { role: "user", content: user },
+        { role: "user", content: userContent },
       ],
       temperature,
     }),

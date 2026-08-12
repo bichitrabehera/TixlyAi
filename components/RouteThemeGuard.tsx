@@ -7,7 +7,7 @@ export function RouteThemeGuard() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!pathname.startsWith("/dashboard")) {
+    if (!pathname.startsWith("/app")) {
       document.documentElement.classList.remove("dark");
       document.documentElement.style.colorScheme = "light";
     }

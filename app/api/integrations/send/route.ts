@@ -3,23 +3,12 @@ import { auth } from "@clerk/nextjs/server";
 import { sendToIntegration, parseRawTicket } from "@/lib/integrations";
 import type { IntegrationTool } from "@/lib/integrations/types";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { getPlan } from "@/lib/billing/plans";
-import { getUserByClerkId } from "@/lib/db/users";
 
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await getUserByClerkId(userId);
-    const plan = getPlan(user?.plan || "free");
-    if (!plan.features.integrations) {
-      return NextResponse.json(
-        { error: "Integrations are available on the Pro plan. Upgrade to use Slack and Linear." },
-        { status: 403 },
-      );
     }
 
     const body = await request.json();
@@ -39,7 +28,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const rateCheck = checkRateLimit(`${tool}:${userId}`, "free");
+    const rateCheck = checkRateLimit(`${tool}:${userId}`);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: "Too many requests. Try again later." },

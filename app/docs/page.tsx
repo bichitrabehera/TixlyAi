@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ExternalLink, Menu, X, ArrowLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const sections = [
   {
@@ -21,11 +22,6 @@ const sections = [
       { id: "slack", label: "Slack" },
       { id: "linear", label: "Linear" },
     ],
-  },
-  {
-    id: "plans-billing",
-    label: "Plans & Billing",
-    items: [],
   },
 ];
 
@@ -80,16 +76,18 @@ export default function DocsPage() {
 
       <div className="mx-auto max-w-7xl px-4 pt-28 pb-16">
         <div className="flex gap-8">
-          <button
+          <Button
+            size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg md:hidden"
+            className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full bg-slate-900 text-white shadow-lg md:hidden"
+            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
           >
             {mobileOpen ? (
               <X className="w-5 h-5" />
             ) : (
               <Menu className="w-5 h-5" />
             )}
-          </button>
+          </Button>
 
           {mobileOpen && (
             <div
@@ -109,13 +107,19 @@ export default function DocsPage() {
               <span className="text-sm font-semibold text-slate-900">
                 Navigation
               </span>
-              <button onClick={() => setMobileOpen(false)}>
-                <X className="w-5 h-5 text-slate-500" />
-              </button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setMobileOpen(false)}
+                className="text-slate-500"
+                aria-label="Close navigation menu"
+              >
+                <X className="w-5 h-5" />
+              </Button>
             </div>
 
             <Link
-              href="/dashboard/settings"
+              href="/app/settings"
               className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 mb-6 transition-colors"
             >
               <ArrowLeft className="w-3 h-3" />
@@ -251,7 +255,7 @@ export default function DocsPage() {
                       <span>
                         In Tixly, go to{" "}
                         <Link
-                          href="/dashboard/settings?tab=ai"
+                          href="/app/settings"
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → AI Provider
@@ -329,7 +333,7 @@ export default function DocsPage() {
                       <span>
                         In Tixly, go to{" "}
                         <Link
-                          href="/dashboard/settings?tab=ai"
+                          href="/app/settings"
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → AI Provider
@@ -403,7 +407,7 @@ export default function DocsPage() {
                       <span>
                         In Tixly, go to{" "}
                         <Link
-                          href="/dashboard/settings?tab=ai"
+                          href="/app/settings"
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → AI Provider
@@ -447,7 +451,7 @@ export default function DocsPage() {
                       <span>
                         Go to{" "}
                         <Link
-                          href="/dashboard/settings?tab=integrations"
+                          href="/app/settings"
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → Integrations
@@ -566,7 +570,7 @@ export default function DocsPage() {
                       <span>
                         In Tixly, go to{" "}
                         <Link
-                          href="/dashboard/settings?tab=integrations"
+                          href="/app/settings"
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → Integrations
@@ -584,57 +588,6 @@ export default function DocsPage() {
                     click Disconnect.
                   </p>
                 </div>
-              </section>
-
-              {/* Plans & Billing */}
-              <section id="plans-billing">
-                <h2 className="text-2xl font-bold text-slate-900 mb-8">
-                  Plans &amp; Billing
-                </h2>
-
-                <div className="p-6 rounded-2xl border border-slate-200 bg-white">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">
-                          Free
-                        </p>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          10 tickets per month
-                        </p>
-                      </div>
-                      <span className="text-sm text-slate-500">$0</span>
-                    </div>
-                    <div className="flex items-center justify-between py-3">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">
-                          Pro
-                        </p>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          Unlimited tickets
-                        </p>
-                      </div>
-                      <span className="text-sm font-semibold text-green-700">
-                        $5/month (₹449)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-sm text-slate-600 mt-4 leading-relaxed">
-                  To upgrade, go to{" "}
-                  <Link
-                    href="/dashboard/settings?tab=plan"
-                    className="text-green-700 hover:text-green-800 underline underline-offset-2"
-                  >
-                    Settings → Plan &amp; Billing
-                  </Link>{" "}
-                  and click{" "}
-                  <strong className="text-slate-900 font-semibold">
-                    Upgrade to Pro
-                  </strong>
-                  . Payment is processed through Razorpay.
-                </p>
               </section>
 
               <div className="pt-8 border-t border-slate-200">

@@ -74,18 +74,6 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-[(--text)] mb-3">
-              Payment Terms
-            </h2>
-            <p>
-              Some features may require payment. If you purchase a paid plan,
-              you agree to pay all fees associated with your subscription. All
-              payments are non-refundable unless otherwise specified. We reserve
-              the right to change pricing at any time with reasonable notice.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
               Termination Rights
             </h2>
             <p>

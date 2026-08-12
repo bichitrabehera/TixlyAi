@@ -4,8 +4,6 @@ import { sql } from "drizzle-orm";
 export const users = pgTable("users", {
   clerkUserId: text("clerk_user_id").primaryKey(),
   email: text("email").notNull(),
-  plan: text("plan").notNull().default("free"),
-  planStartedAt: timestamp("plan_started_at"),
   slackEncryptedToken: text("slack_encrypted_token"),
   slackUserId: text("slack_user_id"),
   linearEncryptedKey: text("linear_encrypted_key"),
@@ -13,8 +11,6 @@ export const users = pgTable("users", {
   aiEncryptedKey: text("ai_encrypted_key"),
   aiProvider: text("ai_provider"),
   notificationEmail: text("notification_email").default("off"),
-  razorpaySubscriptionId: text("razorpay_subscription_id"),
-  razorpayCustomerId: text("razorpay_customer_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -25,6 +21,7 @@ export const tickets = pgTable("tickets", {
   userId: text("user_id")
     .notNull()
     .references(() => users.clerkUserId),
+  ticketType: text("ticket_type"),
   screenshotUrl: text("screenshot_url"),
   inputText: text("input_text"),
   generatedTicket: text("generated_ticket").notNull(),

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { CALL_TO_ACTION } from "@/lib/data";
+import { Button } from "@/components/ui/button";
 
 export function CallToAction() {
   return (
@@ -16,13 +17,12 @@ export function CallToAction() {
         <p className="text-lg text-slate-600 mb-8">
           {CALL_TO_ACTION.description}
         </p>
-        <Link
-          href="/dashboard/generate"
-          className="inline-flex items-center gap-2 rounded-xl bg-green-700 px-6 py-2 font-medium text-white transition hover:bg-green-600"
-        >
-          {CALL_TO_ACTION.button}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+        <Button asChild size="lg" className="gap-2">
+          <Link href="/app/generate">
+            {CALL_TO_ACTION.button}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
       </div>
     </section>
   );

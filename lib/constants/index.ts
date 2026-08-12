@@ -1,5 +1,3 @@
-export const MONTHLY_LIMIT_FREE = 30;
-
 export const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 export const OPENAI_MODEL = "gpt-4o-mini";
 export const OPENAI_API_KEY_PATTERN = /^sk-[A-Za-z0-9-_]{20,}$/;
@@ -29,8 +27,43 @@ export const TEXTAREA_MIN_HEIGHT = 52;
 export const TOAST_DISMISS_MS = 2000;
 
 export const RATE_LIMIT_WINDOW_MS = 60_000;
-export const RATE_LIMIT_TIERS: Record<string, number> = { free: 5, basic: 30 };
 export const RATE_LIMIT_CLEANUP_INTERVAL_MS = 60_000;
+
+export const TICKET_TYPES = ["bug", "feature", "ui", "feedback", "task"] as const;
+export type TicketType = (typeof TICKET_TYPES)[number];
+
+export const TICKET_TYPE_META: Record<
+  TicketType,
+  { label: string; emoji: string; description: string }
+> = {
+  bug: {
+    label: "Bug Report",
+    emoji: "🐛",
+    description: "Something is broken or not working as expected.",
+  },
+  feature: {
+    label: "Feature Request",
+    emoji: "✨",
+    description: "A new capability or enhancement to build.",
+  },
+  ui: {
+    label: "UI Issue",
+    emoji: "🎨",
+    description: "A visual or layout problem in the interface.",
+  },
+  feedback: {
+    label: "Client Feedback",
+    emoji: "💬",
+    description: "Feedback or opinions from a client or user.",
+  },
+  task: {
+    label: "Task",
+    emoji: "⚡",
+    description: "A discrete piece of work to be completed.",
+  },
+};
+
+export const DETAIL_LEVELS = ["concise", "standard", "detailed"] as const;
 
 export const PRIORITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;
 export const TEMPERATURE_MAP: Record<string, number> = {

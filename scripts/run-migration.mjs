@@ -8,8 +8,6 @@ const statements = [
   sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "ai_encrypted_key" text;`,
   sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "ai_provider" text;`,
   sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "notification_email" text DEFAULT 'off';`,
-  sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "razorpay_subscription_id" text;`,
-  sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "razorpay_customer_id" text;`,
 ];
 
 for (const stmt of statements) {

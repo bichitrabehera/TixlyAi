@@ -3,10 +3,8 @@ import { Hero } from "@/components/Hero";
 import { HowItWorks } from "@/components/HowItWorks";
 import { UseCases } from "@/components/UseCases";
 import { Features } from "@/components/Features";
-import { Pricing } from "@/components/Pricing";
 import { CallToAction } from "@/components/CallToAction";
 import { Footer } from "@/components/Footer";
-import ComparisonPage from "@/components/Comparison";
 
 export default function Home() {
   return (
@@ -16,8 +14,6 @@ export default function Home() {
       <HowItWorks />
       <UseCases />
       <Features />
-      <Pricing />
-      <ComparisonPage />
       <CallToAction />
       <Footer />
     </div>

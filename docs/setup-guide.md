@@ -101,12 +101,3 @@ Create Linear issues directly from generated tickets.
 **To disconnect:** Go to **Settings → Integrations** and click **Disconnect** next to Linear.
 
 ---
-
-## Plans & Billing
-
-| Plan | Price | Tickets |
-|------|-------|---------|
-| Free | $0 | 10 / month |
-| Pro  | $5/month (₹449) | Unlimited |
-
-To upgrade, go to **Settings → Plan & Billing** and click **Upgrade to Pro**. Payment is processed through Razorpay.

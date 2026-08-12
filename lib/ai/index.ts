@@ -15,6 +15,7 @@ export interface AiCallParams {
   system: string;
   user: string;
   temperature: number;
+  imageUrl?: string;
 }
 
 export async function callAi(
@@ -26,11 +27,29 @@ export async function callAi(
 
   switch (provider) {
     case "openai":
-      return callOpenAI(apiKey, params.system, params.user, params.temperature);
+      return callOpenAI(
+        apiKey,
+        params.system,
+        params.user,
+        params.temperature,
+        params.imageUrl,
+      );
     case "openrouter":
-      return callOpenRouter(apiKey, params.system, params.user, params.temperature);
+      return callOpenRouter(
+        apiKey,
+        params.system,
+        params.user,
+        params.temperature,
+        params.imageUrl,
+      );
     case "anthropic":
-      return callAnthropic(apiKey, params.system, params.user, params.temperature);
+      return callAnthropic(
+        apiKey,
+        params.system,
+        params.user,
+        params.temperature,
+        params.imageUrl,
+      );
     default:
       throw new Error(`Unsupported AI provider: ${provider}`);
   }
