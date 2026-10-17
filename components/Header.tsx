@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/routes";
 
 export function Header() {
   const { user, isLoaded } = useUser();
@@ -27,7 +28,7 @@ export function Header() {
                   asChild
                   className="ml-1 rounded-full bg-slate-900 px-5 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-xl"
                 >
-                  <Link href="/app">Dashboard</Link>
+                  <Link href={ROUTES.overview}>Dashboard</Link>
                 </Button>
               </>
             ) : (

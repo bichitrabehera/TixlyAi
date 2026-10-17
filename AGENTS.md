@@ -1,36 +1,19 @@
-# CRITICAL RULES - MUST FOLLOW
+# AGENTS.md
 
-## RESPONSES
+Project knowledge and rules live in [`knowledge/`](./knowledge/README.md). Read that first — this file is only a pointer.
 
-- Keep responses concise and to the point - unless the user asks otherwise
+- **Rules & index:** [`knowledge/README.md`](./knowledge/README.md)
+- **Product idea:** [`knowledge/IDEA.md`](./knowledge/IDEA.md)
+- **App map, routes, data flow:** [`knowledge/ARCHITECTURE.md`](./knowledge/ARCHITECTURE.md)
+- **AI stack (LangChain v1, guardrails, streaming, BYOK):** [`knowledge/AI_STACK.md`](./knowledge/AI_STACK.md)
+- **UI design system:** [`knowledge/DESIGN.md`](./knowledge/DESIGN.md)
+- **Why things are the way they are:** [`knowledge/DECISIONS.md`](./knowledge/DECISIONS.md)
 
-## PLANNING MODE
+## Hard rules
 
-- Always ask clarifying questions
-- Never assume design, tech stack or features
-- Use deep-dive sub-agents to assist with research
-- Use deep-dive sub-agents to review the different aspects of your plan before presenting to the user
-
-## CHANGE / EDIT MODE
-
-- Never implement features yourself when possible - use sub-agents!
-- Identify changes from the plan that can be implemented in parallel, and use sub-agents to implement the features efficiently
-- When using sub-agents to implement features, act as a coordinator only
-- Use the best model for the task - premium models for complex tasks (like coding) and mid-tier models for simpler tasks, like documentation
-- After completing features (large or small), always run commands like lint, type check and next build to check code quality
-
-## DATABASE SCHEMA CHANGES
-
-- Whenever you make changes to the database schema, ALWAYS run the drizzle generate and migrate commands
-- NEVER run drizzle push!
-
-## TESTING
-
-- Use any testing tools, libraries available to the project for testing your changes
-- Never assume your changes simply work, always test!
-- If the project does not have any testing tools, scripts, MCP tools, skills, etc. available for testing, ask the user whether testing should be skipped.
-
-## UI DESIGN
-
-- Always follow the UI design system when creating or reviewing components or pages.
-- Design System: @DESIGN.md
+1. Keep responses concise.
+2. Plan before building; ask when a requirement is ambiguous.
+3. DB schema changes: `drizzle-kit generate` + `drizzle-kit migrate`. Never `drizzle push`.
+4. After changes, run lint, typecheck, and build (`npm run lint`, `npx tsc --noEmit`, `npm run build`).
+5. Follow the design system in `knowledge/DESIGN.md` for any UI work.
+6. Never log, expose, or return AI keys, Slack tokens, or Linear keys.

@@ -1,6 +1,26 @@
 import { TICKET_TYPE_META } from "@/lib/constants";
 
-interface TicketData {
+export function extractTicketTitle(ticket: string, limit = 60): string {
+  try {
+    const parsed = JSON.parse(ticket) as { title?: string };
+    if (parsed.title) return parsed.title;
+  } catch {}
+  const match = ticket.match(/🐛\s*(.*)/);
+  if (match) return match[1];
+  return ticket.slice(0, limit) + (ticket.length > limit ? "..." : "");
+}
+
+export function formatTicketDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export interface TicketData {
   type?: string;
   title?: string;
   priority?: string;
@@ -22,7 +42,7 @@ interface TicketData {
   additionalNotes?: string;
 }
 
-function parseTicketString(text: string): TicketData {
+export function parseTicketData(text: string): TicketData {
   try {
     const parsed = JSON.parse(text);
     if (parsed.title) {
@@ -93,7 +113,7 @@ function numberedList(items: string[]): string[] {
 }
 
 export function ticketToPlainText(ticketText: string): string {
-  const ticket = parseTicketString(ticketText);
+  const ticket = parseTicketData(ticketText);
 
   const lines: string[] = [];
 
@@ -195,4 +215,14 @@ export function ticketToPlainText(ticketText: string): string {
   }
 
   return lines.join("\n");
+}
+
+export function ticketDisplayId(text: string): string {
+  const ticket = parseTicketData(text);
+  const seed = `${ticket.title ?? ""}${ticket.component ?? ""}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) % 0xffff;
+  }
+  return `TKT-${hash.toString(16).toUpperCase().padStart(4, "0")}`;
 }

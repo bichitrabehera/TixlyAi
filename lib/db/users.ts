@@ -1,6 +1,6 @@
 import { db } from "./index";
-import { users, tickets } from "./schema";
-import { eq } from "drizzle-orm";
+import { users, tickets, aiKeys } from "./schema";
+import { desc, eq, and } from "drizzle-orm";
 import { type AiProvider } from "@/lib/constants";
 
 export async function getOrCreateUser(clerkUserId: string, email: string) {
@@ -98,6 +98,84 @@ export async function deleteAiKey(clerkUserId: string) {
     .update(users)
     .set({ aiEncryptedKey: null, aiProvider: null })
     .where(eq(users.clerkUserId, clerkUserId));
+}
+
+export async function listAiKeys(clerkUserId: string) {
+  return db
+    .select()
+    .from(aiKeys)
+    .where(eq(aiKeys.clerkUserId, clerkUserId))
+    .orderBy(desc(aiKeys.updatedAt));
+}
+
+export async function getAiKeyForProvider(
+  clerkUserId: string,
+  provider: AiProvider,
+) {
+  const [row] = await db
+    .select()
+    .from(aiKeys)
+    .where(
+      and(eq(aiKeys.clerkUserId, clerkUserId), eq(aiKeys.provider, provider)),
+    )
+    .limit(1);
+  return row ?? null;
+}
+
+export async function upsertAiKey(
+  clerkUserId: string,
+  provider: AiProvider,
+  encryptedKey: string,
+  keyHint: string,
+) {
+  await getOrCreateUser(clerkUserId, "");
+  await db
+    .insert(aiKeys)
+    .values({
+      clerkUserId,
+      provider,
+      encryptedKey,
+      keyHint,
+      status: "valid",
+      updatedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [aiKeys.clerkUserId, aiKeys.provider],
+      set: {
+        encryptedKey,
+        keyHint,
+        status: "valid",
+        updatedAt: new Date(),
+      },
+    });
+}
+
+export async function deleteAiKeyForProvider(
+  clerkUserId: string,
+  provider: AiProvider,
+) {
+  await db
+    .delete(aiKeys)
+    .where(
+      and(eq(aiKeys.clerkUserId, clerkUserId), eq(aiKeys.provider, provider)),
+    );
+}
+
+export async function deleteAllAiKeys(clerkUserId: string) {
+  await db.delete(aiKeys).where(eq(aiKeys.clerkUserId, clerkUserId));
+}
+
+export async function setAiKeyStatus(
+  clerkUserId: string,
+  provider: AiProvider,
+  status: "valid" | "invalid",
+) {
+  await db
+    .update(aiKeys)
+    .set({ status, updatedAt: new Date() })
+    .where(
+      and(eq(aiKeys.clerkUserId, clerkUserId), eq(aiKeys.provider, provider)),
+    );
 }
 
 export async function updateProfile(clerkUserId: string, name: string) {

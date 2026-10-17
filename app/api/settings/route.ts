@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getUserByClerkId, updateProfile } from "@/lib/db/users";
+import { getUserByClerkId, updateProfile, listAiKeys } from "@/lib/db/users";
 
 export async function GET() {
   try {
@@ -15,11 +15,14 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const aiKeys = await listAiKeys(userId);
+    const activeProvider = aiKeys[0]?.provider ?? user.aiProvider;
+
     return NextResponse.json({
       name: user.name || "",
       email: user.email,
-      aiProvider: user.aiProvider,
-      hasAiKey: !!user.aiEncryptedKey,
+      aiProvider: activeProvider,
+      hasAiKey: aiKeys.length > 0 || !!user.aiEncryptedKey,
       notificationEmail: user.notificationEmail === "on",
       hasSlack: !!user.slackEncryptedToken,
       hasLinear: !!user.linearEncryptedKey,

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ExternalLink, Menu, X, ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/routes";
 
 const sections = [
   {
@@ -119,7 +120,7 @@ export default function DocsPage() {
             </div>
 
             <Link
-              href="/app/settings"
+              href={`${ROUTES.generate}?settings=ai`}
               className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 mb-6 transition-colors"
             >
               <ArrowLeft className="w-3 h-3" />
@@ -255,7 +256,7 @@ export default function DocsPage() {
                       <span>
                         In Tixly, go to{" "}
                         <Link
-                          href="/app/settings"
+                          href={`${ROUTES.generate}?settings=ai`}
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → AI Provider
@@ -333,7 +334,7 @@ export default function DocsPage() {
                       <span>
                         In Tixly, go to{" "}
                         <Link
-                          href="/app/settings"
+                          href={`${ROUTES.generate}?settings=ai`}
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → AI Provider
@@ -407,7 +408,7 @@ export default function DocsPage() {
                       <span>
                         In Tixly, go to{" "}
                         <Link
-                          href="/app/settings"
+                          href={`${ROUTES.generate}?settings=ai`}
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → AI Provider
@@ -451,7 +452,7 @@ export default function DocsPage() {
                       <span>
                         Go to{" "}
                         <Link
-                          href="/app/settings"
+                          href={`${ROUTES.generate}?settings=ai`}
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → Integrations
@@ -570,7 +571,7 @@ export default function DocsPage() {
                       <span>
                         In Tixly, go to{" "}
                         <Link
-                          href="/app/settings"
+                          href={`${ROUTES.generate}?settings=ai`}
                           className="text-green-700 hover:text-green-800 underline underline-offset-2"
                         >
                           Settings → Integrations

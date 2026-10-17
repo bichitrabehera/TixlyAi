@@ -1,14 +1,3 @@
-export const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-export const OPENAI_MODEL = "gpt-4o-mini";
-export const OPENAI_API_KEY_PATTERN = /^sk-[A-Za-z0-9-_]{20,}$/;
-
-export const OPENROUTER_API_URL =
-  "https://openrouter.ai/api/v1/chat/completions";
-export const OPENROUTER_KEY_PATTERN = /^sk-or-v1-[A-Za-z0-9-_]{20,}$/;
-
-export const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-export const ANTHROPIC_KEY_PATTERN = /^sk-ant-[A-Za-z0-9-_]{20,}$/;
-
 export const AI_PROVIDERS = ["openai", "openrouter", "anthropic"] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
 export const LINEAR_API_URL = "https://api.linear.app/graphql";
@@ -27,6 +16,7 @@ export const TEXTAREA_MIN_HEIGHT = 52;
 export const TOAST_DISMISS_MS = 2000;
 
 export const RATE_LIMIT_WINDOW_MS = 60_000;
+export const RATE_LIMIT_MAX_REQUESTS = 5;
 export const RATE_LIMIT_CLEANUP_INTERVAL_MS = 60_000;
 
 export const TICKET_TYPES = ["bug", "feature", "ui", "feedback", "task"] as const;
@@ -65,6 +55,21 @@ export const TICKET_TYPE_META: Record<
 
 export const DETAIL_LEVELS = ["concise", "standard", "detailed"] as const;
 
+export const DETAIL_LEVEL_META: Record<
+  (typeof DETAIL_LEVELS)[number],
+  { label: string; hint: string }
+> = {
+  concise: { label: "Concise", hint: "Title, description, priority only." },
+  standard: {
+    label: "Standard",
+    hint: "Adds repro steps, expected vs. actual, and component.",
+  },
+  detailed: {
+    label: "Detailed",
+    hint: "Full technical context, edge cases, and acceptance notes.",
+  },
+};
+
 export const PRIORITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;
 export const TEMPERATURE_MAP: Record<string, number> = {
   CRITICAL: 0.0,
@@ -75,6 +80,30 @@ export const TEMPERATURE_MAP: Record<string, number> = {
 
 export const SESSION_KEY = "tixly_session";
 export const STORAGE_THEME_KEY = "theme";
+export const PREFS_STORAGE_KEY = "tixly_prefs";
+export const MODEL_STORAGE_KEY = "tixly_model";
+
+export const PROVIDER_LABELS: Record<AiProvider, string> = {
+  openai: "OpenAI",
+  openrouter: "OpenRouter",
+  anthropic: "Anthropic",
+};
+
+export const PROVIDER_MODEL_LABEL: Record<AiProvider, string> = {
+  openai: "GPT-4o",
+  openrouter: "OpenRouter Auto",
+  anthropic: "Claude Sonnet 4",
+};
+
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+export const ALLOWED_IMAGE_MIME = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+] as const;
+export const ALLOWED_IMAGE_EXT = [".png", ".jpg", ".jpeg", ".webp", ".heic", ".heif"];
 
 export const OCR_LANGUAGE = "eng";
 export const SLACK_OAUTH_SCOPES = "chat:write,im:write,im:read,users:read";

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { CALL_TO_ACTION } from "@/lib/data";
+import { ROUTES } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
 
 export function CallToAction() {
@@ -18,7 +19,7 @@ export function CallToAction() {
           {CALL_TO_ACTION.description}
         </p>
         <Button asChild size="lg" className="gap-2">
-          <Link href="/app/generate">
+          <Link href={ROUTES.generate}>
             {CALL_TO_ACTION.button}
             <ArrowRight className="h-4 w-4" />
           </Link>

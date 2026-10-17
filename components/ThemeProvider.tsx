@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { STORAGE_THEME_KEY } from "@/lib/constants";
 
 export type Theme = "light" | "dark" | "system";
@@ -15,20 +22,24 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function getSystemTheme() {
   if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "system";
+  try {
+    const stored = window.localStorage.getItem(STORAGE_THEME_KEY) as Theme | null;
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      return stored;
+    }
+  } catch {}
+  return "system";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const storedTheme = window.localStorage.getItem(STORAGE_THEME_KEY) as Theme | null;
-    if (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system") {
-      setThemeState(storedTheme);
-    }
-    setMounted(true);
-  }, []);
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   const resolvedTheme = theme === "system" ? getSystemTheme() : theme;
 
@@ -36,19 +47,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     root.classList.toggle("dark", resolvedTheme === "dark");
     root.style.colorScheme = resolvedTheme;
+  }, [resolvedTheme]);
 
-    if (mounted) {
-      window.localStorage.setItem(STORAGE_THEME_KEY, theme);
-    }
-  }, [mounted, resolvedTheme, theme]);
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next);
+    try {
+      window.localStorage.setItem(STORAGE_THEME_KEY, next);
+    } catch {}
+  }, []);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
       resolvedTheme,
-      setTheme: setThemeState,
+      setTheme,
     }),
-    [theme, resolvedTheme],
+    [theme, resolvedTheme, setTheme],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

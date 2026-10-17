@@ -3,13 +3,14 @@ import { auth } from "@clerk/nextjs/server";
 import { encryptToken } from "@/lib/slack";
 import { updateSlackTokens } from "@/lib/db/users";
 import { SLACK_API_BASE } from "@/lib/constants";
+import { ROUTES } from "@/lib/routes";
 
 export async function GET(request: Request) {
   const { userId } = await auth();
 
   if (!userId) {
     return NextResponse.redirect(
-      new URL("/app/generate?error=unauthorized", request.url),
+      new URL(`${ROUTES.generate}?error=unauthorized`, request.url),
     );
   }
 
@@ -18,11 +19,11 @@ export async function GET(request: Request) {
   const error = searchParams.get("error");
 
   if (error) {
-    return NextResponse.redirect(new URL(`/app/generate?error=slack_${error}`, request.url));
+    return NextResponse.redirect(new URL(`${ROUTES.generate}?error=slack_${error}`, request.url));
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL("/app/generate?error=no_code", request.url));
+    return NextResponse.redirect(new URL(`${ROUTES.generate}?error=no_code`, request.url));
   }
 
   const clientId = process.env.SLACK_CLIENT_ID;
@@ -33,7 +34,7 @@ export async function GET(request: Request) {
   const redirectUri = `${baseUrl}/api/slack/callback`;
 
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(new URL("/app/generate?error=missing_config", request.url));
+    return NextResponse.redirect(new URL(`${ROUTES.generate}?error=missing_config`, request.url));
   }
 
   try {
@@ -54,17 +55,17 @@ export async function GET(request: Request) {
 
     if (!data.ok) {
       console.error("Slack OAuth error:", data);
-      return NextResponse.redirect(new URL("/app/generate?error=oauth_failed", request.url));
+      return NextResponse.redirect(new URL(`${ROUTES.generate}?error=oauth_failed`, request.url));
     }
 
     const encryptedToken = encryptToken(data.access_token);
     await updateSlackTokens(userId, encryptedToken, data.authed_user?.id);
 
     return NextResponse.redirect(
-      new URL("/app/generate?slack_connected=true", request.url),
+      new URL(`${ROUTES.generate}?slack_connected=true`, request.url),
     );
   } catch (error) {
     console.error("OAuth exception:", error);
-    return NextResponse.redirect(new URL("/app/generate?error=oauth_exception", request.url));
+    return NextResponse.redirect(new URL(`${ROUTES.generate}?error=oauth_exception`, request.url));
   }
 }

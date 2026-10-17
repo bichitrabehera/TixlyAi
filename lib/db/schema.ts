@@ -1,4 +1,10 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export const users = pgTable("users", {
@@ -13,6 +19,30 @@ export const users = pgTable("users", {
   notificationEmail: text("notification_email").default("off"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const aiKeys = pgTable(
+  "ai_keys",
+  {
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    clerkUserId: text("clerk_user_id")
+      .notNull()
+      .references(() => users.clerkUserId, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    encryptedKey: text("encrypted_key").notNull(),
+    keyHint: text("key_hint"),
+    status: text("status").notNull().default("valid"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("ai_keys_user_provider_idx").on(
+      table.clerkUserId,
+      table.provider,
+    ),
+  ],
+);
 
 export const tickets = pgTable("tickets", {
   id: uuid("id")
@@ -29,6 +59,7 @@ export const tickets = pgTable("tickets", {
 });
 
 export type User = typeof users.$inferSelect;
+export type AiKeyRow = typeof aiKeys.$inferSelect;
 export type Ticket = typeof tickets.$inferSelect;
 export type NewTicket = typeof tickets.$inferInsert;
 export type NewUser = typeof users.$inferInsert;

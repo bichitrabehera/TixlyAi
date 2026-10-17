@@ -2,10 +2,7 @@
 
 import { UserProfile } from "@clerk/nextjs";
 
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 export function ManageAccountDialog({
   open,
@@ -16,7 +13,7 @@ export function ManageAccountDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[80vh] max-w-4xl overflow-hidden p-0">
+      <DialogContent className="max-w-4xl overflow-hidden p-0">
         <UserProfile
           appearance={{
             elements: {

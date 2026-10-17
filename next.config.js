@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: ["143.110.248.235"],
+  serverExternalPackages: ["openai", "@anthropic-ai/sdk"],
   images: {
     remotePatterns: [
       {

@@ -1,9 +1,52 @@
 import "dotenv/config";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { encrypt } from "@/lib/crypto";
-import { updateAiKey, deleteAiKey, getAiKey } from "@/lib/db/users";
+import { encrypt, decrypt } from "@/lib/crypto";
+import {
+  listAiKeys,
+  upsertAiKey,
+  deleteAiKeyForProvider,
+  deleteAllAiKeys,
+} from "@/lib/db/users";
 import { detectProvider, testAiKey } from "@/lib/ai";
+import { AI_PROVIDERS, type AiProvider } from "@/lib/constants";
+
+export interface AiKeySummary {
+  provider: AiProvider;
+  status: "valid" | "invalid";
+  hint: string | null;
+}
+
+function keyHint(key: string): string {
+  if (key.length <= 8) return `${key.slice(0, 2)}…`;
+  return `${key.slice(0, 3)}…${key.slice(-4)}`;
+}
+
+async function summarizeKeys(): Promise<AiKeySummary[]> {
+  const { userId } = await auth();
+  if (!userId) return [];
+
+  const rows = await listAiKeys(userId);
+  return rows
+    .filter((row): row is typeof row & { provider: AiProvider } =>
+      AI_PROVIDERS.includes(row.provider as AiProvider),
+    )
+    .map((row) => {
+      let hint = row.keyHint;
+      if (!hint && row.encryptedKey) {
+        try {
+          hint = keyHint(decrypt(row.encryptedKey));
+        } catch {
+          hint = null;
+        }
+      }
+      return {
+        provider: row.provider as AiProvider,
+        status: row.status === "invalid" ? "invalid" : "valid",
+        hint,
+      };
+    });
+}
 
 export async function GET() {
   try {
@@ -12,10 +55,13 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const aiKey = await getAiKey(userId);
+    const keys = await summarizeKeys();
+    const latest = keys[0] ?? null;
+
     return NextResponse.json({
-      provider: aiKey?.provider || null,
-      hasKey: !!aiKey,
+      provider: latest?.provider ?? null,
+      hasKey: keys.length > 0,
+      keys,
     });
   } catch (error) {
     console.error("Error fetching AI key status:", error);
@@ -57,13 +103,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const encryptedKey = encrypt(trimmedKey);
-    await updateAiKey(userId, encryptedKey, provider);
+    await upsertAiKey(userId, provider, encrypt(trimmedKey), keyHint(trimmedKey));
+
+    const providerName =
+      provider === "openrouter"
+        ? "OpenRouter"
+        : provider === "anthropic"
+          ? "Anthropic"
+          : "OpenAI";
 
     return NextResponse.json({
       success: true,
       provider,
-      message: `Connected to ${provider === "openrouter" ? "OpenRouter" : provider === "anthropic" ? "Anthropic" : "OpenAI"}.`,
+      hint: keyHint(trimmedKey),
+      keys: await summarizeKeys(),
+      message: `Connected to ${providerName}.`,
     });
   } catch (error) {
     console.error("Error saving AI key:", error);
@@ -74,20 +128,27 @@ export async function POST(request: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await deleteAiKey(userId);
+    const providerParam = new URL(request.url).searchParams.get("provider");
+    const provider = providerParam as AiProvider | null;
 
-    return NextResponse.json({ success: true });
+    if (provider && AI_PROVIDERS.includes(provider)) {
+      await deleteAiKeyForProvider(userId, provider);
+    } else {
+      await deleteAllAiKeys(userId);
+    }
+
+    return NextResponse.json({ success: true, keys: await summarizeKeys() });
   } catch (error) {
     console.error("Error deleting AI key:", error);
     return NextResponse.json(
-      { error: "Failed to delete API key" },
+      { error: "Failed to delete AI key" },
       { status: 500 },
     );
   }

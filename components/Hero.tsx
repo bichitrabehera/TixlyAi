@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Slack, Jira, Notion } from "developer-icons";
 import { CgLinear } from "react-icons/cg";
 import { HERO } from "@/lib/data";
+import { ROUTES } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
 import TixlyCard from "./TixlyCard";
 
@@ -47,7 +48,7 @@ export function Hero() {
             size="lg"
             className="group gap-2 px-7 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-green-900/20"
           >
-            <Link href="/app/generate">{HERO.cta}</Link>
+            <Link href={ROUTES.generate}>{HERO.cta}</Link>
           </Button>
 
           <Button

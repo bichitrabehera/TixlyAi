@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, RefreshCw, X } from "lucide-react";
+import { FieldLabel } from "@/components/shared/FieldLabel";
+import { cn } from "@/lib/utils";
 
 interface ScreenshotDropzoneProps {
   image: string | null;
+  fileName?: string | null;
   onDrop: (e: React.DragEvent) => void;
   onDragOver: (e: React.DragEvent) => void;
   onClick: () => void;
@@ -12,10 +16,13 @@ interface ScreenshotDropzoneProps {
   onRemove: () => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   disabled?: boolean;
+  dragging?: boolean;
+  fileError?: string | null;
 }
 
 export function ScreenshotDropzone({
   image,
+  fileName,
   onDrop,
   onDragOver,
   onClick,
@@ -23,76 +30,122 @@ export function ScreenshotDropzone({
   onRemove,
   fileInputRef,
   disabled = false,
+  dragging = false,
+  fileError = null,
 }: ScreenshotDropzoneProps) {
+  const [dimensions, setDimensions] = useState<{
+    w: number;
+    h: number;
+  } | null>(null);
+
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-muted-foreground">
-          Screenshot
-        </span>
-        <span className="text-xs text-muted-foreground/60">( Required )</span>
+    <section className="space-y-2" aria-labelledby="screenshot-label">
+      <div className="flex items-center justify-between gap-2">
+        <FieldLabel
+          id="screenshot-label"
+          required
+          className="text-xs font-medium text-foreground"
+        >
+          Source Capture
+        </FieldLabel>
       </div>
 
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp"
+        accept="image/png,image/jpeg,image/webp,image/heic,image/heif"
         onChange={onFileChange}
         className="hidden"
+        aria-labelledby="screenshot-label"
+        aria-describedby="screenshot-help"
       />
 
       {image ? (
-        <div className="relative h-42 overflow-hidden rounded-2xl border border-border bg-card">
-          <Image
-            src={image}
-            alt="Screenshot preview"
-            fill
-            unoptimized
-            className="object-contain"
-          />
-          <div className="absolute right-2 top-2 flex items-center gap-1.5">
+        <div
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          className={cn(
+            "group relative overflow-hidden rounded-lg border border-border bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:12px_12px]",
+            dragging && "border-primary ring-2 ring-primary/30",
+          )}
+        >
+          <div className="relative aspect-video max-h-[220px] min-h-[132px]">
+            <Image
+              src={image}
+              alt="Uploaded screenshot preview"
+              fill
+              unoptimized
+              onLoad={(event) => {
+                const img = event.currentTarget;
+                if (img.naturalWidth && img.naturalHeight) {
+                  setDimensions({ w: img.naturalWidth, h: img.naturalHeight });
+                }
+              }}
+              className="object-contain p-2"
+            />
+          </div>
+
+          <div className="absolute right-1.5 top-1.5 flex items-center gap-1">
             <button
               type="button"
               onClick={onClick}
               disabled={disabled}
-              className="rounded-lg bg-background/80 px-2.5 py-1.5 text-xs text-foreground backdrop-blur transition-colors hover:bg-foreground/10 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-black/60 px-2 py-1 text-[11px] font-medium text-white backdrop-blur-md transition-colors hover:bg-black/75 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50 disabled:opacity-50"
             >
-              Replace screenshot
+              <RefreshCw className="h-3 w-3" aria-hidden />
+              Replace
             </button>
             <button
               type="button"
               onClick={onRemove}
               disabled={disabled}
-              title="Remove screenshot"
-              className="rounded-lg bg-background/80 px-2.5 py-1.5 text-xs text-foreground backdrop-blur transition-colors hover:bg-foreground/10 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Remove screenshot"
+              className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-white/10 bg-black/60 text-white backdrop-blur-md transition-colors hover:bg-black/75 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50 disabled:opacity-50"
             >
-              ✕
+              <X className="h-3.5 w-3.5" aria-hidden />
             </button>
           </div>
         </div>
       ) : (
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={disabled ? -1 : 0}
+          aria-labelledby="screenshot-label screenshot-help"
           onClick={onClick}
           onDrop={onDrop}
           onDragOver={onDragOver}
-          disabled={disabled}
-          className="group flex w-full flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed border-input bg-card px-6 py-12 text-center transition-colors hover:border-primary/60 hover:bg-primary/[0.03] disabled:pointer-events-none disabled:opacity-50"
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              if (!disabled) onClick();
+            }
+          }}
+          className={cn(
+            "group flex min-h-[132px] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-4 text-center transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            dragging && "border-primary bg-primary/[0.04]",
+            !dragging && "hover:border-primary/50",
+            disabled && "pointer-events-none cursor-not-allowed opacity-50",
+          )}
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground transition-colors group-hover:border-primary/50 group-hover:text-primary">
-            <ImagePlus className="h-5 w-5 transition-colors" />
+          <span className="flex size-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors group-hover:border-primary/50 group-hover:text-primary">
+            <ImagePlus className="h-4 w-4" aria-hidden />
+          </span>
+          <div>
+            <p className="text-xs font-medium text-foreground">
+              {dragging ? "Drop your screenshot" : "Drop or paste a screenshot"}
+            </p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              PNG · JPG · WEBP · HEIC · 10 MB
+            </p>
           </div>
-          <p className="text-sm font-medium text-foreground">
-            Upload screenshot
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Drag &amp; drop, click to browse, or paste anywhere
-          </p>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">
-            PNG · JPG · WEBP
-          </p>
-        </button>
+        </div>
       )}
-    </div>
+
+      {fileError && (
+        <p role="alert" className="text-xs text-destructive">
+          {fileError}
+        </p>
+      )}
+    </section>
   );
 }

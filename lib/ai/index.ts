@@ -1,8 +1,16 @@
-import { decrypt } from "@/lib/crypto";
-import { callOpenAI } from "./openai";
-import { callOpenRouter } from "./openrouter";
-import { callAnthropic } from "./anthropic";
 import type { AiProvider } from "@/lib/constants";
+import { createChatModel } from "./models";
+
+export { createChatModel } from "./models";
+export { createTicketAgent } from "./agent";
+export { streamTicketRun, type StreamRunOptions } from "./run";
+export { GuardrailViolationError } from "./middleware";
+export type {
+  RunStreamEvent,
+  StreamStep,
+  StreamStepStatus,
+} from "./stream-types";
+export { AI_MODEL_CONFIG, RUN_STEPS } from "./config";
 
 export function detectProvider(apiKey: string): AiProvider | null {
   if (apiKey.startsWith("sk-or-v1-")) return "openrouter";
@@ -11,63 +19,13 @@ export function detectProvider(apiKey: string): AiProvider | null {
   return null;
 }
 
-export interface AiCallParams {
-  system: string;
-  user: string;
-  temperature: number;
-  imageUrl?: string;
-}
-
-export async function callAi(
-  encryptedKey: string,
+export async function testAiKey(
+  apiKey: string,
   provider: AiProvider,
-  params: AiCallParams,
-): Promise<string> {
-  const apiKey = decrypt(encryptedKey);
-
-  switch (provider) {
-    case "openai":
-      return callOpenAI(
-        apiKey,
-        params.system,
-        params.user,
-        params.temperature,
-        params.imageUrl,
-      );
-    case "openrouter":
-      return callOpenRouter(
-        apiKey,
-        params.system,
-        params.user,
-        params.temperature,
-        params.imageUrl,
-      );
-    case "anthropic":
-      return callAnthropic(
-        apiKey,
-        params.system,
-        params.user,
-        params.temperature,
-        params.imageUrl,
-      );
-    default:
-      throw new Error(`Unsupported AI provider: ${provider}`);
-  }
-}
-
-export async function testAiKey(apiKey: string, provider: AiProvider): Promise<boolean> {
+): Promise<boolean> {
   try {
-    switch (provider) {
-      case "openai":
-        await callOpenAI(apiKey, "Respond with just: ok", "ok", 0);
-        break;
-      case "openrouter":
-        await callOpenRouter(apiKey, "Respond with just: ok", "ok", 0);
-        break;
-      case "anthropic":
-        await callAnthropic(apiKey, "Respond with just: ok", "ok", 0);
-        break;
-    }
+    const model = createChatModel(provider, apiKey, 0);
+    await model.invoke("Respond with just: ok");
     return true;
   } catch {
     return false;

@@ -1,4 +1,8 @@
-import { RATE_LIMIT_WINDOW_MS, RATE_LIMIT_CLEANUP_INTERVAL_MS } from "./constants";
+import {
+  RATE_LIMIT_WINDOW_MS,
+  RATE_LIMIT_CLEANUP_INTERVAL_MS,
+  RATE_LIMIT_MAX_REQUESTS,
+} from "./constants";
 
 interface RateLimitEntry {
   count: number;
@@ -8,7 +12,7 @@ interface RateLimitEntry {
 const store = new Map<string, RateLimitEntry>();
 
 const WINDOW_MS = RATE_LIMIT_WINDOW_MS;
-const MAX_REQUESTS = 1;
+const MAX_REQUESTS = RATE_LIMIT_MAX_REQUESTS;
 
 setInterval(() => {
   const now = Date.now();

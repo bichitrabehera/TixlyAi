@@ -1,3 +1,5 @@
+import { ROUTES } from "@/lib/routes";
+
 export const SITE = {
   name: "Tixly",
   tagline: "Screenshot to ticket, instantly.",
@@ -7,7 +9,7 @@ export const SITE = {
 export const NAV = {
   links: [
     { label: "How it works", href: "#how" },
-    { label: "Generate ticket", href: "/app/generate" },
+    { label: "Generate ticket", href: ROUTES.generate },
   ],
 };
 
@@ -116,7 +118,7 @@ export const CALL_TO_ACTION = {
 export const FOOTER = {
   links: [
     { label: "How it works", href: "#how" },
-    { label: "Generate ticket", href: "/app/generate" },
+    { label: "Generate ticket", href: ROUTES.generate },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms & Conditions", href: "/terms" },
   ],
