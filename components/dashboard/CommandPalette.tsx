@@ -22,7 +22,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
-import { useSettingsDialog } from "@/components/settings/SettingsDialogProvider";
 import { extractTicketTitle, ticketDisplayId } from "@/lib/tickets/format";
 
 interface CommandPaletteValue {
@@ -92,7 +91,6 @@ interface PaletteItem {
 
 function CommandPaletteBody({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const { openSettings } = useSettingsDialog();
   const [query, setQuery] = useState("");
   const [tickets, setTickets] = useState<TicketHit[]>([]);
   const [active, setActive] = useState(0);
@@ -133,16 +131,24 @@ function CommandPaletteBody({ onClose }: { onClose: () => void }) {
         icon: <History className="size-4" />,
         run: () => router.push(ROUTES.history),
       },
+      {
+        id: "nav-settings",
+        label: "Settings",
+        group: "Navigate",
+        hint: "AI keys, account",
+        icon: <Settings className="size-4" />,
+        run: () => router.push(ROUTES.settings),
+      },
     ];
 
     const actions: PaletteItem[] = [
       {
-        id: "act-settings",
-        label: "Open settings",
+        id: "act-integrations",
+        label: "Manage integrations",
         group: "Actions",
-        hint: "API keys, integrations",
-        icon: <Settings className="size-4" />,
-        run: openSettings,
+        hint: "Slack, Linear",
+        icon: <Zap className="size-4" />,
+        run: () => router.push(`${ROUTES.settings}?section=integrations`),
       },
     ];
 
@@ -156,7 +162,7 @@ function CommandPaletteBody({ onClose }: { onClose: () => void }) {
     }));
 
     return [...navigate, ...actions, ...recent];
-  }, [router, openSettings, tickets]);
+  }, [router, tickets]);
 
   const needle = query.trim().toLowerCase();
   const filtered = useMemo(() => {

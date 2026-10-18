@@ -21,40 +21,38 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how" className="border-t border-slate-200 py-20 lg:py-28">
+    <section id="how" className="border-t border-hairline py-20 lg:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         {/* Header */}
         <div className="mx-auto mb-14 max-w-2xl text-center">
-          <span className="inline-flex rounded-full border border-slate-200 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
+          <span className="inline-flex rounded-full border border-hairline px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-muted">
             How it works
           </span>
 
-          <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-900 lg:text-4xl">
+          <h2 className="mt-5 text-3xl font-semibold tracking-tight text-ink lg:text-4xl">
             {HOW_IT_WORKS.title}
           </h2>
         </div>
 
         {/* Steps */}
-        <div className="grid gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 sm:grid-cols-3">
+        <div className="grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-3">
           {steps.map(({ icon: Icon, title, description }, index) => (
             <div
               key={title}
-              className="bg-white p-8 transition-colors hover:bg-slate-50"
+              className="bg-canvas p-8 transition-colors hover:bg-panel"
             >
-              <span className="text-xs font-medium text-slate-400">
+              <span className="text-xs font-medium text-ink-3">
                 0{index + 1}
               </span>
 
-              <div className="mt-4 flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
-                <Icon className="h-5 w-5 text-slate-700" />
+              <div className="mt-4 flex h-11 w-11 items-center justify-center rounded-xl border border-hairline bg-panel">
+                <Icon className="h-5 w-5 text-ink" />
               </div>
 
               <div className="mt-5">
-                <h3 className="text-base font-semibold text-slate-900">
-                  {title}
-                </h3>
+                <h3 className="text-base font-semibold text-ink">{title}</h3>
 
-                <p className="mt-2 text-sm leading-7 text-slate-500">
+                <p className="mt-2 text-sm leading-7 text-muted">
                   {description}
                 </p>
               </div>

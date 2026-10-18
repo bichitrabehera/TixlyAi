@@ -11,6 +11,7 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -21,8 +22,26 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-hairline: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-shell: var(--shell);
+  --color-canvas: var(--canvas);
+  --color-panel: var(--card);
+  --color-panel-soft: var(--panel-soft);
+  --color-control: var(--control);
+  --color-control-border: var(--control-border);
+  --color-dash: var(--dash);
+  --color-track: var(--track);
+  --color-ink: var(--ink);
+  --color-prose: var(--prose);
+  --color-ink-3: var(--ink-3);
+  --color-nav-active: var(--nav-active);
+  --color-nav-active-fg: var(--nav-active-fg);
+  --color-brand: var(--brand);
+  --color-brand-border: var(--brand-border);
+  --color-brand-tile: var(--brand-tile);
 
   --font-sans: var(--font-ibm-plex-sans);
   --font-mono: var(--font-ibm-plex-mono);
@@ -36,68 +55,92 @@
 
 :root {
   --radius: 0.65rem;
-
-  --bg: #ffffff;
-  --text: #0f172a;
-  --muted: #64748b;
-
-  --card: #f8fafc;
-  --card-2: #f1f5f9;
-  --border: #e2e8f0;
-
-  --primary: #1f883d;
-  --primary-hover: #15803d;
+  --shell: #eeede8;
+  --canvas: #faf9f5;
+  --card: #f3f2ed;
+  --panel-soft: color-mix(in srgb, var(--card) 55%, transparent);
+  --control: #ffffff;
+  --control-border: #e3e3e3;
+  --border: #e6e6e6;
+  --dash: #d6d6d6;
+  --track: #ececec;
+  --ink: #181816;
+  --ink-2: #686762;
+  --ink-3: #9b9992;
+  --prose: #2c2c2a;
+  --primary: #2d6a4f;
+  --primary-hover: #245a42;
+  --primary-foreground: #ffffff;
+  --nav-active: #e2e5f3;
+  --nav-active-fg: #252b42;
+  --brand: #f3d060;
+  --brand-border: #e0be4b;
+  --brand-tile: #4d8871;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --glow: rgba(34, 197, 94, 0.14);
-
-  --background: var(--bg);
+  --bg: var(--shell);
+  --text: var(--ink);
+  --muted: var(--ink-2);
+  --card-2: var(--card);
+  --background: var(--shell);
   --foreground: var(--text);
   --card-foreground: var(--text);
-  --popover: #ffffff;
+  --popover: var(--canvas);
   --popover-foreground: var(--text);
-  --primary-foreground: #ffffff;
   --secondary: var(--card-2);
   --secondary-foreground: var(--text);
   --muted-foreground: var(--muted);
   --accent: var(--card-2);
   --accent-foreground: var(--text);
-  --input: var(--border);
+  --input: var(--control-border);
   --ring: var(--primary);
+  --glow: color-mix(in srgb, var(--primary) 16%, transparent);
 }
 
 .dark {
+  color-scheme: dark;
+
   --radius: 0.65rem;
-
-  --bg: #000000;
-  --text: #fafafa;
-  --muted: #a1a1aa;
-
-  --card: #0a0a0a;
-  --card-2: #111111;
-
-  --border: #1a1a1a;
-
-  --primary: #22c55e;
-  --primary-hover: #16a34a;
-  --destructive: #ef4444;
+  --shell: #14120f;
+  --canvas: #1b1915;
+  --card: #231f1a;
+  --panel-soft: color-mix(in srgb, var(--card) 55%, transparent);
+  --control: #2a251f;
+  --control-border: #3a342b;
+  --border: #302b24;
+  --dash: #4a4338;
+  --track: #2e2922;
+  --ink: #f3efe4;
+  --ink-2: #b0a995;
+  --ink-3: #7a7464;
+  --prose: #e2ddcf;
+  --primary: #6bb88a;
+  --primary-hover: #7cc79a;
+  --primary-foreground: #0d1a12;
+  --nav-active: #25382d;
+  --nav-active-fg: #cfe8d9;
+  --brand: #f3d060;
+  --brand-border: #c9a63a;
+  --brand-tile: #3f7a62;
+  --destructive: #e5484d;
   --destructive-foreground: #ffffff;
-
-  --glow: rgba(34, 197, 94, 0.16);
-
-  --background: var(--bg);
+  --bg: var(--shell);
+  --text: var(--ink);
+  --muted: var(--ink-2);
+  --card-2: var(--card);
+  --background: var(--shell);
   --foreground: var(--text);
   --card-foreground: var(--text);
-  --popover: #0a0a0a;
+  --popover: var(--canvas);
   --popover-foreground: var(--text);
-  --primary-foreground: #052e16;
   --secondary: var(--card-2);
   --secondary-foreground: var(--text);
   --muted-foreground: var(--muted);
   --accent: var(--card-2);
   --accent-foreground: var(--text);
-  --input: var(--border);
+  --input: var(--control-border);
   --ring: var(--primary);
+  --glow: color-mix(in srgb, var(--primary) 26%, transparent);
 }
 
 /* BASE */
@@ -128,6 +171,20 @@ body {
 
 ::-webkit-scrollbar {
   width: 3px;
+  height: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--dash);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-3);
 }
 
 @keyframes dialog-overlay-in {
@@ -197,9 +254,9 @@ body {
 .shimmer-block {
   background-image: linear-gradient(
     90deg,
-    var(--card-2) 25%,
-    var(--accent) 50%,
-    var(--card-2) 75%
+    var(--dash) 25%,
+    var(--control) 50%,
+    var(--dash) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.6s linear infinite;
@@ -235,4 +292,3 @@ body {
 .animate-pulse-ring {
   animation: pulse-ring 1.6s ease-out infinite;
 }
-

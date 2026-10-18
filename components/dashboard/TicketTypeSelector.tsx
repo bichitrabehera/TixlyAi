@@ -1,13 +1,5 @@
 "use client";
 
-import {
-  Bug,
-  CheckSquare,
-  Layers,
-  MessageSquare,
-  Sparkles,
-  Wand2,
-} from "lucide-react";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import {
   TICKET_TYPE_META,
@@ -23,15 +15,6 @@ interface TicketTypeSelectorProps {
 
 type SegmentValue = TicketType | "auto";
 
-const ICONS: Record<SegmentValue, React.ReactNode> = {
-  auto: <Wand2 className="h-3.5 w-3.5" aria-hidden />,
-  bug: <Bug className="h-3.5 w-3.5" aria-hidden />,
-  feature: <Sparkles className="h-3.5 w-3.5" aria-hidden />,
-  ui: <Layers className="h-3.5 w-3.5" aria-hidden />,
-  feedback: <MessageSquare className="h-3.5 w-3.5" aria-hidden />,
-  task: <CheckSquare className="h-3.5 w-3.5" aria-hidden />,
-};
-
 const SHORT_LABELS: Record<TicketType, string> = {
   bug: "Bug",
   feature: "Feature",
@@ -46,11 +29,10 @@ export function TicketTypeSelector({
   disabled = false,
 }: TicketTypeSelectorProps) {
   const options = [
-    { value: "auto" as const, label: "Auto", icon: ICONS.auto },
+    { value: "auto" as const, label: "Auto" },
     ...TICKET_TYPES.map((type) => ({
       value: type,
       label: SHORT_LABELS[type],
-      icon: ICONS[type],
       title: TICKET_TYPE_META[type].description,
     })),
   ];

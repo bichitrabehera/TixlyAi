@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
+import { Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 
@@ -9,38 +10,30 @@ export function Header() {
   const { user, isLoaded } = useUser();
 
   return (
-    <header className="fixed mx-auto top-0 left-0 right-0 p-6 z-50">
-      <div className=" mx-auto w-fit rounded-full border border-slate-900/10 backdrop-blur-xl shadow-lg shadow-slate-900/5">
+    <header className="fixed inset-x-0 top-0 z-50 p-6">
+      <div className="mx-auto w-fit rounded-full border border-hairline bg-canvas/70 shadow-[0_2px_12px_rgba(0,0,0,0.05)] backdrop-blur-xl">
         <div className="flex items-center gap-1 px-2 py-1">
           <Link
             href="/"
-            className="flex items-center gap-2 rounded-full px-4 py-2 text-base font-bold tracking-tight text-slate-900 transition-colors hover:bg-green-100/80 hover:text-slate-700"
+            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-base font-semibold tracking-tight text-ink transition-colors hover:bg-panel"
           >
+            <span className="flex h-6 w-6 items-center justify-center rounded-md border border-primary bg-brand-tile">
+              <Ticket className="h-3.5 w-3.5 text-ink" aria-hidden />
+            </span>
             Tixly
           </Link>
 
-          <nav className="items-center flex gap-1">
+          <nav className="flex items-center gap-1">
             {!isLoaded ? (
-              <div className="w-8 h-8" />
+              <div className="h-8 w-8" />
             ) : user ? (
-              <>
-                <Button
-                  asChild
-                  className="ml-1 rounded-full bg-slate-900 px-5 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-xl"
-                >
-                  <Link href={ROUTES.overview}>Dashboard</Link>
-                </Button>
-              </>
+              <Button asChild className="ml-1 rounded-full px-5">
+                <Link href={ROUTES.overview}>Dashboard</Link>
+              </Button>
             ) : (
-              <>
-                <Button
-                  asChild
-                  size="lg"
-                  className="ml-1 rounded-full bg-slate-900 px-5 text-white shadow-sm transition-all hover:bg-green-700"
-                >
-                  <Link href="/login">Sign In</Link>
-                </Button>
-              </>
+              <Button asChild size="lg" className="ml-1 rounded-full px-5">
+                <Link href="/login">Sign In</Link>
+              </Button>
             )}
           </nav>
         </div>

@@ -18,6 +18,11 @@ export default async function DashboardLayout({
 
   return (
     <ThemeProvider>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{var k='theme';var t=localStorage.getItem(k);var d=t==='dark'||((!t||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;if(d){r.classList.add('dark');r.style.colorScheme='dark';}else{r.classList.remove('dark');r.style.colorScheme='light';}}catch(e){}})();`,
+        }}
+      />
       <DashboardShell>
         <SessionCleanup />
         {children}

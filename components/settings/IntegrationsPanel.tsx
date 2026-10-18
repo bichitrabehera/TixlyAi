@@ -8,7 +8,43 @@ import { SLACK_OAUTH_SCOPES } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+
+function DisconnectButton({
+  onClick,
+  busy,
+}: {
+  onClick: () => void;
+  busy: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-3 text-xs font-medium text-destructive shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-[color-mix(in_srgb,var(--destructive)_12%,transparent)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {busy ? "Disconnecting…" : "Disconnect"}
+    </button>
+  );
+}
+
+function ConnectButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+    >
+      {children}
+    </button>
+  );
+}
 
 export function IntegrationsPanel() {
   const [slackConnected, setSlackConnected] = useState(false);
@@ -53,6 +89,12 @@ export function IntegrationsPanel() {
   }, [loadStatus]);
 
   const connectSlack = () => {
+    if (!process.env.NEXT_PUBLIC_SLACK_CLIENT_ID) {
+      setError(
+        "Slack app isn't configured yet — add NEXT_PUBLIC_SLACK_CLIENT_ID and SLACK_CLIENT_ID (from your Slack app settings) to .env, then restart. See docs/setup-guide.md.",
+      );
+      return;
+    }
     const redirectUri = `${window.location.origin}/api/slack/callback`;
     const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.NEXT_PUBLIC_SLACK_CLIENT_ID}&scope=${SLACK_OAUTH_SCOPES}&redirect_uri=${encodeURIComponent(redirectUri)}`;
     window.location.href = url;
@@ -133,81 +175,71 @@ export function IntegrationsPanel() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-hairline bg-control p-4">
+        <div className="flex min-w-0 items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#4A154B] text-white">
             <Slack className="h-4 w-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-medium text-foreground">Slack</p>
-              {slackConnected && <StatusBadge connected />}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-medium text-ink">Slack</p>
+              <StatusBadge connected={slackConnected} />
             </div>
             <p className="mt-0.5 text-xs text-muted">
-              Send tickets directly to your Slack DM
+              {slackConnected
+                ? "Tickets can be sent to your Slack DM."
+                : "Connect to send tickets directly to your Slack DM."}
             </p>
           </div>
         </div>
         <div className="shrink-0">
           {slackConnected ? (
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
+            <DisconnectButton
               onClick={disconnectSlack}
-              disabled={disconnecting === "slack"}
-            >
-              {disconnecting === "slack" ? "Removing..." : "Disconnect"}
-            </Button>
-          ) : process.env.NEXT_PUBLIC_SLACK_CLIENT_ID ? (
-            <Button type="button" size="sm" onClick={connectSlack}>
-              Connect Slack
-            </Button>
-          ) : null}
+              busy={disconnecting === "slack"}
+            />
+          ) : (
+            <ConnectButton onClick={connectSlack}>Connect</ConnectButton>
+          )}
         </div>
       </div>
 
-      <Separator />
-
-      <div>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
+      <div className="rounded-xl border border-hairline bg-control p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#5E6AD2] text-white">
               <CgLinear className="h-4 w-4" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-foreground">Linear</p>
-                {linearConnected && <StatusBadge connected />}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-medium text-ink">Linear</p>
+                <StatusBadge connected={linearConnected} />
               </div>
               <p className="mt-0.5 text-xs text-muted">
-                Create issues from generated tickets
+                {linearConnected
+                  ? "Tickets can be pushed as Linear issues."
+                  : "Connect to create issues from generated tickets."}
               </p>
             </div>
           </div>
-          <div className="shrink-0">
-            {linearConnected && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
+          {linearConnected && (
+            <div className="shrink-0">
+              <DisconnectButton
                 onClick={disconnectLinear}
-                disabled={disconnecting === "linear"}
-              >
-                {disconnecting === "linear" ? "Removing..." : "Disconnect"}
-              </Button>
-            )}
-          </div>
+                busy={disconnecting === "linear"}
+              />
+            </div>
+          )}
         </div>
 
         {!linearConnected && (
-          <div className="mt-3 ml-12 space-y-2">
+          <div className="mt-3 space-y-2 sm:ml-12">
             <p className="text-xs text-muted">
               Create a Personal API Key in Linear → Settings → API, then paste
               it below.
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 type="password"
                 value={linearKey}
@@ -227,7 +259,7 @@ export function IntegrationsPanel() {
                     Saving...
                   </>
                 ) : (
-                  "Save"
+                  "Connect"
                 )}
               </Button>
             </div>

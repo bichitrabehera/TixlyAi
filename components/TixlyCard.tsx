@@ -1,14 +1,15 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function TixlyCard() {
   return (
-    <div className=" flex justify-center items-center py-6">
+    <div className="flex items-center justify-center py-6">
       <Button
         asChild
+        variant="outline"
         size="sm"
-        className="mt-3 gap-1 font-semibold transition hover:opacity-90 hover:-translate-y-0.5 hover:shadow-xl bg-orange-500"
+        className="gap-1.5 border-hairline bg-[#F52B20] font-medium text-white transition-all hover:-translate-y-0.5 hover:text-ink"
       >
         <Link
           href="https://www.producthunt.com/products/tixly?embed=true&utm_source=embed&utm_medium=post_embed"
@@ -16,6 +17,7 @@ export default function TixlyCard() {
           rel="noopener noreferrer"
         >
           Check it out on Product Hunt
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
       </Button>
     </div>

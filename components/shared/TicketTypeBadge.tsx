@@ -16,12 +16,8 @@ export function TicketTypeBadge({
   return (
     <Badge
       variant={selected ? "default" : "secondary"}
-      className={cn(
-        "shrink-0 font-mono text-[10px] uppercase tracking-widest",
-        className,
-      )}
+      className={cn("shrink-0 text-[12px]", className)}
     >
-      <span aria-hidden>{meta.emoji}</span>
       {meta.label}
     </Badge>
   );

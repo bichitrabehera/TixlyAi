@@ -1,8 +1,7 @@
 "use client";
 
 import type { ChangeEvent, DragEvent, RefObject } from "react";
-import { Cpu, Sparkles, Square, Ticket } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Square } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ScreenshotDropzone } from "@/components/dashboard/ScreenshotDropzone";
 import { TicketTypeSelector } from "@/components/dashboard/TicketTypeSelector";
@@ -75,8 +74,8 @@ export function InputScreen({
   const canGenerate = !loading && !!image;
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-card">
-      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5">
         <ScreenshotDropzone
           image={image}
           fileName={fileName}
@@ -104,7 +103,7 @@ export function InputScreen({
               onChange={(event) => onManualOcrChange(event.target.value)}
               rows={4}
               placeholder="Paste the text from the screenshot here…"
-              className="mt-2 min-h-0 resize-none rounded-lg bg-background text-xs"
+              className="mt-2 min-h-0 resize-none rounded-lg bg-canvas text-xs"
             />
           </section>
         )}
@@ -125,11 +124,8 @@ export function InputScreen({
 
         <section className="space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-foreground">
+            <span className="text-xs font-medium text-ink">
               Additional Context
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
-              markdown
             </span>
           </div>
           <Textarea
@@ -138,7 +134,7 @@ export function InputScreen({
             disabled={loading}
             rows={4}
             placeholder="Anything the screenshot doesn't show — repro hints, environment, expected behavior…"
-            className="min-h-[88px] w-full resize-none rounded-lg bg-background text-xs"
+            className="w-full resize-none rounded-lg border border-control-border bg-canvas p-3 text-xs text-ink placeholder:text-ink-3 transition-colors focus:border-ink focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </section>
 
@@ -151,30 +147,32 @@ export function InputScreen({
         />
       </div>
 
-      <footer className="flex shrink-0 items-center justify-end gap-3 border-t border-border bg-background px-3 py-3">
+      <footer className="flex shrink-0 items-center justify-between border-t border-hairline bg-canvas p-4">
+        <p className="flex items-baseline gap-1.5 text-xs">
+          <span className="font-bold text-ink">{image ? 1 : 0}</span>
+          <span className="text-muted">
+            {image ? "capture ready" : "awaiting capture"}
+          </span>
+        </p>
+
         {loading ? (
-          <Button
+          <button
             type="button"
-            variant="outline"
             onClick={onStop}
-            className="h-8 gap-1.5 rounded-md px-3 text-xs font-medium"
+            className="flex cursor-pointer items-center gap-2 rounded-lg border border-control-border bg-control px-4 py-2 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Square className="h-3 w-3 fill-current" aria-hidden />
             Stop
-          </Button>
+          </button>
         ) : (
-          <Button
+          <button
             type="button"
             onClick={onGenerate}
             disabled={!canGenerate}
-            className="h-8 gap-1.5 rounded-md px-3.5 text-xs font-medium"
+            className="flex cursor-pointer items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Sparkles className="h-3.5 w-3.5" aria-hidden />
-            Generate
-            <kbd className="ml-0.5 rounded border border-primary-foreground/25 bg-primary-foreground/15 px-1 py-px font-mono text-[10px] font-normal">
-              ⌘↵
-            </kbd>
-          </Button>
+            + Generate Ticket
+          </button>
         )}
       </footer>
     </div>

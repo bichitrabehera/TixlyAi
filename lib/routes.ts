@@ -8,6 +8,7 @@ export const ROUTES = {
   overview: "/dashboard",
   generate: "/dashboard/generate",
   history: "/dashboard/history",
+  settings: "/dashboard/settings",
   playground: "/dashboard/playground",
   ticket: (id: string) => `/dashboard/tickets/${id}`,
 };

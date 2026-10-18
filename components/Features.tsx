@@ -5,16 +5,16 @@ const icons = [ClipboardList, Key, Zap, Copy];
 
 export function Features() {
   return (
-    <section className="border-t border-slate-200 py-16 lg:py-24">
+    <section className="border-t border-hairline py-16 lg:py-24">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        <div className="text-center mb-20">
-          <p className="text-sm font-semibold tracking-wide text-slate-500 uppercase mb-3">
+        <div className="mb-20 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
             Features
           </p>
-          <h2 className="text-4xl font-bold text-slate-900 tracking-tight lg:text-5xl">
+          <h2 className="text-4xl font-bold tracking-tight text-ink lg:text-5xl">
             {FEATURES.title}
           </h2>
-          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted">
             {FEATURES.subtitle}
           </p>
         </div>
@@ -25,25 +25,25 @@ export function Features() {
             return (
               <div
                 key={feature.title}
-                className="group relative rounded-xl border border-slate-200 bg-white p-8 transition-all hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/50"
+                className="group relative rounded-xl border border-hairline bg-canvas p-8 transition-all hover:border-dash hover:shadow-lg hover:shadow-black/5"
               >
                 {/* Icon */}
-                <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white transition-transform group-hover:scale-110">
+                <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-ink text-canvas transition-transform group-hover:scale-110">
                   <Icon className="h-6 w-6" />
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                <h3 className="mb-2 text-lg font-semibold text-ink">
                   {feature.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm leading-relaxed text-muted">
                   {feature.description}
                 </p>
 
                 {/* Decorative element */}
-                <div className="absolute top-0 right-0 h-px w-16 bg-gradient-to-r from-transparent to-slate-200" />
+                <div className="absolute right-0 top-0 h-px w-16 bg-gradient-to-r from-transparent to-hairline" />
               </div>
             );
           })}

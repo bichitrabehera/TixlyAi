@@ -52,7 +52,7 @@ export default function DocsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#ecfff1]">
+    <div className="min-h-screen bg-background dark:bg-background">
       <header className="fixed top-0 left-0 right-0 p-4 z-50">
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto w-fit rounded-full border border-slate-900/10 backdrop-blur-xl shadow-lg shadow-slate-900/5">
@@ -81,7 +81,9 @@ export default function DocsPage() {
             size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
             className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full bg-slate-900 text-white shadow-lg md:hidden"
-            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-label={
+              mobileOpen ? "Close navigation menu" : "Open navigation menu"
+            }
           >
             {mobileOpen ? (
               <X className="w-5 h-5" />

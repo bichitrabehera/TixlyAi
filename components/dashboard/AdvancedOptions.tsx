@@ -71,7 +71,7 @@ export function AdvancedOptions({
         aria-expanded={open}
         aria-controls={panelId}
         disabled={disabled}
-        className="flex w-full items-center justify-between gap-3 rounded-lg border border-border/80 bg-background px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+        className="flex w-full items-center justify-between gap-3 rounded-lg border border-control-border bg-canvas px-3 py-2 text-xs font-medium text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink disabled:opacity-50"
       >
         <span className="flex items-center gap-1.5 font-medium">
           <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
@@ -94,7 +94,7 @@ export function AdvancedOptions({
           className="space-y-4 pt-3"
         >
           <div className="space-y-2">
-            <span className="text-[11px] font-medium text-foreground">
+            <span className="text-[11px] font-medium text-ink">
               Priority override
             </span>
             <SegmentedControl
@@ -108,7 +108,7 @@ export function AdvancedOptions({
             />
           </div>
 
-          <div className="divide-y divide-border/70 overflow-hidden rounded-lg border border-border/70">
+          <div className="divide-y divide-hairline overflow-hidden rounded-lg border border-control-border bg-canvas">
             {TOGGLES.map(({ key, label, hint }) => {
               const hintId = `pref-hint-${key}`;
               const on = value[key];
@@ -117,16 +117,16 @@ export function AdvancedOptions({
                 <label
                   key={key}
                   htmlFor={`pref-${key}`}
-                  className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-secondary/50"
+                  className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-panel"
                 >
                   <span className="min-w-0">
-                    <span className="block text-xs text-foreground">
+                    <span className="block text-xs text-ink">
                       {label}
                     </span>
                     {!on && (
                       <span
                         id={hintId}
-                        className="mt-0.5 block text-[11px] text-muted-foreground"
+                        className="mt-0.5 block text-[11px] text-muted"
                       >
                         {hint}
                       </span>

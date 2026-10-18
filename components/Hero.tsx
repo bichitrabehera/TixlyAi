@@ -16,37 +16,35 @@ const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
 
 export function Hero() {
   return (
-    <section className="mx-auto max-w-6xl px-6 pb-20 pt-30">
+    <section className="mx-auto max-w-6xl px-4 pb-20 pt-32">
       <div className="text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-4 py-2 text-sm font-medium text-green-800 mb-10">
+        <div className="mb-10 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
           </span>
           {HERO.badge}
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl font-bold leading-[1.1] tracking-tight lg:text-6xl text-slate-900">
+        <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-ink lg:text-6xl">
           {HERO.title}
           <br />
-          <span className="italic bg-gradient-to-r from-green-700 to-green-500 bg-clip-text text-transparent">
-            {HERO.titleHighlight}
-          </span>
+          <span className="italic text-primary">{HERO.titleHighlight}</span>
         </h1>
 
         {/* Description */}
-        <p className="mx-auto mt-8 max-w-xl sm:text-sm text-base leading-relaxed text-slate-500">
+        <p className="mx-auto mt-8 max-w-xl text-base leading-relaxed text-muted sm:text-sm">
           {HERO.description}
         </p>
 
         {/* CTAs */}
-        <div className="mt-10 flex gap-3 justify-center items-center flex-wrap">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Button
             asChild
             size="lg"
-            className="group gap-2 px-7 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-green-900/20"
+            className="group gap-2 px-7 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/20"
           >
             <Link href={ROUTES.generate}>{HERO.cta}</Link>
           </Button>
@@ -55,7 +53,7 @@ export function Hero() {
             asChild
             variant="outline"
             size="lg"
-            className="bg-white px-7 font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5"
+            className="bg-canvas px-7 font-semibold text-ink shadow-sm transition-all duration-200 hover:-translate-y-0.5"
           >
             <a href="#how">{HERO.secondaryCta}</a>
           </Button>
@@ -63,19 +61,24 @@ export function Hero() {
 
         <TixlyCard />
 
-        <div className="relative mt-10">
-          <div className="mb-16 overflow-hidden rounded-xl shadow-green-950 border border-slate-200 shadow-sm">
-            <img
-              src="/Banner1.jpeg"
-              alt="Tixly dashboard preview"
-              fetchPriority="high"
-              className="w-full object-cover"
-            />
-          </div>
+        <div
+          className="relative mt-10 overflow-hidden rounded-xl border border-neutral-300 p-2 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(-315deg, #c9c9c9ff 0, #e6e6e6ff 1px, transparent 1px, transparent 50%)",
+            backgroundSize: "8px 8px",
+          }}
+        >
+          <img
+            src="/Banner.png"
+            alt="Tixly dashboard preview"
+            fetchPriority="high"
+            className="w-full object-cover rounded-lg"
+          />
         </div>
 
         <div className="mt-20">
-          <p className="text-xs font-medium uppercase tracking-widest text-slate-400">
+          <p className="text-xs font-medium uppercase tracking-widest text-ink-3">
             {HERO.integrationsLabel}
           </p>
 
@@ -83,12 +86,12 @@ export function Hero() {
             {HERO.integrations.map((name) => (
               <div
                 key={name}
-                className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition-all duration-200 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5 cursor-default"
+                className="group flex cursor-default items-center gap-3 rounded-xl border border-hairline bg-canvas px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-dash hover:shadow-md"
               >
-                <span className="text-slate-400 transition-colors group-hover:text-slate-700">
+                <span className="text-ink-3 transition-colors group-hover:text-ink">
                   {INTEGRATION_ICONS[name]}
                 </span>
-                <span className="text-sm font-medium text-slate-500 group-hover:text-slate-800 transition-colors">
+                <span className="text-sm font-medium text-muted transition-colors group-hover:text-ink">
                   {name}
                 </span>
               </div>

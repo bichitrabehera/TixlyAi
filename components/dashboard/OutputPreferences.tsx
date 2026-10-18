@@ -26,9 +26,6 @@ export function DetailLevelControl({
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-foreground">Verbosity</span>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
-          detail level
-        </span>
       </div>
 
       <SegmentedControl

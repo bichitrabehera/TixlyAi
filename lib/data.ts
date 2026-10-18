@@ -119,11 +119,12 @@ export const FOOTER = {
   links: [
     { label: "How it works", href: "#how" },
     { label: "Generate ticket", href: ROUTES.generate },
+    { label: "Docs", href: "/docs" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms & Conditions", href: "/terms" },
   ],
   builtBy: "Bichitra Behera",
-  copyright: "© 2026 TixlyAi. All rights reserved.",
+  copyright: "© 2026 Tixly. All rights reserved.",
 };
 
 export const SOCIALS = [

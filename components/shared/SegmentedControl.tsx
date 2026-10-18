@@ -45,7 +45,7 @@ export function SegmentedControl<T extends string>({
       role="radiogroup"
       aria-label={ariaLabel}
       className={cn(
-        "grid gap-0.5 rounded-lg bg-secondary p-0.5",
+        "grid gap-1 rounded-lg border border-control-border bg-track p-1",
         className,
       )}
       style={{
@@ -78,10 +78,9 @@ export function SegmentedControl<T extends string>({
               if (!active) onChange(option.value);
             }}
             className={cn(
-              "flex min-w-0 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-              active
-                ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
-                : "text-muted-foreground hover:text-foreground",
+              "flex min-w-0 items-center justify-center gap-1.5 rounded-md border border-transparent bg-background px-2 py-1.5 text-xs font-normal text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+              active &&
+                "border-primary bg-primary font-medium text-primary-foreground shadow-[0_1px_2px_rgba(0,0,0,0.15)] hover:text-primary-foreground",
               disabled && "cursor-not-allowed opacity-50",
             )}
           >

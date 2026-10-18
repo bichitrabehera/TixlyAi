@@ -16,6 +16,7 @@ app/
     page.tsx                   /dashboard — overview
     generate/                  /dashboard/generate — InputScreen → OutputScreen
     history/                   /dashboard/history — past tickets
+    settings/                  /dashboard/settings — AI keys, integrations, notifications, account
     playground/                /dashboard/playground — dev sandbox
     tickets/[id]/              /dashboard/tickets/[id] — detail + actions
   api/
@@ -26,7 +27,7 @@ app/
     settings/                  ai-key, notifications, account
 ```
 
-All route strings live in **`lib/routes.ts`** (`WORKSPACE_ROOT = "/dashboard"`, `ROUTES`, `NAV_PRIMARY`) — import from there, never hardcode. Navigation is the TopBar (**`components/dashboard/TopNav.tsx`** tabs) plus a global ⌘K/Ctrl-K command palette (**`components/dashboard/CommandPalette.tsx`**). Settings is a dialog, not a route — gear in the TopBar / account dropdown / `NoAiKeyCard` open it.
+All route strings live in **`lib/routes.ts`** (`WORKSPACE_ROOT = "/dashboard"`, `ROUTES`, `NAV_PRIMARY`) — import from there, never hardcode. Navigation is the **`AppSidebar`** (Overview · Generate · History · Settings, plus Integrations/Help links) inside the inset-canvas `DashboardShell`, plus a global ⌘K/Ctrl-K command palette (**`components/dashboard/CommandPalette.tsx`**). Settings is a route (`/dashboard/settings`), not a dialog; `?section=ai|integrations|notifications|account` deep-links and scrolls to a section. Tixly is BYOK-only — no subscription, no PRO tier.
 
 ## Request flow: generating a ticket
 

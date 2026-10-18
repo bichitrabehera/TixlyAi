@@ -1,112 +1,180 @@
-"use client";
 import Link from "next/link";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#ecfff1] py-16 px-6">
+    <div className="min-h-screen bg-shell py-16 px-6">
       <div className="max-w-3xl mx-auto">
         <Link href="/" className="flex items-center gap-2 mb-8 w-fit">
-          <span className="text-2xl font-bold text-[(--text)]">Tixly</span>
+          <span className="text-2xl font-bold text-ink">Tixly</span>
         </Link>
 
-        <p className="text-sm text-[(--muted)] mb-8">
-          Last updated: May 16, 2026
+        <p className="text-sm text-muted mb-8">
+          Last updated: October 19, 2026
         </p>
 
-        <h1 className="text-3xl font-bold text-[(--text)] mb-8">
-          Terms & Conditions
+        <h1 className="text-3xl font-bold text-ink mb-8">
+          Terms &amp; Conditions
         </h1>
 
-        <div className="space-y-8 text-[(--text)]/80">
+        <div className="space-y-8 text-muted">
           <section>
-            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               Use of Service
             </h2>
             <p>
-              By accessing and using TixlyAi, you agree to be bound by these
-              terms. Our service allows you to convert screenshots into
-              structured bug tickets using AI technology. You must be at least
-              18 years old to use this service.
+              By accessing or using Tixly, you agree to these Terms. Tixly
+              converts screenshots into structured tickets using AI. The service
+              is free to use and works with your own AI provider key. You must
+              be old enough to form a binding contract in your jurisdiction to
+              use Tixly.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
+              Your AI Key (BYOK)
+            </h2>
+            <p className="mb-2">
+              Tixly does not provide AI models. You connect your own OpenAI,
+              OpenRouter, or Anthropic API key, and:
+            </p>
+            <ul className="list-disc list-inside space-y-2">
+              <li>
+                Your key is encrypted at rest (AES-256-GCM) and used only
+                server-side to generate your tickets.
+              </li>
+              <li>
+                Usage, costs, and rate limits on that key are between you and
+                your AI provider.
+              </li>
+              <li>
+                You are responsible for complying with your provider&apos;s terms and
+                for keeping your key valid and secure.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-ink mb-3">
               User Responsibilities
             </h2>
             <p className="mb-2">You agree to:</p>
             <ul className="list-disc list-inside space-y-2">
-              <li>Provide accurate information when creating an account</li>
-              <li>Maintain the security of your account credentials</li>
+              <li>Provide accurate information for your account</li>
+              <li>Keep your account credentials secure</li>
               <li>Not share your account with unauthorized users</li>
               <li>Use the service in compliance with all applicable laws</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
               Acceptable Use
             </h2>
-            <p className="mb-2">You may NOT use our service to:</p>
+            <p className="mb-2">You may not use Tixly to:</p>
             <ul className="list-disc list-inside space-y-2">
-              <li>Generate tickets containing malicious code or exploits</li>
+              <li>Upload content you do not have the right to share</li>
+              <li>Infringe intellectual property or privacy rights</li>
               <li>Attempt to gain unauthorized access to any system</li>
-              <li>
-                Upload content that infringes on intellectual property rights
-              </li>
-              <li>Generate content that is illegal, harmful, or offensive</li>
-              <li>Abuse or spam the service beyond normal usage</li>
+              <li>Generate content that is illegal, harmful, or abusive</li>
+              <li>Abuse, overload, or spam the service or other users</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
+              Your Content
+            </h2>
+            <p>
+              You keep ownership of the screenshots, text, and tickets you
+              create. You grant us permission to process and store that content
+              only as needed to operate the service — for example, to generate a
+              ticket, keep your history, or push an export you request.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-ink mb-3">
               AI Limitations Disclaimer
             </h2>
             <p>
-              Our service uses AI to generate tickets from screenshots. While we
-              strive for accuracy, we cannot guarantee that all generated
-              tickets will be correct or complete. You are responsible for
-              reviewing and validating generated tickets before use. We are not
-              liable for any decisions made based on AI-generated content.
+              Tickets are generated by AI and may be inaccurate or incomplete.
+              You are responsible for reviewing and validating every ticket
+              before you rely on it or send it anywhere. We are not liable for
+              decisions made based on AI-generated content.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
-              Termination Rights
+            <h2 className="text-xl font-semibold text-ink mb-3">
+              Integrations
             </h2>
             <p>
-              We reserve the right to suspend or terminate your account at any
-              time if you violate these terms. You may cancel your account at
-              any time by contacting us. Upon termination, your right to use the
-              service ceases immediately.
+              Connecting Slack or Linear authorizes Tixly to send tickets to
+              those services on your behalf. You are responsible for the
+              accounts you connect and for what you choose to export.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
+              Termination
+            </h2>
+            <p>
+              We may suspend or terminate access if you violate these Terms. You
+              may stop using Tixly and ask us to delete your account at any
+              time. On termination, your right to use the service ends
+              immediately.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-ink mb-3">
+              Disclaimer of Warranties
+            </h2>
+            <p>
+              Tixly is provided &quot;as is&quot; and &quot;as available&quot;,
+              without warranties of any kind, whether express or implied,
+              including fitness for a particular purpose and non-infringement.
+              We do not warrant that the service will be uninterrupted, secure,
+              or error-free.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-ink mb-3">
               Limitation of Liability
             </h2>
             <p>
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, TIXLYAI SHALL NOT BE
+              TO THE MAXIMUM EXTENT PERMITTED BY LAW, TIXLY SHALL NOT BE
               LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
-              PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE SERVICE. OUR TOTAL
-              LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID FOR THE SERVICE IN
-              THE TWELVE (12) MONTHS PRECEDING THE CLAIM.
+              PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE SERVICE. BECAUSE THE
+              SERVICE IS PROVIDED FREE OF CHARGE, OUR TOTAL AGGREGATE LIABILITY
+              SHALL NOT EXCEED USD 100.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[(--text)] mb-3">
+            <h2 className="text-xl font-semibold text-ink mb-3">
+              Changes to These Terms
+            </h2>
+            <p>
+              We may update these Terms from time to time. Continued use of
+              Tixly after changes take effect means you accept the updated
+              Terms. We will revise the &quot;Last updated&quot; date above and
+              communicate material changes in the app.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-ink mb-3">
               Contact Us
             </h2>
             <p>
-              If you have any questions about this Privacy Policy, please
-              contact us at{" "}
+              If you have any questions about these Terms, please contact us at{" "}
               <a
                 href="mailto:bichitrabehera.345@gmail.com"
-                className="text-[(--primary)] hover:underline"
+                className="text-primary hover:underline"
               >
                 bichitrabehera.345@gmail.com
               </a>

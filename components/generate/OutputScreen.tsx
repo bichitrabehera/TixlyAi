@@ -1,24 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  AlertCircle,
-  ArrowUpRight,
-  Bug,
-  Check,
-  CheckCircle2,
-  CheckSquare,
-  Circle,
-  Copy,
-  Download,
-  Layers,
-  MessageSquare,
-  Pencil,
-  RotateCcw,
-  Sparkles,
-  Square,
-  Terminal,
-} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Check, Download, RotateCcw, Sparkles, Square } from "lucide-react";
 import { Slack } from "developer-icons";
 import { CgLinear } from "react-icons/cg";
 
@@ -32,79 +16,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { AgentRunTimeline } from "@/components/ai/AgentRunTimeline";
 import type { StreamStep } from "@/lib/ai/stream-types";
 import { NeedsReviewBanner } from "@/components/ai/GuardrailNotice";
-import { useSettingsDialog } from "@/components/settings/SettingsDialogProvider";
-import {
-  parseTicketData,
-  ticketDisplayId,
-  type TicketData,
-} from "@/lib/tickets/format";
-import {
-  TICKET_TYPE_META,
-  TOAST_DISMISS_MS,
-  type TicketType,
-} from "@/lib/constants";
+import { parseTicketData, type TicketData } from "@/lib/tickets/format";
+import { TICKET_TYPE_META, type TicketType } from "@/lib/constants";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
-const TYPE_ICONS: Record<string, React.ReactNode> = {
-  bug: <Bug className="h-3.5 w-3.5" aria-hidden />,
-  feature: <Sparkles className="h-3.5 w-3.5" aria-hidden />,
-  ui: <Layers className="h-3.5 w-3.5" aria-hidden />,
-  feedback: <MessageSquare className="h-3.5 w-3.5" aria-hidden />,
-  task: <CheckSquare className="h-3.5 w-3.5" aria-hidden />,
-};
-
-const priorityTone: Record<string, string> = {
-  CRITICAL: "border-destructive/25 bg-destructive/5 text-destructive",
-  HIGH: "border-destructive/20 bg-destructive/5 text-destructive",
-  MEDIUM:
-    "border-amber-500/25 bg-amber-500/5 text-amber-600 dark:text-amber-400",
-  LOW: "border-border bg-secondary text-muted-foreground",
-};
-
-function PropertyPill({
-  className,
-  children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
-        className,
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
 function SectionHeading({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-xs font-semibold uppercase text-muted-foreground/70">
-      {children}
-    </h2>
-  );
+  return <h2 className="text-xs font-semibold text-ink">{children}</h2>;
 }
 
 function RichText({ text }: { text: string }) {
   const parts = text.split(/`([^`]+)`/g);
   return (
-    <p className="text-sm leading-6 text-foreground/90">
+    <p className="text-sm leading-relaxed text-prose">
       {parts.map((part, index) =>
         index % 2 === 1 ? (
           <code
             key={index}
-            className="rounded border border-border/70 bg-secondary px-1.5 py-0.5 font-mono text-xs text-foreground/80"
+            className="rounded border border-hairline bg-panel px-1.5 py-0.5 font-mono text-xs text-ink"
           >
             {part}
           </code>
@@ -122,9 +54,9 @@ function BulletList({ items }: { items: string[] }) {
       {items.map((item, index) => (
         <li
           key={index}
-          className="flex gap-2.5 text-sm leading-6 text-foreground/90"
+          className="flex gap-2.5 text-xs leading-relaxed text-prose"
         >
-          <span className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/40" />
+          <span className="mt-1.5 size-1 shrink-0 rounded-full bg-dash" />
           <span>{item}</span>
         </li>
       ))}
@@ -140,7 +72,8 @@ interface OutputScreenProps {
   needsReview: boolean;
   dirty: boolean;
   disabled: boolean;
-  onCopy: () => void;
+  editing: boolean;
+  onEditingChange: (value: boolean) => void;
   onExport: () => void;
   onEditInputs: () => void;
   onReset: () => void;
@@ -151,23 +84,21 @@ interface OutputScreenProps {
   slackLoading: boolean;
   slackSent: boolean;
   slackConnected: boolean;
-  onSendToLinear: () => Promise<void>;
+  linearConnected: boolean;
   linearLoading: boolean;
   linearSent: boolean;
-  linearConnected: boolean;
+  onSendToLinear: () => Promise<void>;
 }
 
 function BarButton({
   label,
   onClick,
   disabled,
-  active,
   children,
 }: {
   label: string;
   onClick: () => void | Promise<void>;
   disabled?: boolean;
-  active?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -175,45 +106,96 @@ function BarButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={cn(
-        "inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-        active && "border-primary/40 bg-primary/10 text-primary",
-      )}
+      className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-2.5 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink disabled:cursor-not-allowed disabled:opacity-50"
     >
       {children}
-      <span className="hidden xl:inline">{label}</span>
+      <span>{label}</span>
     </button>
   );
 }
 
-function MetaStrip({ ticket }: { ticket: TicketData }) {
+function formatPriority(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}
+
+function environmentLabel(environment: string) {
+  if (/prod/i.test(environment)) return "Production";
+  return environment.split(/[·\n]/)[0]?.trim() || environment;
+}
+
+function MetaStrip({
+  ticket,
+  editing,
+  onEdit,
+  onRegenerate,
+}: {
+  ticket: TicketData;
+  editing: boolean;
+  onEdit: () => void;
+  onRegenerate: () => void;
+}) {
   const typeMeta = ticket.type
     ? TICKET_TYPE_META[ticket.type as TicketType]
     : null;
-  const priority = ticket.priority?.toUpperCase();
+  const env = ticket.environment ? environmentLabel(ticket.environment) : null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {priority && (
-        <PropertyPill className={priorityTone[priority] || priorityTone.LOW}>
-          <span className="h-1.5 w-1.5 rounded-full bg-current" />
-          {ticket.priority}
-        </PropertyPill>
-      )}
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-b border-hairline pb-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        {typeMeta && (
+          <span className="flex items-center gap-1.5 text-xs text-muted">
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                ticket.type === "bug" ? "bg-red-600" : "bg-[#9B9992]",
+              )}
+              aria-hidden
+            />
+            <span className="font-semibold text-ink">
+              {typeMeta.label}
+            </span>
+          </span>
+        )}
 
-      {typeMeta && (
-        <PropertyPill className="border-border bg-secondary text-foreground/80">
-          {ticket.type ? TYPE_ICONS[ticket.type] : null}
-          {typeMeta.label}
-        </PropertyPill>
-      )}
+        {ticket.priority && (
+          <span className="text-xs text-muted">
+            <span className="font-semibold text-ink">
+              {formatPriority(ticket.priority)}
+            </span>{" "}
+            severity
+          </span>
+        )}
 
-      {ticket.component && (
-        <PropertyPill className="border-border bg-secondary text-foreground/70">
-          <Terminal className="h-3 w-3" aria-hidden />
-          {ticket.component}
-        </PropertyPill>
-      )}
+        {env && (
+          <span className="text-xs text-muted">
+            <span className="font-semibold text-ink">{env}</span> env
+          </span>
+        )}
+
+        {ticket.component && (
+          <span className="rounded border border-control-border bg-panel px-2 py-0.5 font-mono text-[11px] text-ink">
+            {ticket.component}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onEdit}
+          disabled={editing}
+          className="cursor-pointer rounded-lg border border-control-border bg-control px-2.5 py-1 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Edit ticket
+        </button>
+        <button
+          type="button"
+          onClick={onRegenerate}
+          className="cursor-pointer rounded-lg border border-control-border bg-control px-2.5 py-1 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+        >
+          Regenerate
+        </button>
+      </div>
     </div>
   );
 }
@@ -226,7 +208,8 @@ export function OutputScreen({
   needsReview,
   dirty,
   disabled,
-  onCopy,
+  editing,
+  onEditingChange,
   onExport,
   onEditInputs,
   onReset,
@@ -237,71 +220,61 @@ export function OutputScreen({
   slackLoading,
   slackSent,
   slackConnected,
-  onSendToLinear,
+  linearConnected,
   linearLoading,
   linearSent,
-  linearConnected,
+  onSendToLinear,
 }: OutputScreenProps) {
-  const { openSettings } = useSettingsDialog();
-  const [copied, setCopied] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const router = useRouter();
   const [confirmRegenerate, setConfirmRegenerate] = useState(false);
   const ticket = parseTicketData(ticketText);
   const hasTicket = !!ticketText.trim();
 
-  const handleCopy = async () => {
-    await onCopy();
-    setCopied(true);
-    setTimeout(() => setCopied(false), TOAST_DISMISS_MS);
-  };
+  const openIntegrations = () =>
+    router.push(`${ROUTES.settings}?section=integrations`);
 
   const handleRegenerate = () => {
     if (dirty) {
       setConfirmRegenerate(true);
       return;
     }
-    setEditing(false);
+    onEditingChange(false);
     onRegenerate();
   };
 
-  const crumb =
-    ticket.component ||
-    (ticket.type ? TICKET_TYPE_META[ticket.type as TicketType]?.label : "") ||
-    "Preview";
-
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
+    <div className="flex h-full min-h-0 flex-col bg-canvas">
       {loading ? (
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-3xl px-12 py-8">
-            <p className="micro-label text-muted-foreground">Run progress</p>
+          <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+            <p className="micro-label text-ink-3">Run progress</p>
             <p
               aria-live="polite"
-              className="mt-2 flex items-center gap-2 text-sm text-foreground/80"
+              className="mt-2 flex items-center gap-2 text-sm text-muted"
             >
-              <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+              <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-hairline border-t-primary" />
               {status || "Working…"}
             </p>
-            <div className="mt-4 rounded-lg border border-border bg-card p-4">
+            <div className="mt-4 rounded-xl border border-hairline bg-panel-soft p-4">
               {steps.length > 0 ? (
                 <AgentRunTimeline steps={steps} />
               ) : (
-                <p className="text-sm text-muted-foreground">Starting…</p>
+                <p className="text-sm text-muted">Starting…</p>
               )}
             </div>
           </div>
         </div>
       ) : !hasTicket ? (
         <div className="flex min-h-0 flex-1 items-center justify-center px-6">
-          <div className="flex max-w-md flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-card px-8 py-10 text-center">
-            <span className="flex size-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground">
+          <div className="flex max-w-md flex-col items-center gap-3 rounded-xl border border-dashed border-dash bg-panel-soft px-8 py-10 text-center">
+            <span className="flex size-10 items-center justify-center rounded-full border border-hairline bg-control text-ink-3">
               <Sparkles className="size-5" aria-hidden />
             </span>
             <div>
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-sm font-medium text-ink">
                 Your ticket appears here
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs text-muted">
                 Add a screenshot, tune the options, then hit Generate.
               </p>
             </div>
@@ -309,18 +282,27 @@ export function OutputScreen({
         </div>
       ) : editing ? (
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-4xl space-y-2 px-12 py-8">
-            <p className="text-xs font-medium text-muted-foreground">
-              Edit the generated ticket
-            </p>
+          <div className="mx-auto w-full max-w-4xl space-y-2 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-medium text-muted">
+                Edit the generated ticket
+              </p>
+              <button
+                type="button"
+                onClick={() => onEditingChange(false)}
+                className="cursor-pointer rounded-lg border border-control-border bg-control px-2.5 py-1 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Done
+              </button>
+            </div>
             <Textarea
               value={ticketText}
               onChange={(event) => onTicketChange(event.target.value)}
               rows={22}
-              className="min-h-[420px] w-full resize-y rounded-lg bg-card px-3.5 py-3 font-mono text-xs leading-relaxed"
+              className="min-h-[420px] w-full resize-y rounded-lg px-3.5 py-3 font-mono text-xs leading-relaxed"
               aria-label="Ticket text"
             />
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-ink-3">
               Regenerating will ask for confirmation before overwriting your
               edits.
             </p>
@@ -328,207 +310,210 @@ export function OutputScreen({
         </div>
       ) : !ticket.title && !ticket.description ? (
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-4xl px-12 py-8">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+            <button
+              type="button"
               onClick={handleRegenerate}
-              className="h-7 gap-1.5 rounded-md text-xs"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-2.5 py-1 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
             >
               <RotateCcw className="size-3.5" aria-hidden />
               Regenerate
-            </Button>
-            <pre className="mt-3 whitespace-pre-wrap rounded-lg border border-border bg-card p-4 text-sm text-foreground/70">
+            </button>
+            <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-hairline bg-panel p-4 font-mono text-xs leading-relaxed text-muted">
               {ticketText}
             </pre>
           </div>
         </div>
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <article className="animate-fade-up mx-auto w-full max-w-4xl space-y-6 px-12 py-8">
+          <article className="animate-fade-up mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
             {needsReview && <NeedsReviewBanner />}
             {dirty && (
-              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-ink-3">
                 Edited by you
               </p>
             )}
 
             {ticket.title && (
-              <h1 className="text-xl font-semibold tracking-tight text-foreground">
+              <h1 className="mt-3 text-xl font-semibold tracking-tight text-ink">
                 {ticket.title}
               </h1>
             )}
 
-            <MetaStrip ticket={ticket} />
+            <MetaStrip
+              ticket={ticket}
+              editing={editing}
+              onEdit={() => onEditingChange(true)}
+              onRegenerate={handleRegenerate}
+            />
 
-            {ticket.description && (
-              <section className="space-y-2">
-                <RichText text={ticket.description} />
-              </section>
-            )}
+            <div className="mt-6 max-w-3xl space-y-6">
+              {ticket.description && (
+                <section className="space-y-2">
+                  <SectionHeading>Executive Summary</SectionHeading>
+                  <RichText text={ticket.description} />
+                </section>
+              )}
 
-            {(ticket.expected || ticket.actual) && (
-              <div className="grid grid-cols-1 gap-3">
-                {ticket.expected && (
-                  <div className="">
-                    <p className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                      Expected
-                    </p>
-                    <p className="mt-1.5 text-sm leading-5 text-foreground/85">
-                      {ticket.expected}
-                    </p>
-                  </div>
-                )}
-
-                {ticket.actual && (
-                  <div className="">
-                    <p className="flex items-center gap-1.5 text-xs font-medium text-destructive">
-                      Actual
-                    </p>
-                    <p className="mt-1.5 text-sm leading-5 text-foreground/85">
-                      {ticket.actual}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(ticket.steps?.length ?? 0) > 0 && (
-              <section className="space-y-2">
-                <SectionHeading>Steps to reproduce</SectionHeading>
-                <ol className="space-y-2">
-                  {(ticket.steps ?? []).map((step, index) => (
-                    <li key={index} className="flex gap-3">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center text-[11px] text-muted-foreground">
-                        {index + 1}
-                      </span>
-                      <span className="pt-px text-sm leading-5 text-foreground/90">
-                        {step}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            )}
-
-            {ticket.userStory && (
-              <section className="space-y-2">
-                <SectionHeading>User story</SectionHeading>
-                <p className="text-sm leading-6 text-foreground/90">
-                  {ticket.userStory}
-                </p>
-              </section>
-            )}
-
-            {ticket.scope && (
-              <section className="space-y-2">
-                <SectionHeading>Scope</SectionHeading>
-                <p className="text-sm leading-6 text-foreground/90">
-                  {ticket.scope}
-                </p>
-              </section>
-            )}
-
-            {ticket.summary && (
-              <section className="space-y-2">
-                <SectionHeading>Summary</SectionHeading>
-                <p className="text-sm leading-6 text-foreground/90">
-                  {ticket.summary}
-                </p>
-              </section>
-            )}
-
-            {ticket.sentiment && (
-              <section className="space-y-2">
-                <SectionHeading>Sentiment</SectionHeading>
-                <p className="text-sm leading-6 text-foreground/90">
-                  {ticket.sentiment}
-                </p>
-              </section>
-            )}
-
-            {ticket.location && (
-              <section className="space-y-2">
-                <SectionHeading>Location</SectionHeading>
-                <p className="text-sm leading-6 text-foreground/90">
-                  {ticket.location}
-                </p>
-              </section>
-            )}
-
-            {(ticket.acceptanceCriteria?.length ?? 0) > 0 && (
-              <section className="space-y-2">
-                <SectionHeading>Acceptance criteria</SectionHeading>
-                <BulletList items={ticket.acceptanceCriteria ?? []} />
-              </section>
-            )}
-
-            {(ticket.checklist?.length ?? 0) > 0 && (
-              <section className="space-y-2">
-                <SectionHeading>Checklist</SectionHeading>
-                <BulletList items={ticket.checklist ?? []} />
-              </section>
-            )}
-
-            {(ticket.actionItems?.length ?? 0) > 0 && (
-              <section className="space-y-2">
-                <SectionHeading>Action items</SectionHeading>
-                <BulletList items={ticket.actionItems ?? []} />
-              </section>
-            )}
-
-            {(ticket.environment || ticket.additionalNotes) && (
-              <section className="space-y-3">
-                {ticket.environment && (
-                  <div className="space-y-2">
-                    <SectionHeading>Environment</SectionHeading>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
-                      {ticket.environment}
+              {(ticket.expected || ticket.actual) && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {ticket.expected && (
+                    <div className="space-y-1.5 rounded-xl border border-hairline bg-panel-soft p-4">
+                      <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-emerald-600"
+                          aria-hidden
+                        />
+                        Expected
+                      </p>
+                      <p className="text-xs leading-relaxed text-muted">
+                        {ticket.expected}
+                      </p>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {ticket.additionalNotes && (
-                  <div className="space-y-2">
-                    <SectionHeading>Notes</SectionHeading>
-                    <div className="text-sm text-muted-foreground">
-                      {ticket.additionalNotes}
+                  {ticket.actual && (
+                    <div className="space-y-1.5 rounded-xl border border-hairline bg-panel-soft p-4">
+                      <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-red-600"
+                          aria-hidden
+                        />
+                        Actual
+                      </p>
+                      <p className="text-xs leading-relaxed text-muted">
+                        {ticket.actual}
+                      </p>
                     </div>
-                  </div>
-                )}
-              </section>
-            )}
+                  )}
+                </div>
+              )}
 
-            <div className="flex shrink-0 items-center gap-1">
+              {(ticket.steps?.length ?? 0) > 0 && (
+                <section className="space-y-2">
+                  <SectionHeading>Steps to reproduce</SectionHeading>
+                  <ol className="divide-y divide-hairline overflow-hidden rounded-xl border border-hairline bg-control">
+                    {(ticket.steps ?? []).map((step, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center gap-3 px-3.5 py-2.5 text-xs text-prose"
+                      >
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-control-border bg-panel font-mono text-[11px] text-muted">
+                          {index + 1}
+                        </span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              )}
+
+              {ticket.userStory && (
+                <section className="space-y-2">
+                  <SectionHeading>User story</SectionHeading>
+                  <p className="text-sm leading-relaxed text-prose">
+                    {ticket.userStory}
+                  </p>
+                </section>
+              )}
+
+              {ticket.scope && (
+                <section className="space-y-2">
+                  <SectionHeading>Scope</SectionHeading>
+                  <p className="text-sm leading-relaxed text-prose">
+                    {ticket.scope}
+                  </p>
+                </section>
+              )}
+
+              {ticket.summary && (
+                <section className="space-y-2">
+                  <SectionHeading>Summary</SectionHeading>
+                  <p className="text-sm leading-relaxed text-prose">
+                    {ticket.summary}
+                  </p>
+                </section>
+              )}
+
+              {ticket.sentiment && (
+                <section className="space-y-2">
+                  <SectionHeading>Sentiment</SectionHeading>
+                  <p className="text-sm leading-relaxed text-prose">
+                    {ticket.sentiment}
+                  </p>
+                </section>
+              )}
+
+              {ticket.location && (
+                <section className="space-y-2">
+                  <SectionHeading>Location</SectionHeading>
+                  <p className="text-sm leading-relaxed text-prose">
+                    {ticket.location}
+                  </p>
+                </section>
+              )}
+
+              {(ticket.acceptanceCriteria?.length ?? 0) > 0 && (
+                <section className="space-y-2">
+                  <SectionHeading>Acceptance criteria</SectionHeading>
+                  <BulletList items={ticket.acceptanceCriteria ?? []} />
+                </section>
+              )}
+
+              {(ticket.checklist?.length ?? 0) > 0 && (
+                <section className="space-y-2">
+                  <SectionHeading>Checklist</SectionHeading>
+                  <BulletList items={ticket.checklist ?? []} />
+                </section>
+              )}
+
+              {(ticket.actionItems?.length ?? 0) > 0 && (
+                <section className="space-y-2">
+                  <SectionHeading>Action items</SectionHeading>
+                  <BulletList items={ticket.actionItems ?? []} />
+                </section>
+              )}
+
+              {(ticket.environment || ticket.additionalNotes) && (
+                <section className="space-y-3 rounded-xl border border-dashed border-dash bg-panel-soft p-4">
+                  {ticket.environment && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-semibold text-ink">
+                        Environment
+                      </p>
+                      <p className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-ink">
+                        {ticket.environment}
+                      </p>
+                    </div>
+                  )}
+
+                  {ticket.additionalNotes && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-semibold text-ink">
+                        Notes
+                      </p>
+                      <p className="text-xs leading-relaxed text-muted">
+                        {ticket.additionalNotes}
+                      </p>
+                    </div>
+                  )}
+                </section>
+              )}
+            </div>
+
+            <div className="mt-6 flex shrink-0 flex-wrap items-center gap-1.5">
               {loading ? (
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={onStop}
-                  className="h-7 gap-1.5 rounded-md px-2.5 text-xs"
+                  className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-2.5 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
                 >
                   <Square className="size-3 fill-current" aria-hidden />
                   Stop
-                </Button>
+                </button>
               ) : (
                 hasTicket && (
                   <>
-                    <BarButton
-                      label="Copy MD"
-                      onClick={handleCopy}
-                      disabled={disabled}
-                    >
-                      {copied ? (
-                        <Check
-                          className="h-3.5 w-3.5 text-primary"
-                          aria-hidden
-                        />
-                      ) : (
-                        <Copy className="h-3.5 w-3.5" aria-hidden />
-                      )}
-                    </BarButton>
-
                     <BarButton
                       label="Download"
                       onClick={onExport}
@@ -537,46 +522,39 @@ export function OutputScreen({
                       <Download className="h-3.5 w-3.5" aria-hidden />
                     </BarButton>
 
-                    <BarButton
-                      label={editing ? "Done" : "Edit"}
-                      onClick={() => setEditing((value) => !value)}
-                      disabled={disabled}
-                      active={editing}
-                    >
-                      <Pencil className="h-3.5 w-3.5" aria-hidden />
-                    </BarButton>
-
-                    {slackConnected && (
+                    {slackConnected ? (
                       <BarButton
-                        label="Slack"
+                        label={slackSent ? "Sent to Slack" : "Send to Slack"}
                         onClick={onSendToSlack}
                         disabled={disabled || slackLoading || slackSent}
                       >
                         {slackSent ? (
-                          <Check
-                            className="h-3.5 w-3.5 text-primary"
-                            aria-hidden
-                          />
+                          <Check className="h-3.5 w-3.5 text-primary" aria-hidden />
                         ) : (
                           <Slack className="h-3.5 w-3.5" />
                         )}
                       </BarButton>
+                    ) : (
+                      <BarButton label="Connect Slack" onClick={openIntegrations}>
+                        <Slack className="h-3.5 w-3.5" />
+                      </BarButton>
                     )}
 
-                    {linearConnected && (
+                    {linearConnected ? (
                       <BarButton
-                        label="Linear"
+                        label={linearSent ? "Pushed to Linear" : "Push to Linear"}
                         onClick={onSendToLinear}
                         disabled={disabled || linearLoading || linearSent}
                       >
                         {linearSent ? (
-                          <Check
-                            className="h-3.5 w-3.5 text-primary"
-                            aria-hidden
-                          />
+                          <Check className="h-3.5 w-3.5 text-primary" aria-hidden />
                         ) : (
                           <CgLinear className="h-3.5 w-3.5" />
                         )}
+                      </BarButton>
+                    ) : (
+                      <BarButton label="Connect Linear" onClick={openIntegrations}>
+                        <CgLinear className="h-3.5 w-3.5" />
                       </BarButton>
                     )}
                   </>
@@ -589,7 +567,7 @@ export function OutputScreen({
                 variant="ghost"
                 size="sm"
                 onClick={onReset}
-                className="h-7 gap-1.5 text-xs text-muted-foreground"
+                className="h-7 gap-1.5 text-xs text-muted hover:text-ink"
               >
                 <RotateCcw className="h-3.5 w-3.5" aria-hidden />
                 New ticket
@@ -598,7 +576,7 @@ export function OutputScreen({
                 variant="ghost"
                 size="sm"
                 onClick={onEditInputs}
-                className="h-7 gap-1.5 text-xs text-muted-foreground lg:hidden"
+                className="h-7 gap-1.5 text-xs text-muted hover:text-ink lg:hidden"
               >
                 Edit inputs
               </Button>
@@ -612,7 +590,7 @@ export function OutputScreen({
         onOpenChange={setConfirmRegenerate}
         onConfirm={() => {
           setConfirmRegenerate(false);
-          setEditing(false);
+          onEditingChange(false);
           onRegenerate();
         }}
       />
