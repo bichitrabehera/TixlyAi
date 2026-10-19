@@ -1,4 +1,5 @@
 import {
+  index,
   pgTable,
   text,
   timestamp,
@@ -44,19 +45,25 @@ export const aiKeys = pgTable(
   ],
 );
 
-export const tickets = pgTable("tickets", {
-  id: uuid("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.clerkUserId),
-  ticketType: text("ticket_type"),
-  screenshotUrl: text("screenshot_url"),
-  inputText: text("input_text"),
-  generatedTicket: text("generated_ticket").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const tickets = pgTable(
+  "tickets",
+  {
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.clerkUserId),
+    ticketType: text("ticket_type"),
+    screenshotUrl: text("screenshot_url"),
+    inputText: text("input_text"),
+    generatedTicket: text("generated_ticket").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("tickets_user_created_idx").on(table.userId, table.createdAt),
+  ],
+);
 
 export type User = typeof users.$inferSelect;
 export type AiKeyRow = typeof aiKeys.$inferSelect;

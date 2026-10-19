@@ -10,6 +10,7 @@ import {
 } from "@/lib/db/users";
 import { detectProvider, testAiKey } from "@/lib/ai";
 import { AI_PROVIDERS, type AiProvider } from "@/lib/constants";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export interface AiKeySummary {
   provider: AiProvider;
@@ -18,7 +19,7 @@ export interface AiKeySummary {
 }
 
 function keyHint(key: string): string {
-  if (key.length <= 8) return `${key.slice(0, 2)}…`;
+  if (key.length < 12) return "…";
   return `${key.slice(0, 3)}…${key.slice(-4)}`;
 }
 
@@ -79,6 +80,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // POST triggers a paid provider call (testAiKey) — keep it cheap to spam.
+    const rateCheck = checkRateLimit(`ai-key:${userId}`, 10);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Try again later." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.ceil(rateCheck.resetIn / 1000)) },
+        },
+      );
+    }
+
     const body = await request.json();
     const { key } = body;
 
@@ -120,9 +133,11 @@ export async function POST(request: Request) {
       message: `Connected to ${providerName}.`,
     });
   } catch (error) {
+    // Never echo raw error text here — env misconfig details ("Invalid key
+    // length", file paths) must not reach the client.
     console.error("Error saving AI key:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to save API key" },
+      { error: "Failed to save API key" },
       { status: 500 },
     );
   }
@@ -135,16 +150,29 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const providerParam = new URL(request.url).searchParams.get("provider");
-    const provider = providerParam as AiProvider | null;
+    const params = new URL(request.url).searchParams;
+    const providerParam = params.get("provider");
+    const wantsAll = params.get("all") === "true";
 
-    if (provider && AI_PROVIDERS.includes(provider)) {
-      await deleteAiKeyForProvider(userId, provider);
-    } else {
+    // Bulk delete is explicit (`?all=true`); an unrecognized provider is a
+    // 400 — never silently fall through to wiping every key.
+    if (wantsAll && !providerParam) {
       await deleteAllAiKeys(userId);
+      return NextResponse.json({ success: true, keys: await summarizeKeys() });
     }
 
-    return NextResponse.json({ success: true, keys: await summarizeKeys() });
+    if (providerParam && AI_PROVIDERS.includes(providerParam as AiProvider)) {
+      await deleteAiKeyForProvider(userId, providerParam as AiProvider);
+      return NextResponse.json({ success: true, keys: await summarizeKeys() });
+    }
+
+    return NextResponse.json(
+      {
+        error:
+          "Specify a valid provider (openai, anthropic, openrouter) or pass all=true.",
+      },
+      { status: 400 },
+    );
   } catch (error) {
     console.error("Error deleting AI key:", error);
     return NextResponse.json(

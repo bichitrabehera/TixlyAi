@@ -95,15 +95,6 @@ export function SettingsPage() {
         </SectionCard>
       </div>
 
-      <div id="notifications" className="scroll-mt-4">
-        <NotificationsSection
-          key={String(settings.notificationEmail)}
-          settings={settings}
-          onUpdate={fetchSettings}
-          showMessage={showMessage}
-        />
-      </div>
-
       <div id="account" className="scroll-mt-4">
         <AccountSection showMessage={showMessage} />
       </div>

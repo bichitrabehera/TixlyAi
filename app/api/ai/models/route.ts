@@ -5,6 +5,7 @@ import { decrypt } from "@/lib/crypto";
 import { listAiKeys, setAiKeyStatus } from "@/lib/db/users";
 import { AI_PROVIDERS, type AiProvider } from "@/lib/constants";
 import { AI_MODEL_CONFIG, modelVisionHeuristic } from "@/lib/ai/config";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -125,6 +126,19 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // This route decrypts stored keys and makes up to three outbound provider
+    // calls per request — keep it cheap to spam.
+    const rateCheck = checkRateLimit(`ai-models:${userId}`, 30);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Try again later." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.ceil(rateCheck.resetIn / 1000)) },
+        },
+      );
     }
 
     const rows = await listAiKeys(userId);

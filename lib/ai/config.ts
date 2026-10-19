@@ -1,4 +1,9 @@
-import { TEMPERATURE_MAP, type AiProvider } from "@/lib/constants";
+import {
+  MAX_NOTE_LENGTH,
+  MAX_OCR_TEXT_LENGTH,
+  TEMPERATURE_MAP,
+  type AiProvider,
+} from "@/lib/constants";
 
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
@@ -18,8 +23,8 @@ export const AI_MODEL_CONFIG: Record<
 };
 
 export const AGENT_LIMITS = {
-  maxNoteLength: 4_000,
-  maxOcrLength: 30_000,
+  maxNoteLength: MAX_NOTE_LENGTH,
+  maxOcrLength: MAX_OCR_TEXT_LENGTH,
   modelCallRunLimit: 6,
   modelRetryMax: 2,
   graphRecursionLimit: 100,

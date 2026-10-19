@@ -1,17 +1,44 @@
 import { z } from "zod";
 import {
   AI_PROVIDERS,
+  MAX_IMAGE_DATA_URI_LENGTH,
+  MAX_NOTE_LENGTH,
+  MAX_OCR_TEXT_LENGTH,
   PRIORITIES,
   TICKET_TYPES,
   DETAIL_LEVELS,
   TICKET_TITLE_MAX_LENGTH,
 } from "@/lib/constants";
 
+/**
+ * Screenshots must come from https (or localhost in dev) so a persisted
+ * javascript:/data: URL can never end up rendered or linked later.
+ */
+function isSafeScreenshotUrl(value: string): boolean {
+  return (
+    value.startsWith("https://") ||
+    /^http:\/\/localhost(:\d+)?(\/|$)/.test(value)
+  );
+}
+
 export const TicketRequestSchema = z.object({
-  ocrText: z.string().optional().nullable(),
-  note: z.string().optional().nullable(),
-  screenshotUrl: z.string().url().optional().nullable(),
-  imageDataUri: z.string().optional().nullable(),
+  ocrText: z.string().max(MAX_OCR_TEXT_LENGTH).optional().nullable(),
+  note: z.string().max(MAX_NOTE_LENGTH).optional().nullable(),
+  screenshotUrl: z
+    .string()
+    .url()
+    .refine(isSafeScreenshotUrl, {
+      message: "Screenshot URL must use https",
+    })
+    .optional()
+    .nullable(),
+  imageDataUri: z
+    .string()
+    .max(MAX_IMAGE_DATA_URI_LENGTH, {
+      message: "Image is larger than 10 MB",
+    })
+    .optional()
+    .nullable(),
   preferredPriority: z.enum(PRIORITIES).optional(),
   language: z.string().optional(),
   ticketType: z.enum(TICKET_TYPES).optional(),

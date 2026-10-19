@@ -9,6 +9,14 @@ function getKey(): Buffer {
   if (!key) {
     throw new Error("ENCRYPTION_KEY environment variable is not set");
   }
+  // Fail fast with a precise message: Buffer.from(key, "hex") silently
+  // truncates garbage input and createCipheriv would later throw a cryptic
+  // "Invalid key length" mid-request.
+  if (!/^[0-9a-fA-F]{64}$/.test(key)) {
+    throw new Error(
+      "ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes). Generate one with: openssl rand -hex 32",
+    );
+  }
   return Buffer.from(key, "hex");
 }
 

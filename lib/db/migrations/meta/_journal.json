@@ -1,48 +1,20 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
       "version": "7",
       "when": 1778928482897,
-      "tag": "0000_skinny_silver_surfer",
+      "tag": "0000_greedy_switch",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1778951897159,
-      "tag": "0001_normal_purifiers",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1782808316570,
-      "tag": "0002_flawless_valeria_richards",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1786383741892,
-      "tag": "0003_superb_xavin",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1786463879437,
-      "tag": "0004_icy_sleeper",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1792170060352,
-      "tag": "0005_huge_korg",
+      "when": 1792403973297,
+      "tag": "0001_noisy_agent_zero",
       "breakpoints": true
     }
-  ]
+  ],
+  "version": "7",
+  "dialect": "postgresql"
 }

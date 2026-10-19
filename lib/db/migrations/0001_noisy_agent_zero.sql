@@ -1,0 +1,1 @@
+CREATE INDEX "tickets_user_created_idx" ON "tickets" USING btree ("user_id","created_at");

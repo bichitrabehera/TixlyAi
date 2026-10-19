@@ -4,21 +4,19 @@ import { desc, eq, and } from "drizzle-orm";
 import { type AiProvider } from "@/lib/constants";
 
 export async function getOrCreateUser(clerkUserId: string, email: string) {
-  const [user] = await db.select().from(users).where(eq(users.clerkUserId, clerkUserId));
-
-  if (user) {
-    return user;
-  }
-
-  const [newUser] = await db
+  // Atomic upsert: the old select-then-insert raced on concurrent first
+  // requests (ticket save + key save) and threw a unique violation.
+  const [user] = await db
     .insert(users)
-    .values({
-      clerkUserId,
-      email,
+    .values({ clerkUserId, email })
+    .onConflictDoUpdate({
+      target: users.clerkUserId,
+      // On conflict keep the stored email unless we have a real one.
+      set: { email: email || undefined },
     })
     .returning();
 
-  return newUser;
+  return user;
 }
 
 export async function getUserByClerkId(clerkUserId: string) {

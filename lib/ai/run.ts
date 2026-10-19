@@ -1,11 +1,16 @@
 import { AIMessage } from "@langchain/core/messages";
 import { decrypt } from "@/lib/crypto";
-import type { AiProvider } from "@/lib/constants";
+import { PROVIDER_LABELS, type AiProvider } from "@/lib/constants";
 import type { TicketRequest } from "@/lib/tickets/schemas";
 import { AI_MODEL_CONFIG, RUN_STEPS, modelVisionHeuristic, AGENT_LIMITS } from "./config";
 import { createTicketAgent } from "./agent";
 import { buildUserText } from "./prompts";
 import { GuardrailViolationError } from "./middleware";
+import {
+  NoStructuredOutputError,
+  RUN_FAILED_MESSAGE,
+  isAuthModelError,
+} from "./errors";
 import type { RunStreamEvent, StreamStep } from "./stream-types";
 
 export interface StreamRunOptions {
@@ -146,7 +151,7 @@ async function* driveRun(
   }
 
   if (!structured) {
-    throw new Error("The agent finished without producing a structured ticket.");
+    throw new NoStructuredOutputError();
   }
 
   if (toolsActive) {
@@ -205,6 +210,26 @@ export async function* streamTicketRun(
     return event;
   };
 
+  /**
+   * Whitelisted error events: guardrail messages are authored by us and safe
+   * to show, auth failures get a friendly key message (and mark the run so
+   * the route can invalidate the stored key), and everything else collapses
+   * to a fixed message — raw provider/DB error text never reaches the client.
+   */
+  const failEvent = (err: unknown): RunStreamEvent => {
+    if (err instanceof GuardrailViolationError) {
+      return { type: "error", message: err.message, code: err.code };
+    }
+    if (isAuthModelError(err)) {
+      return {
+        type: "error",
+        message: `Your ${PROVIDER_LABELS[opts.provider]} key was rejected. Replace it in API keys and try again.`,
+        code: "key_invalid",
+      };
+    }
+    return { type: "error", message: RUN_FAILED_MESSAGE, code: "run_failed" };
+  };
+
   const req = opts.req;
   const hasImage = Boolean(req.screenshotUrl || req.imageDataUri);
   const hasText = Boolean(req.ocrText?.trim() || req.note?.trim());
@@ -254,14 +279,16 @@ export async function* streamTicketRun(
     result = next.value;
   } catch (err) {
     const isGuardrail = err instanceof GuardrailViolationError;
-    const canFallback = includeImage && hasText && !isGuardrail;
+    const isNoOutput = err instanceof NoStructuredOutputError;
+    const isAuth = isAuthModelError(err);
+    // Fallback exists to recover from vision failures — never to buy a fresh
+    // model-call budget after the cost cap, retry auth failures, or re-attempt
+    // a run that already failed schema validation.
+    const canFallback =
+      includeImage && hasText && !isGuardrail && !isNoOutput && !isAuth;
 
     if (!canFallback) {
-      yield record({
-        type: "error",
-        message: err instanceof Error ? err.message : "Failed to generate ticket",
-        code: isGuardrail ? err.code : "run_failed",
-      });
+      yield record(failEvent(err));
       return;
     }
 
@@ -283,13 +310,7 @@ export async function* streamTicketRun(
       result = next.value;
       yield record({ type: "step", step: { ...RUN_STEPS.fallback, status: "done" } });
     } catch (retryErr) {
-      yield record({
-        type: "error",
-        message:
-          retryErr instanceof Error ? retryErr.message : "Failed to generate ticket",
-        code:
-          retryErr instanceof GuardrailViolationError ? retryErr.code : "run_failed",
-      });
+      yield record(failEvent(retryErr));
       return;
     }
   }
@@ -304,23 +325,27 @@ export async function* streamTicketRun(
   }
 
   const structured = result.structured as { needsHumanReview?: boolean };
-  const needsReview = Boolean(structured.needsHumanReview);
+  // A guardrail hit always forces review server-side — never trust the model
+  // to set the flag when the whole point of the hit is that instructions were
+  // contestable.
+  const guardrailHit = result.guardrailHits.length > 0;
+  const needsReview = Boolean(structured.needsHumanReview) || guardrailHit;
 
   yield record({ type: "step", step: { ...RUN_STEPS.validateOutput, status: "running" } });
   yield record({ type: "step", step: { ...RUN_STEPS.validateOutput, status: "done" } });
 
-  if (result.guardrailHits.length > 0) {
+  if (guardrailHit) {
     yield {
       type: "guardrail",
       level: "warn",
       message:
-        "Suspicious instructions were detected in your text and ignored. The ticket was flagged for human review.",
+        "Suspicious instructions were detected in your text. Review the ticket carefully before using it — it has been flagged for human review.",
     };
   }
 
   yield {
     type: "done",
-    ticket: JSON.stringify(structured),
+    ticket: JSON.stringify({ ...structured, needsHumanReview: needsReview }),
     needsReview,
     steps,
     usage: {

@@ -96,7 +96,9 @@ export function IntegrationsPanel() {
       return;
     }
     const redirectUri = `${window.location.origin}/api/slack/callback`;
-    const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.NEXT_PUBLIC_SLACK_CLIENT_ID}&scope=${SLACK_OAUTH_SCOPES}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    const state = crypto.randomUUID();
+    document.cookie = `tixly_slack_state=${state}; Path=/api/slack/callback; Max-Age=600; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
+    const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.NEXT_PUBLIC_SLACK_CLIENT_ID}&scope=${SLACK_OAUTH_SCOPES}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
     window.location.href = url;
   };
 

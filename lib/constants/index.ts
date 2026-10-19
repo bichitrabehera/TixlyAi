@@ -96,6 +96,10 @@ export const PROVIDER_MODEL_LABEL: Record<AiProvider, string> = {
 };
 
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+/** Base64 length cap for a 10 MB image data URI (~4/3 of byte size). */
+export const MAX_IMAGE_DATA_URI_LENGTH = 14_000_000;
+export const MAX_NOTE_LENGTH = 4_000;
+export const MAX_OCR_TEXT_LENGTH = 30_000;
 export const ALLOWED_IMAGE_MIME = [
   "image/png",
   "image/jpeg",

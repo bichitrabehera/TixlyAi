@@ -14,6 +14,7 @@ import { eq, sql } from "drizzle-orm";
 import { TicketRequestSchema, type TicketRequest } from "@/lib/tickets/schemas";
 import { flagForHumanReview } from "@/lib/tickets/humanInLoop";
 import { streamTicketRun, type RunStreamEvent } from "@/lib/ai";
+import { RUN_FAILED_MESSAGE, isAuthModelError } from "@/lib/ai/errors";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -135,24 +136,49 @@ export async function POST(request: Request) {
   }
 
   const encoder = new TextEncoder();
+  let clientGone = false;
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      let closed = false;
       const send = (event: RunStreamEvent & { ticketId?: string }) => {
-        controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
+        } catch {
+          // Controller already closed/cancelled by the client disconnecting.
+          closed = true;
+        }
       };
 
+      const markGone = () => {
+        clientGone = true;
+      };
+      request.signal.addEventListener("abort", markGone, { once: true });
+
       try {
-        for await (const event of streamTicketRun({
+        const generator = streamTicketRun({
           provider,
           encryptedKey,
           req,
           userId,
-        })) {
+        });
+
+        for await (const event of generator) {
+          // Client hit Stop or disconnected: abandoning the loop stops the
+          // generator from pulling further model calls, and nothing is saved.
+          if (clientGone) break;
+
+          if (event.type === "error" && event.code === "key_invalid") {
+            setAiKeyStatus(userId, provider, "invalid").catch(() => {});
+          }
+
           if (event.type !== "done") {
             send(event);
             continue;
           }
+
+          if (clientGone) break;
 
           let ticketId: string | undefined;
           try {
@@ -190,14 +216,7 @@ export async function POST(request: Request) {
         }
       } catch (error) {
         console.error("Error streaming ticket generation:", error);
-        const rawMessage =
-          error instanceof Error ? error.message : "Failed to generate ticket";
-        const authRejected =
-          /api key|unauthorized|authentication|invalid x-api-key|permission|401/i.test(
-            rawMessage,
-          );
-
-        if (authRejected) {
+        if (isAuthModelError(error)) {
           setAiKeyStatus(userId, provider, "invalid").catch(() => {});
           send({
             type: "error",
@@ -207,13 +226,21 @@ export async function POST(request: Request) {
         } else {
           send({
             type: "error",
-            message: rawMessage,
+            message: RUN_FAILED_MESSAGE,
             code: "internal_error",
           });
         }
       } finally {
-        controller.close();
+        request.signal.removeEventListener("abort", markGone);
+        try {
+          controller.close();
+        } catch {
+          // Already closed by the client.
+        }
       }
+    },
+    cancel() {
+      clientGone = true;
     },
   });
 
