@@ -86,6 +86,7 @@ export async function POST(request: Request) {
     openai: "OpenAI",
     anthropic: "Anthropic",
     openrouter: "OpenRouter",
+    google: "Google",
   };
 
   const keyRows = await listAiKeys(userId);

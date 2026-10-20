@@ -83,11 +83,11 @@ export function AppSidebar({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Link href="/dashboard">
           <div className="flex h-9 items-center flex gap-2.5 px-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-tile">
-              <Ticket className="h-3.5 w-3.5 text-neutral-200" aria-hidden />
+            <span className="flex h-6 w-6 items-center justify-center rounded-md border border-primary/30 bg-brand-tile">
+              <Ticket className="h-4 w-4 text-ink" aria-hidden />
             </span>
             <span className="text-sm font-bold tracking-tight text-ink">
               Tixly
@@ -113,7 +113,7 @@ export function AppSidebar({ className }: { className?: string }) {
         </nav>
       </div>
 
-      <div className="space-y-0.5">
+      <div className="space-y-1">
         <Link
           href={`${ROUTES.settings}?section=integrations`}
           className="flex w-full items-center rounded-lg px-2.5 py-1.5 text-sm text-muted transition-colors hover:bg-panel hover:text-ink"

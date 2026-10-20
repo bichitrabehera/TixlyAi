@@ -26,6 +26,7 @@ const providerHint: Record<AiProvider, string> = {
   openai: "sk-...",
   openrouter: "sk-or-v1-...",
   anthropic: "sk-ant-...",
+  google: "AIza...",
 };
 
 function StatusBadge({ row }: { row?: KeyRow }) {
@@ -168,121 +169,123 @@ export function ApiKeysPanel({ onChanged }: { onChanged?: () => void }) {
         )}
 
         {keys &&
-          (["openai", "openrouter", "anthropic"] as const).map((provider) => {
-            const row = keys.find((k) => k.provider === provider);
-            const isEditing = editing === provider;
+          (["openai", "openrouter", "anthropic", "google"] as const).map(
+            (provider) => {
+              const row = keys.find((k) => k.provider === provider);
+              const isEditing = editing === provider;
 
-            return (
-              <div key={provider} className="px-3.5 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="text-sm font-medium text-foreground">
-                      {PROVIDER_LABELS[provider]}
-                    </span>
-                    <StatusBadge row={row} />
-                    {row?.hint && (
-                      <span className="truncate font-mono text-xs text-muted-foreground">
-                        {row.hint}
+              return (
+                <div key={provider} className="px-3.5 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {PROVIDER_LABELS[provider]}
                       </span>
+                      <StatusBadge row={row} />
+                      {row?.hint && (
+                        <span className="truncate font-mono text-xs text-muted-foreground">
+                          {row.hint}
+                        </span>
+                      )}
+                    </div>
+
+                    {!isEditing && (
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs"
+                          onClick={() => startEdit(provider)}
+                        >
+                          {row ? (
+                            <Trash2 className="size-3.5" aria-hidden />
+                          ) : (
+                            <Plus className="size-3.5" aria-hidden />
+                          )}
+                          {row ? "Replace" : "Add key"}
+                        </Button>
+                        {row && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label={`Remove ${PROVIDER_LABELS[provider]} key`}
+                            onClick={() => removeKey(provider)}
+                            disabled={removingProvider === provider}
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          >
+                            {removingProvider === provider ? (
+                              <Loader2
+                                className="size-4 animate-spin"
+                                aria-hidden
+                              />
+                            ) : (
+                              <Trash2 className="size-4" aria-hidden />
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
 
-                  {!isEditing && (
-                    <div className="flex shrink-0 items-center gap-1.5">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 text-xs"
-                        onClick={() => startEdit(provider)}
-                      >
-                        {row ? (
-                          <Trash2 className="size-3.5" aria-hidden />
-                        ) : (
-                          <Plus className="size-3.5" aria-hidden />
-                        )}
-                        {row ? "Replace" : "Add key"}
-                      </Button>
-                      {row && (
+                  {isEditing && (
+                    <div className="mt-2.5 space-y-2">
+                      <div className="relative">
+                        <Input
+                          type={showKey ? "text" : "password"}
+                          autoComplete="off"
+                          value={keyValue}
+                          onChange={(e) => setKeyValue(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && saveKey()}
+                          placeholder={providerHint[provider]}
+                          aria-label={`${PROVIDER_LABELS[provider]} API key`}
+                          className="h-9 pr-10 font-mono text-xs"
+                        />
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          aria-label={`Remove ${PROVIDER_LABELS[provider]} key`}
-                          onClick={() => removeKey(provider)}
-                          disabled={removingProvider === provider}
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          aria-label={showKey ? "Hide key" : "Show key"}
+                          onClick={() => setShowKey((s) => !s)}
+                          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         >
-                          {removingProvider === provider ? (
+                          {showKey ? <EyeOff /> : <Eye />}
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-8"
+                          onClick={saveKey}
+                          disabled={saving || !keyValue.trim()}
+                        >
+                          {saving && (
                             <Loader2
-                              className="size-4 animate-spin"
+                              className="size-3.5 animate-spin"
                               aria-hidden
                             />
-                          ) : (
-                            <Trash2 className="size-4" aria-hidden />
                           )}
+                          {saving ? "Testing key…" : "Save key"}
                         </Button>
-                      )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 text-xs"
+                          onClick={cancelEdit}
+                          disabled={saving}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
-
-                {isEditing && (
-                  <div className="mt-2.5 space-y-2">
-                    <div className="relative">
-                      <Input
-                        type={showKey ? "text" : "password"}
-                        autoComplete="off"
-                        value={keyValue}
-                        onChange={(e) => setKeyValue(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && saveKey()}
-                        placeholder={providerHint[provider]}
-                        aria-label={`${PROVIDER_LABELS[provider]} API key`}
-                        className="h-9 pr-10 font-mono text-xs"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        aria-label={showKey ? "Hide key" : "Show key"}
-                        onClick={() => setShowKey((s) => !s)}
-                        className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showKey ? <EyeOff /> : <Eye />}
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        className="h-8"
-                        onClick={saveKey}
-                        disabled={saving || !keyValue.trim()}
-                      >
-                        {saving && (
-                          <Loader2
-                            className="size-3.5 animate-spin"
-                            aria-hidden
-                          />
-                        )}
-                        {saving ? "Testing key…" : "Save key"}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-xs"
-                        onClick={cancelEdit}
-                        disabled={saving}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              );
+            },
+          )}
       </div>
 
       {error && (

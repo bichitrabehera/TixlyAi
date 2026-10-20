@@ -1,9 +1,11 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatAnthropic } from "@langchain/anthropic";
+import { ChatGoogle } from "@langchain/google";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import type { AiProvider } from "@/lib/constants";
 import { AI_MODEL_CONFIG } from "./config";
 
-export type ChatModelInstance = ChatOpenAI | ChatAnthropic;
+export type ChatModelInstance = BaseChatModel;
 
 /**
  * OpenAI reasoning models (o-series and the gpt-5 family) reject any
@@ -40,6 +42,15 @@ export function createChatModel(
       temperature,
       maxTokens: 4096,
       maxRetries: 0,
+    });
+  }
+
+  if (provider === "google") {
+    return new ChatGoogle({
+      apiKey,
+      model: modelName,
+      temperature,
+      maxOutputTokens: 4096,
     });
   }
 

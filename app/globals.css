@@ -54,44 +54,62 @@
 }
 
 :root {
-  --radius: 0.65rem;
-  --shell: #eeede8;
-  --canvas: #faf9f5;
-  --card: #f3f2ed;
-  --panel-soft: color-mix(in srgb, var(--card) 55%, transparent);
+  color-scheme: light;
+
+  --radius: 0.75rem;
+
+  /* Surfaces */
+  --shell: #fafafa;
+  --canvas: #ffffff;
+  --card: #ffffff;
+  --panel-soft: #f4f4f5;
   --control: #ffffff;
-  --control-border: #e3e3e3;
-  --border: #e6e6e6;
-  --dash: #d6d6d6;
-  --track: #ececec;
-  --ink: #181816;
-  --ink-2: #686762;
-  --ink-3: #9b9992;
-  --prose: #2c2c2a;
-  --primary: #2d6a4f;
-  --primary-hover: #245a42;
+  --control-border: #e4e4e7;
+
+  /* Borders */
+  --border: #e4e4e7;
+  --dash: #d4d4d8;
+  --track: #ededee;
+
+  /* Typography */
+  --ink: #09090b;
+  --ink-2: #63636b;
+  --ink-3: #9a9aa2;
+  --prose: #27272a;
+
+  /* Green accent (only color in the system) */
+  --primary: #16a34a;
+  --primary-hover: #15803d;
   --primary-foreground: #ffffff;
-  --nav-active: #e2e5f3;
-  --nav-active-fg: #252b42;
-  --brand: #f3d060;
-  --brand-border: #e0be4b;
-  --brand-tile: #4d8871;
+
+  /* Navigation (neutral, green only on text) */
+  --nav-active: #f4f4f5;
+  --nav-active-fg: #09090b;
+
+  /* Brand */
+  --brand: #16a34a;
+  --brand-border: #15803d;
+  --brand-tile: #f4f4f5;
+
+  /* Status */
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
+
+  /* Semantic aliases */
   --bg: var(--shell);
   --text: var(--ink);
   --muted: var(--ink-2);
   --card-2: var(--card);
   --background: var(--shell);
-  --foreground: var(--text);
-  --card-foreground: var(--text);
+  --foreground: var(--ink);
+  --card-foreground: var(--ink);
   --popover: var(--canvas);
-  --popover-foreground: var(--text);
-  --secondary: var(--card-2);
-  --secondary-foreground: var(--text);
-  --muted-foreground: var(--muted);
-  --accent: var(--card-2);
-  --accent-foreground: var(--text);
+  --popover-foreground: var(--ink);
+  --secondary: var(--panel-soft);
+  --secondary-foreground: var(--ink);
+  --muted-foreground: var(--ink-2);
+  --accent: #f4f4f5;
+  --accent-foreground: #09090b;
   --input: var(--control-border);
   --ring: var(--primary);
   --glow: color-mix(in srgb, var(--primary) 16%, transparent);
@@ -100,47 +118,63 @@
 .dark {
   color-scheme: dark;
 
-  --radius: 0.65rem;
-  --shell: #14120f;
-  --canvas: #1b1915;
-  --card: #231f1a;
-  --panel-soft: color-mix(in srgb, var(--card) 55%, transparent);
-  --control: #2a251f;
-  --control-border: #3a342b;
-  --border: #302b24;
-  --dash: #4a4338;
-  --track: #2e2922;
-  --ink: #f3efe4;
-  --ink-2: #b0a995;
-  --ink-3: #7a7464;
-  --prose: #e2ddcf;
-  --primary: #6bb88a;
-  --primary-hover: #7cc79a;
-  --primary-foreground: #0d1a12;
-  --nav-active: #25382d;
-  --nav-active-fg: #cfe8d9;
-  --brand: #f3d060;
-  --brand-border: #c9a63a;
-  --brand-tile: #3f7a62;
-  --destructive: #e5484d;
-  --destructive-foreground: #ffffff;
+  --radius: 0.75rem;
+
+  /* Surfaces */
+  --shell: #09090b;
+  --canvas: #0f0f11;
+  --card: #141416;
+  --panel-soft: #1a1a1d;
+  --control: #141416;
+  --control-border: #2a2a2e;
+
+  /* Borders */
+  --border: #232326;
+  --dash: #3a3a3f;
+  --track: #232326;
+
+  /* Typography */
+  --ink: #fafafa;
+  --ink-2: #a1a1aa;
+  --ink-3: #71717a;
+  --prose: #e4e4e7;
+
+  /* Green accent */
+  --primary: #22c55e;
+  --primary-hover: #4ade80;
+  --primary-foreground: #052e16;
+
+  /* Navigation */
+  --nav-active: #1f1f23;
+  --nav-active-fg: #fafafa;
+
+  /* Brand */
+  --brand: #22c55e;
+  --brand-border: #15803d;
+  --brand-tile: #1f1f23;
+
+  /* Status */
+  --destructive: #f87171;
+  --destructive-foreground: #240c0c;
+
+  /* Semantic aliases */
   --bg: var(--shell);
   --text: var(--ink);
   --muted: var(--ink-2);
   --card-2: var(--card);
   --background: var(--shell);
-  --foreground: var(--text);
-  --card-foreground: var(--text);
+  --foreground: var(--ink);
+  --card-foreground: var(--ink);
   --popover: var(--canvas);
-  --popover-foreground: var(--text);
-  --secondary: var(--card-2);
-  --secondary-foreground: var(--text);
-  --muted-foreground: var(--muted);
-  --accent: var(--card-2);
-  --accent-foreground: var(--text);
+  --popover-foreground: var(--ink);
+  --secondary: var(--panel-soft);
+  --secondary-foreground: var(--ink);
+  --muted-foreground: var(--ink-2);
+  --accent: #1f1f23;
+  --accent-foreground: #fafafa;
   --input: var(--control-border);
   --ring: var(--primary);
-  --glow: color-mix(in srgb, var(--primary) 26%, transparent);
+  --glow: color-mix(in srgb, var(--primary) 24%, transparent);
 }
 
 /* BASE */

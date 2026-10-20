@@ -16,6 +16,7 @@ export function detectProvider(apiKey: string): AiProvider | null {
   if (apiKey.startsWith("sk-or-v1-")) return "openrouter";
   if (apiKey.startsWith("sk-ant-")) return "anthropic";
   if (apiKey.startsWith("sk-")) return "openai";
+  if (apiKey.startsWith("AQ.")) return "google";
   return null;
 }
 

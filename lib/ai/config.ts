@@ -20,6 +20,7 @@ export const AI_MODEL_CONFIG: Record<
   openai: { model: "gpt-4o" },
   anthropic: { model: "claude-sonnet-4-20250514" },
   openrouter: { model: "openrouter/auto", baseURL: OPENROUTER_BASE_URL },
+  google: { model: "gemini-2.0-flash" },
 };
 
 export const AGENT_LIMITS = {

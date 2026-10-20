@@ -1,4 +1,9 @@
-export const AI_PROVIDERS = ["openai", "openrouter", "anthropic"] as const;
+export const AI_PROVIDERS = [
+  "openai",
+  "openrouter",
+  "anthropic",
+  "google",
+] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
 export const LINEAR_API_URL = "https://api.linear.app/graphql";
 export const SLACK_API_BASE = "https://slack.com/api";
@@ -19,7 +24,13 @@ export const RATE_LIMIT_WINDOW_MS = 60_000;
 export const RATE_LIMIT_MAX_REQUESTS = 5;
 export const RATE_LIMIT_CLEANUP_INTERVAL_MS = 60_000;
 
-export const TICKET_TYPES = ["bug", "feature", "ui", "feedback", "task"] as const;
+export const TICKET_TYPES = [
+  "bug",
+  "feature",
+  "ui",
+  "feedback",
+  "task",
+] as const;
 export type TicketType = (typeof TICKET_TYPES)[number];
 
 export const TICKET_TYPE_META: Record<
@@ -87,12 +98,14 @@ export const PROVIDER_LABELS: Record<AiProvider, string> = {
   openai: "OpenAI",
   openrouter: "OpenRouter",
   anthropic: "Anthropic",
+  google: "Google",
 };
 
 export const PROVIDER_MODEL_LABEL: Record<AiProvider, string> = {
   openai: "GPT-4o",
   openrouter: "OpenRouter Auto",
   anthropic: "Claude Sonnet 4",
+  google: "Gemini 2.0",
 };
 
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -107,7 +120,14 @@ export const ALLOWED_IMAGE_MIME = [
   "image/heic",
   "image/heif",
 ] as const;
-export const ALLOWED_IMAGE_EXT = [".png", ".jpg", ".jpeg", ".webp", ".heic", ".heif"];
+export const ALLOWED_IMAGE_EXT = [
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".heic",
+  ".heif",
+];
 
 export const OCR_LANGUAGE = "eng";
 export const SLACK_OAUTH_SCOPES = "chat:write,im:write,im:read,users:read";

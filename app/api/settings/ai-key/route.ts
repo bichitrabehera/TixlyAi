@@ -87,7 +87,9 @@ export async function POST(request: Request) {
         { error: "Too many attempts. Try again later." },
         {
           status: 429,
-          headers: { "Retry-After": String(Math.ceil(rateCheck.resetIn / 1000)) },
+          headers: {
+            "Retry-After": String(Math.ceil(rateCheck.resetIn / 1000)),
+          },
         },
       );
     }
@@ -96,14 +98,20 @@ export async function POST(request: Request) {
     const { key } = body;
 
     if (!key || typeof key !== "string") {
-      return NextResponse.json({ error: "API key is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "API key is required" },
+        { status: 400 },
+      );
     }
 
     const trimmedKey = key.trim();
     const provider = detectProvider(trimmedKey);
     if (!provider) {
       return NextResponse.json(
-        { error: "Unrecognized API key format. Supported: OpenAI (sk-...), OpenRouter (sk-or-v1-...), Anthropic (sk-ant-...)." },
+        {
+          error:
+            "Unrecognized API key format. Supported: OpenAI (sk-...), OpenRouter (sk-or-v1-...), Anthropic (sk-ant-...).",
+        },
         { status: 400 },
       );
     }
@@ -111,19 +119,28 @@ export async function POST(request: Request) {
     const valid = await testAiKey(trimmedKey, provider);
     if (!valid) {
       return NextResponse.json(
-        { error: `API key is invalid or the ${provider} service is unreachable.` },
+        {
+          error: `API key is invalid or the ${provider} service is unreachable.`,
+        },
         { status: 400 },
       );
     }
 
-    await upsertAiKey(userId, provider, encrypt(trimmedKey), keyHint(trimmedKey));
+    await upsertAiKey(
+      userId,
+      provider,
+      encrypt(trimmedKey),
+      keyHint(trimmedKey),
+    );
 
     const providerName =
       provider === "openrouter"
         ? "OpenRouter"
         : provider === "anthropic"
           ? "Anthropic"
-          : "OpenAI";
+          : provider === "google"
+            ? "Google"
+            : "OpenAI";
 
     return NextResponse.json({
       success: true,
@@ -169,7 +186,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Specify a valid provider (openai, anthropic, openrouter) or pass all=true.",
+          "Specify a valid provider (openai, anthropic, openrouter , google) or pass all=true.",
       },
       { status: 400 },
     );

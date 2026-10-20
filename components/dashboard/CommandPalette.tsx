@@ -10,14 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import {
-  History,
-  Search,
-  Settings,
-  Sparkles,
-  Ticket,
-  Zap,
-} from "lucide-react";
+import { History, Search, Settings, Sparkles, Ticket, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -204,7 +197,7 @@ function CommandPaletteBody({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center gap-2 border-b border-(--border) px-4">
+      <div className="flex items-center p-1 gap-2 border-b border-(--border) px-4">
         <Search className="size-4 shrink-0 text-(--muted)" />
         <Input
           autoFocus
@@ -215,7 +208,7 @@ function CommandPaletteBody({ onClose }: { onClose: () => void }) {
           }}
           onKeyDown={onKeyDown}
           placeholder="Search or jump to…"
-          className="h-12 border-0 bg-transparent px-0 text-base shadow-none focus-visible:ring-0 focus-visible:border-0"
+          className="border-0 bg-transparent px-2 text-base shadow-none focus-visible:border-0 focus-visible:ring-0"
         />
         <kbd className="hidden shrink-0 rounded border border-(--border) px-1.5 py-0.5 text-[10px] font-medium text-(--muted) sm:block">
           ESC
