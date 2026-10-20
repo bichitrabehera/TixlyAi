@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
 import { Header } from "@/components/Header";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 /* -------------------------------------------------------------------------- */
 /*  Links                                                                     */
@@ -383,9 +382,6 @@ export default function DocsPage() {
                   </div>
                 );
               })}
-              <div className="p-3">
-                <ThemeSwitcher />
-              </div>
             </nav>
           </aside>
 

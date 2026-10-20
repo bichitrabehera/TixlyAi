@@ -59,6 +59,8 @@ const baseTicketFields = {
   description: z.string().min(1),
   additionalNotes: z.string().optional(),
   needsHumanReview: z.boolean().optional(),
+  /** Model's self-reported certainty that the ticket is accurate and complete (0–100). */
+  confidence: z.number().min(0).max(100).optional(),
 };
 
 /**

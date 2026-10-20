@@ -20,5 +20,9 @@ export type RunStreamEvent =
         model?: string;
         latencyMs?: number;
       };
+      /** Set by the tickets API route once the ticket row is persisted. */
+      ticketId?: string;
+      /** True when generation succeeded but the DB insert failed. */
+      saveFailed?: boolean;
     }
   | { type: "error"; message: string; code?: string };

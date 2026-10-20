@@ -110,7 +110,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Unrecognized API key format. Supported: OpenAI (sk-...), OpenRouter (sk-or-v1-...), Anthropic (sk-ant-...).",
+            "Unrecognized API key format. Supported: OpenAI (sk-...), OpenRouter (sk-or-v1-...), Anthropic (sk-ant-...), Google (AIza...).",
         },
         { status: 400 },
       );

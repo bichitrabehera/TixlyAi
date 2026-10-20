@@ -32,3 +32,28 @@ export async function getTicketForUser(
 
   return row ?? null;
 }
+
+export async function deleteTicketForUser(
+  id: string,
+  clerkUserId: string,
+): Promise<boolean> {
+  if (!UUID_RE.test(id)) return false;
+
+  const deleted = await db
+    .delete(tickets)
+    .where(and(eq(tickets.id, id), eq(tickets.userId, clerkUserId)))
+    .returning({ id: tickets.id });
+
+  return deleted.length > 0;
+}
+
+export async function deleteAllTicketsForUser(
+  clerkUserId: string,
+): Promise<number> {
+  const deleted = await db
+    .delete(tickets)
+    .where(eq(tickets.userId, clerkUserId))
+    .returning({ id: tickets.id });
+
+  return deleted.length;
+}

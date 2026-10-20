@@ -18,6 +18,7 @@ export interface ProviderModelsResult {
 const OPENAI_BASE = "https://api.openai.com/v1";
 const ANTHROPIC_BASE = "https://api.anthropic.com/v1";
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
+const GOOGLE_BASE = "https://generativelanguage.googleapis.com/v1beta";
 const ANTHROPIC_VERSION = "2023-06-01";
 
 const FAST_RE = /(mini|haiku|flash|lite|instant|small|nano|micro|auto)/;
@@ -121,6 +122,28 @@ async function listOpenRouterModels(key?: string) {
   return { unauthorized: false, models };
 }
 
+async function listGoogleModels(key: string) {
+  const res = await fetchJson(`${GOOGLE_BASE}/models?key=${encodeURIComponent(key)}`, {});
+  if (res.status === 401 || res.status === 403) return { unauthorized: true, models: [] };
+  if (!res.ok) return { unauthorized: false, models: [] };
+  const data = (await res.json()) as {
+    models?: Array<{
+      name?: string;
+      supportedGenerationMethods?: string[];
+    }>;
+  };
+  const models = (data.models ?? [])
+    .map((m) => (m.name ?? "").replace(/^models\//, ""))
+    .filter((id) => id.startsWith("gemini-") && !id.includes("embedding"))
+    .sort()
+    .map((id) => ({
+      id,
+      vision: /flash|pro/i.test(id),
+      ...hintFor(id),
+    }));
+  return { unauthorized: false, models };
+}
+
 export async function GET() {
   try {
     const { userId } = await auth();
@@ -165,6 +188,7 @@ export async function GET() {
       try {
         if (provider === "openai") outcome = await listOpenAiModels(key);
         else if (provider === "anthropic") outcome = await listAnthropicModels(key);
+        else if (provider === "google") outcome = await listGoogleModels(key);
         else outcome = await listOpenRouterModels(key);
       } catch {
         // Network/timeout — keep the stored status, just no models this round.

@@ -38,10 +38,12 @@ export function TicketTypeSelector({
   ];
 
   return (
-    <section className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-foreground">
-          Classification
+    <section className="space-y-2.5">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-ink">Classification</span>
+
+        <span className="text-xs text-muted-foreground">
+          {value ? SHORT_LABELS[value] : "Automatic"}
         </span>
       </div>
 

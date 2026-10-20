@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { TicketListItem } from "@/components/shared/TicketListItem";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
+import { DeleteAllTickets } from "@/components/history/DeleteAllTickets";
+import { DeleteTicketButton } from "@/components/history/DeleteTicketButton";
 import { listTicketsForUser } from "@/lib/db/tickets";
 import { TICKET_HISTORY_PAGE_SIZE } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
@@ -28,12 +30,24 @@ export default async function HistoryPage() {
             : `${tickets.length} tickets generated`
         }
         actions={
-          <Button asChild size="sm" className="gap-2">
-            <Link href={ROUTES.generate}>
-              <Zap className="size-4" />
-              New ticket
-            </Link>
-          </Button>
+          tickets.length > 0 ? (
+            <div className="flex items-center gap-2">
+              <DeleteAllTickets count={tickets.length} />
+              <Button asChild size="sm" className="gap-2">
+                <Link href={ROUTES.generate}>
+                  <Zap className="size-4" />
+                  New ticket
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <Button asChild size="sm" className="gap-2">
+              <Link href={ROUTES.generate}>
+                <Zap className="size-4" />
+                New ticket
+              </Link>
+            </Button>
+          )
         }
       />
 
@@ -63,6 +77,7 @@ export default async function HistoryPage() {
                 ticketType: ticket.ticketType,
                 createdAt: ticket.createdAt.toISOString(),
               }}
+              action={<DeleteTicketButton ticketId={ticket.id} />}
             />
           ))}
         </div>

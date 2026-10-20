@@ -18,6 +18,8 @@ export interface StreamRunOptions {
   encryptedKey: string;
   req: TicketRequest;
   userId: string;
+  /** User-selected model id; falls back to the provider default when absent. */
+  model?: string;
 }
 
 interface DriveResult {
@@ -86,6 +88,7 @@ async function* driveRun(
     apiKey,
     req: opts.req,
     userId: opts.userId,
+    model: opts.model,
   });
 
   const stream = await agent.stream(
@@ -233,9 +236,9 @@ export async function* streamTicketRun(
   const req = opts.req;
   const hasImage = Boolean(req.screenshotUrl || req.imageDataUri);
   const hasText = Boolean(req.ocrText?.trim() || req.note?.trim());
-  // The model is fixed per provider, so vision support is derived from the
-  // configured model — never from client input.
-  const modelName = AI_MODEL_CONFIG[opts.provider].model;
+  // User-selected model wins; the provider default is the fallback. Vision
+  // support is derived from the resolved model, never from client input.
+  const modelName = opts.model?.trim() || AI_MODEL_CONFIG[opts.provider].model;
   const visionOk = modelVisionHeuristic(opts.provider, modelName);
   const includeImage = hasImage && visionOk;
 

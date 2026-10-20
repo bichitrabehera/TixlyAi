@@ -51,6 +51,7 @@ export function createChatModel(
       model: modelName,
       temperature,
       maxOutputTokens: 4096,
+      maxRetries: 0,
     });
   }
 

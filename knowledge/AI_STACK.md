@@ -17,29 +17,27 @@ lib/ai/
 
 ## Provider & model
 
-`AI_MODEL_CONFIG` in `config.ts` centralizes defaults:
+`AI_MODEL_CONFIG` in `config.ts` holds the per-provider default model; `MODEL_CATALOG` is the curated list the Generate-screen picker offers:
 
-| Provider | Model | Notes |
+| Provider | Default model | Catalog models |
 | --- | --- | --- |
-| `openai` | `gpt-4o` | fixed — the app is locked to it |
-| `anthropic` | `claude-sonnet-4-20250514` | |
-| `openrouter` | `openrouter/auto` | via `ChatOpenAI` + `baseURL` override |
+| `openai` | `gpt-4o` | gpt-4o, gpt-4o-mini, gpt-4.1, o3, o4-mini |
+| `anthropic` | `claude-sonnet-4-20250514` | claude-sonnet-4, claude-opus-4, claude-3.5-haiku |
+| `openrouter` | `openrouter/auto` | auto, gpt-4o, claude-sonnet-4, gemini-2.0-flash |
+| `google` | `gemini-2.0-flash` | gemini-2.0-flash, gemini-2.5-flash, gemini-2.5-pro |
 
-The model is fixed per provider — the app is locked to `gpt-4o` (the UI has no
-model picker) and the server derives everything from `AI_MODEL_CONFIG`: it
-ignores any client-supplied `model`/`modelVision`, and vision support comes from
-`modelVisionHeuristic(provider, model)` on the configured model.
+The user picks a model on the Generate screen (`ModelPicker.tsx`); the client sends `model` in the request and the server honors it, falling back to the provider default when absent. Vision support is derived from the resolved model via `modelVisionHeuristic(provider, model)` — the server ignores any client-supplied `modelVision`.
 
-Provider is detected from the key prefix (`detectProvider` in `index.ts`), stored on the user row (`aiProvider` + `aiEncryptedKey`), and passed into every run. OpenRouter runs use `maxRetries: 0` — retries are handled once by `modelRetryMiddleware`, not by the client wrapper.
+Provider is detected from the key prefix (`detectProvider` in `index.ts`): `sk-or-v1-` → openrouter, `sk-ant-` → anthropic, `sk-` → openai, `AIza` → google. Keys are stored per-provider in the `aiKeys` table. OpenRouter runs use `maxRetries: 0` — retries are handled once by `modelRetryMiddleware`, not by the client wrapper.
 
 ## The agent
 
-`createTicketAgent({ provider, apiKey, req, userId })`:
+`createTicketAgent({ provider, apiKey, req, userId, model })`:
 
-- **model** — BYOK chat model, temperature from `temperatureFor(preferredPriority)`; omitted for OpenAI reasoning models (o-series / gpt-5) via `modelSupportsTemperature`, which reject any non-default value.
+- **model** — BYOK chat model at the selected (or default) model id, temperature from `temperatureFor(preferredPriority)`; omitted for OpenAI reasoning models (o-series / gpt-5) via `modelSupportsTemperature`, which reject any non-default value.
 - **tools** — `createTicketTools(userId)`: `search_past_tickets` (real Drizzle `ILIKE` query scoped to the user), `get_ticket_template`, `get_priority_guidelines`.
-- **systemPrompt** — `buildSystemPrompt(req)`: pixel-analysis instructions per ticket type.
-- **responseFormat** — `TicketOutputSchema` (Zod discriminated union over the 5 ticket types). The model must produce JSON validating against this schema; the validated object is available as `structuredResponse` on state.
+- **systemPrompt** — `buildSystemPrompt(req)`: pixel-analysis instructions per ticket type, plus a `confidence` instruction (model self-reports 0–100 certainty; below 60 also forces `needsHumanReview`).
+- **responseFormat** — `TicketOutputSchema` (Zod object covering the 5 ticket types). The model must produce JSON validating against this schema; the validated object is available as `structuredResponse` on state. Includes an optional `confidence: z.number().min(0).max(100)` field.
 - **middleware** — the stack below.
 
 ## Middleware stack (execution order)
@@ -77,8 +75,8 @@ The `runTicketRun` driver emits a `guardrail` stream event when `guardrailHits` 
 { type: "error", message, code }
 ```
 
-- `ticket` is the JSON string of the validated structured ticket.
-- `usage` carries `inputTokens` / `outputTokens` (from the last `AIMessage.usage_metadata`), `model`, and `latencyMs`.
+- `ticket` is the JSON string of the validated structured ticket (includes `confidence` when the model provided it).
+- `usage` carries `inputTokens` / `outputTokens` (from the last `AIMessage.usage_metadata`), the resolved `model` id, and `latencyMs`. The client renders this in the OutputScreen MetaStrip alongside the confidence chip.
 - Step ids/labels are defined once in `RUN_STEPS` (`config.ts`).
 
 The route (`app/api/tickets/route.ts`) writes each frame as one NDJSON line. The client (`lib/hooks/useTicketGeneration.ts`) reads the body with a `ReadableStream` reader, buffers by `\n`, and updates `steps` / `guardrailNotice` / `usage` / `ticket` state. **Change event shapes in `stream-types.ts` only** — both sides import it.
@@ -89,8 +87,8 @@ If a vision run fails and the request also had text (`ocrText` or `note`), `run.
 
 ## BYOK key lifecycle
 
-1. User adds a key in Settings → `/api/settings/ai-key` stores `encrypt(key)` + detected provider on `users`.
-2. `/api/tickets` loads the encrypted key via `getAiKey(userId)`.
+1. User adds a key in Settings → `/api/settings/ai-key` detects the provider from the key prefix (`AIza` → google), live-tests it, and stores `encrypt(key)` + hint in the `aiKeys` table (one row per provider).
+2. `/api/tickets` loads the user's keys via `listAiKeys(userId)`; the client may request a specific provider via `req.provider`, else the most recently saved key wins.
 3. `streamTicketRun` calls `decrypt(encryptedKey)` per run, in memory.
 4. The key is passed to `createChatModel` and never leaves the server, is never logged, and is never returned to the client.
 
@@ -104,7 +102,8 @@ If a vision run fails and the request also had text (`ocrText` or `note`), `run.
 
 ## Extending
 
+- **Add a model to the picker** — add it to `MODEL_CATALOG` in `config.ts` (and update `AI_MODEL_CONFIG` if it should become the new default).
 - **Add a tool** — add it in `tools.ts` and include it in `createTicketTools`; the agent picks it up automatically.
 - **Add a guardrail** — new middleware file in `middleware/`, wire into `buildAgentMiddleware()` in execution order, and emit a `guardrail` event from `run.ts` if it should surface in the UI.
 - **Add a run step** — add to `RUN_STEPS` in `config.ts`, emit `{ type: "step", ... }` from `run.ts`, and the timeline UI picks it up via `AgentRunTimeline`.
-- **Add a provider** — extend `AI_MODEL_CONFIG`, add a branch in `createChatModel`, add a key-prefix rule to `detectProvider`.
+- **Add a provider** — extend `AI_MODEL_CONFIG` and `MODEL_CATALOG`, add a branch in `createChatModel`, add a key-prefix rule to `detectProvider`, and add a model-list branch in `/api/ai/models` if live listing is wanted.

@@ -40,6 +40,8 @@ export interface TicketData {
   actionItems?: string[];
   checklist?: string[];
   additionalNotes?: string;
+  /** Model's self-reported certainty that the ticket is accurate (0–100). */
+  confidence?: number;
 }
 
 export function parseTicketData(text: string): TicketData {
@@ -70,6 +72,12 @@ export function parseTicketData(text: string): TicketData {
           : undefined,
         checklist: Array.isArray(parsed.checklist) ? parsed.checklist : undefined,
         additionalNotes: parsed.additionalNotes,
+        confidence:
+          typeof parsed.confidence === "number" &&
+          parsed.confidence >= 0 &&
+          parsed.confidence <= 100
+            ? parsed.confidence
+            : undefined,
       };
     }
   } catch {}
@@ -207,6 +215,11 @@ export function ticketToPlainText(ticketText: string): string {
     lines.push("");
     lines.push("Checklist:");
     lines.push(...numberedList(ticket.checklist));
+  }
+
+  if (ticket.confidence !== undefined) {
+    lines.push("");
+    lines.push(`Confidence: ${ticket.confidence}%`);
   }
 
   if (ticket.additionalNotes) {

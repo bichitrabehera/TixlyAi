@@ -77,7 +77,10 @@ export function GenerateWorkspace({
             </span>
           </span>
 
-          <span className="hidden h-3.5 w-[1px] bg-hairline sm:block" aria-hidden />
+          <span
+            className="hidden h-3.5 w-[1px] bg-hairline sm:block"
+            aria-hidden
+          />
 
           <TopBarButton
             label={copied ? "Copied" : "Copy MD"}
@@ -106,13 +109,9 @@ export function GenerateWorkspace({
   return (
     <>
       {topBarActions}
-      <div className="-mx-4 -my-4 flex h-[calc(100dvh-4rem)] min-h-0 overflow-hidden">
-        <div
-          className={cn(
-            "h-full min-h-0 w-full shrink-0 border-r border-hairline bg-canvas/60 lg:w-[530px]",
-            showInput ? "block" : "hidden lg:block",
-          )}
-        >
+      <div className="-mx-4 -my-4 flex min-h-0 flex-col overflow-y-auto overflow-x-hidden lg:h-[calc(100dvh-4rem)] lg:flex-row lg:overflow-hidden">
+        {" "}
+        <div className="w-full shrink-0 bg-canvas/60 lg:h-full lg:w-[530px] lg:overflow-y-auto">
           <InputScreen
             image={gen.image}
             fileName={gen.fileName}
@@ -126,11 +125,13 @@ export function GenerateWorkspace({
             preferredPriority={gen.preferredPriority}
             prefsValue={gen.prefsValue}
             aiProvider={gen.aiProvider}
+            model={gen.model}
             fileInputRef={gen.fileInputRef}
             onNoteChange={gen.setNote}
             onTicketTypeChange={gen.handleTicketTypeChange}
             onPreferredPriorityChange={gen.setPreferredPriority}
             onPrefsChange={gen.handlePrefsChange}
+            onModelChange={gen.setModel}
             onManualOcrChange={gen.setManualOcrText}
             onDrop={gen.handleDrop}
             onDragOver={gen.handleDragOver}
@@ -140,13 +141,7 @@ export function GenerateWorkspace({
             onStop={gen.stopGeneration}
           />
         </div>
-
-        <div
-          className={cn(
-            "h-full min-h-0 flex-1 overflow-hidden bg-canvas",
-            showOutput ? "flex flex-col" : "hidden lg:flex lg:flex-col",
-          )}
-        >
+        <div className="flex min-h-[500px] w-full shrink-0 flex-col overflow-hidden bg-canvas lg:h-full lg:min-w-0 lg:flex-1">
           {hasStrip && (
             <div className="shrink-0 space-y-2 border-b border-hairline bg-canvas px-6 py-2.5">
               {gen.error && (
@@ -167,6 +162,7 @@ export function GenerateWorkspace({
               status={gen.status}
               steps={gen.steps}
               needsReview={gen.needsReview}
+              usage={gen.usage}
               dirty={gen.ticketDirty}
               disabled={!gen.ticket || gen.loading}
               editing={editing}

@@ -56,7 +56,7 @@ function InsetFrame({ children }: { children: ReactNode }) {
       )}
 
       <div className="flex flex-1 flex-col overflow-hidden rounded-none md:rounded-xl border border-hairline bg-canvas shadow-[0_1px_3px_rgba(0,0,0,0.02)] select-text m-0 lg:m-2">
-        <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-hairline px-3 sm:px-4">
+        <div className="flex h-11 shrink-0 items-center justify-between gap-2 px-3 sm:px-4">
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <button
               type="button"

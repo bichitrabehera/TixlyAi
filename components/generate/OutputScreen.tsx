@@ -23,9 +23,10 @@ import { parseTicketData, type TicketData } from "@/lib/tickets/format";
 import { TICKET_TYPE_META, type TicketType } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+import type { RunUsage } from "@/lib/hooks/useTicketGeneration";
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-xs font-semibold text-ink">{children}</h2>;
+  return <h2 className="text-sm font-semibold text-ink">{children}</h2>;
 }
 
 function RichText({ text }: { text: string }) {
@@ -36,7 +37,7 @@ function RichText({ text }: { text: string }) {
         index % 2 === 1 ? (
           <code
             key={index}
-            className="rounded border border-hairline bg-panel px-1.5 py-0.5 font-mono text-xs text-ink"
+            className="rounded border border-hairline bg-panel px-1.5 py-0.5 text-sm text-ink"
           >
             {part}
           </code>
@@ -54,7 +55,7 @@ function BulletList({ items }: { items: string[] }) {
       {items.map((item, index) => (
         <li
           key={index}
-          className="flex gap-2.5 text-xs leading-relaxed text-prose"
+          className="flex gap-2.5 text-sm leading-relaxed text-prose"
         >
           <span className="mt-1.5 size-1 shrink-0 rounded-full bg-dash" />
           <span>{item}</span>
@@ -70,6 +71,7 @@ interface OutputScreenProps {
   status: string;
   steps: StreamStep[];
   needsReview: boolean;
+  usage: RunUsage | null;
   dirty: boolean;
   disabled: boolean;
   editing: boolean;
@@ -106,7 +108,7 @@ function BarButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-2.5 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink disabled:cursor-not-allowed disabled:opacity-50"
+      className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-2.5 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink disabled:cursor-not-allowed disabled:opacity-50"
     >
       {children}
       <span>{label}</span>
@@ -123,13 +125,36 @@ function environmentLabel(environment: string) {
   return environment.split(/[·\n]/)[0]?.trim() || environment;
 }
 
+function formatLatency(ms: number): string {
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
+function formatTokens(n: number): string {
+  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+}
+
+function confidenceTone(confidence: number) {
+  if (confidence >= 80) {
+    return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400";
+  }
+
+  if (confidence >= 50) {
+    return "bg-amber-500/10 text-amber-700 dark:text-amber-400";
+  }
+
+  return "bg-red-500/10 text-red-700 dark:text-red-400";
+}
+
 function MetaStrip({
   ticket,
+  usage,
   editing,
   onEdit,
   onRegenerate,
 }: {
   ticket: TicketData;
+  usage: RunUsage | null;
   editing: boolean;
   onEdit: () => void;
   onRegenerate: () => void;
@@ -138,12 +163,28 @@ function MetaStrip({
     ? TICKET_TYPE_META[ticket.type as TicketType]
     : null;
   const env = ticket.environment ? environmentLabel(ticket.environment) : null;
+  const confidence =
+    typeof ticket.confidence === "number" &&
+    ticket.confidence >= 0 &&
+    ticket.confidence <= 100
+      ? Math.round(ticket.confidence)
+      : null;
+
+  const usageParts: string[] = [];
+  if (usage?.model) usageParts.push(usage.model);
+  if (usage?.latencyMs !== undefined)
+    usageParts.push(formatLatency(usage.latencyMs));
+  if (usage?.inputTokens !== undefined && usage?.outputTokens !== undefined) {
+    usageParts.push(
+      `${formatTokens(usage.inputTokens)}→${formatTokens(usage.outputTokens)} tok`,
+    );
+  }
 
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-b border-hairline pb-4">
+    <div className="my-6 flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
         {typeMeta && (
-          <span className="flex items-center gap-1.5 text-xs text-muted">
+          <span className="flex items-center gap-1.5 text-sm text-muted">
             <span
               className={cn(
                 "h-1.5 w-1.5 rounded-full",
@@ -151,14 +192,12 @@ function MetaStrip({
               )}
               aria-hidden
             />
-            <span className="font-semibold text-ink">
-              {typeMeta.label}
-            </span>
+            <span className="font-semibold text-ink">{typeMeta.label}</span>
           </span>
         )}
 
         {ticket.priority && (
-          <span className="text-xs text-muted">
+          <span className="text-sm text-muted">
             <span className="font-semibold text-ink">
               {formatPriority(ticket.priority)}
             </span>{" "}
@@ -166,35 +205,47 @@ function MetaStrip({
           </span>
         )}
 
-        {env && (
-          <span className="text-xs text-muted">
-            <span className="font-semibold text-ink">{env}</span> env
-          </span>
-        )}
-
-        {ticket.component && (
-          <span className="rounded border border-control-border bg-panel px-2 py-0.5 font-mono text-[11px] text-ink">
-            {ticket.component}
+        {confidence !== null && (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium",
+              confidenceTone(confidence),
+            )}
+            title="Model-reported certainty that this ticket is accurate and complete"
+          >
+            <span className="size-1.5 rounded-full bg-current opacity-70" />
+            {confidence}% confidence
           </span>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onEdit}
-          disabled={editing}
-          className="cursor-pointer rounded-lg border border-control-border bg-control px-2.5 py-1 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Edit ticket
-        </button>
-        <button
-          type="button"
-          onClick={onRegenerate}
-          className="cursor-pointer rounded-lg border border-control-border bg-control px-2.5 py-1 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
-        >
-          Regenerate
-        </button>
+      <div className="flex items-center gap-3">
+        {usageParts.length > 0 && (
+          <span
+            className="hidden text-[11px] text-muted sm:block"
+            title="Model, latency, and token usage for this run"
+          >
+            {usageParts.join(" · ")}
+          </span>
+        )}
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onEdit}
+            disabled={editing}
+            className="cursor-pointer rounded-lg border border-control-border bg-control px-2.5 py-1 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Edit ticket
+          </button>
+          <button
+            type="button"
+            onClick={onRegenerate}
+            className="cursor-pointer rounded-lg border border-control-border bg-control px-2.5 py-1 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+          >
+            Regenerate
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -206,6 +257,7 @@ export function OutputScreen({
   status,
   steps,
   needsReview,
+  usage,
   dirty,
   disabled,
   editing,
@@ -274,7 +326,7 @@ export function OutputScreen({
               <p className="text-sm font-medium text-ink">
                 Your ticket appears here
               </p>
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 text-sm text-muted">
                 Add a screenshot, tune the options, then hit Generate.
               </p>
             </div>
@@ -284,13 +336,13 @@ export function OutputScreen({
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-4xl space-y-2 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-xs font-medium text-muted">
+              <p className="text-sm font-medium text-muted">
                 Edit the generated ticket
               </p>
               <button
                 type="button"
                 onClick={() => onEditingChange(false)}
-                className="cursor-pointer rounded-lg border border-control-border bg-control px-2.5 py-1 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                className="cursor-pointer rounded-lg border border-control-border bg-control px-2.5 py-1 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
               >
                 Done
               </button>
@@ -299,7 +351,7 @@ export function OutputScreen({
               value={ticketText}
               onChange={(event) => onTicketChange(event.target.value)}
               rows={22}
-              className="min-h-[420px] w-full resize-y rounded-lg px-3.5 py-3 font-mono text-xs leading-relaxed"
+              className="min-h-[420px] w-full resize-y rounded-lg px-3.5 py-3 text-sm leading-relaxed"
               aria-label="Ticket text"
             />
             <p className="text-[11px] text-ink-3">
@@ -314,39 +366,38 @@ export function OutputScreen({
             <button
               type="button"
               onClick={handleRegenerate}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-2.5 py-1 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-2.5 py-1 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
             >
               <RotateCcw className="size-3.5" aria-hidden />
               Regenerate
             </button>
-            <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-hairline bg-panel p-4 font-mono text-xs leading-relaxed text-muted">
+            <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-hairline bg-panel p-4 text-sm leading-relaxed text-muted">
               {ticketText}
             </pre>
           </div>
         </div>
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <article className="animate-fade-up mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+          <article className="animate-fade-up mx-auto w-full max-w-4xl px-5 pb-24">
+            {" "}
             {needsReview && <NeedsReviewBanner />}
             {dirty && (
-              <p className="font-mono text-[10px] uppercase tracking-widest text-ink-3">
+              <p className=" text-[10px] uppercase tracking-widest text-ink-3">
                 Edited by you
               </p>
             )}
-
             {ticket.title && (
-              <h1 className="mt-3 text-xl font-semibold tracking-tight text-ink">
+              <h1 className="text-xl font-semibold tracking-tight text-ink">
                 {ticket.title}
               </h1>
             )}
-
             <MetaStrip
               ticket={ticket}
+              usage={usage}
               editing={editing}
               onEdit={() => onEditingChange(true)}
               onRegenerate={handleRegenerate}
             />
-
             <div className="mt-6 max-w-3xl space-y-6">
               {ticket.description && (
                 <section className="space-y-2">
@@ -359,14 +410,14 @@ export function OutputScreen({
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {ticket.expected && (
                     <div className="space-y-1.5 rounded-xl border border-hairline bg-panel-soft p-4">
-                      <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                      <p className="flex items-center gap-1.5 text-sm font-semibold text-ink">
                         <span
                           className="h-1.5 w-1.5 rounded-full bg-emerald-600"
                           aria-hidden
                         />
                         Expected
                       </p>
-                      <p className="text-xs leading-relaxed text-muted">
+                      <p className="text-sm leading-relaxed text-muted">
                         {ticket.expected}
                       </p>
                     </div>
@@ -374,14 +425,14 @@ export function OutputScreen({
 
                   {ticket.actual && (
                     <div className="space-y-1.5 rounded-xl border border-hairline bg-panel-soft p-4">
-                      <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                      <p className="flex items-center gap-1.5 text-sm font-semibold text-ink">
                         <span
                           className="h-1.5 w-1.5 rounded-full bg-red-600"
                           aria-hidden
                         />
                         Actual
                       </p>
-                      <p className="text-xs leading-relaxed text-muted">
+                      <p className="text-sm leading-relaxed text-muted">
                         {ticket.actual}
                       </p>
                     </div>
@@ -396,9 +447,9 @@ export function OutputScreen({
                     {(ticket.steps ?? []).map((step, index) => (
                       <li
                         key={index}
-                        className="flex items-center gap-3 px-3.5 py-2.5 text-xs text-prose"
+                        className="flex items-center gap-3 px-3.5 py-2.5 text-sm text-prose"
                       >
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-control-border bg-panel font-mono text-[11px] text-muted">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-control-border bg-panel text-[11px] text-muted">
                           {index + 1}
                         </span>
                         <span>{step}</span>
@@ -478,10 +529,10 @@ export function OutputScreen({
                 <section className="space-y-3 rounded-xl border border-dashed border-dash bg-panel-soft p-4">
                   {ticket.environment && (
                     <div className="space-y-1.5">
-                      <p className="text-xs font-semibold text-ink">
+                      <p className="text-sm font-semibold text-ink">
                         Environment
                       </p>
-                      <p className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-ink">
+                      <p className="whitespace-pre-wrap text-[11px] leading-relaxed text-ink">
                         {ticket.environment}
                       </p>
                     </div>
@@ -489,10 +540,8 @@ export function OutputScreen({
 
                   {ticket.additionalNotes && (
                     <div className="space-y-1.5">
-                      <p className="text-xs font-semibold text-ink">
-                        Notes
-                      </p>
-                      <p className="text-xs leading-relaxed text-muted">
+                      <p className="text-sm font-semibold text-ink">Notes</p>
+                      <p className="text-sm leading-relaxed text-muted">
                         {ticket.additionalNotes}
                       </p>
                     </div>
@@ -500,13 +549,12 @@ export function OutputScreen({
                 </section>
               )}
             </div>
-
             <div className="mt-6 flex shrink-0 flex-wrap items-center gap-1.5">
               {loading ? (
                 <button
                   type="button"
                   onClick={onStop}
-                  className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-2.5 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                  className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border border-control-border bg-control px-2.5 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-panel focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
                 >
                   <Square className="size-3 fill-current" aria-hidden />
                   Stop
@@ -529,31 +577,45 @@ export function OutputScreen({
                         disabled={disabled || slackLoading || slackSent}
                       >
                         {slackSent ? (
-                          <Check className="h-3.5 w-3.5 text-primary" aria-hidden />
+                          <Check
+                            className="h-3.5 w-3.5 text-primary"
+                            aria-hidden
+                          />
                         ) : (
                           <Slack className="h-3.5 w-3.5" />
                         )}
                       </BarButton>
                     ) : (
-                      <BarButton label="Connect Slack" onClick={openIntegrations}>
+                      <BarButton
+                        label="Connect Slack"
+                        onClick={openIntegrations}
+                      >
                         <Slack className="h-3.5 w-3.5" />
                       </BarButton>
                     )}
 
                     {linearConnected ? (
                       <BarButton
-                        label={linearSent ? "Pushed to Linear" : "Push to Linear"}
+                        label={
+                          linearSent ? "Pushed to Linear" : "Push to Linear"
+                        }
                         onClick={onSendToLinear}
                         disabled={disabled || linearLoading || linearSent}
                       >
                         {linearSent ? (
-                          <Check className="h-3.5 w-3.5 text-primary" aria-hidden />
+                          <Check
+                            className="h-3.5 w-3.5 text-primary"
+                            aria-hidden
+                          />
                         ) : (
                           <CgLinear className="h-3.5 w-3.5" />
                         )}
                       </BarButton>
                     ) : (
-                      <BarButton label="Connect Linear" onClick={openIntegrations}>
+                      <BarButton
+                        label="Connect Linear"
+                        onClick={openIntegrations}
+                      >
                         <CgLinear className="h-3.5 w-3.5" />
                       </BarButton>
                     )}
@@ -561,13 +623,12 @@ export function OutputScreen({
                 )
               )}
             </div>
-
             <div className="flex items-center gap-3 pt-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onReset}
-                className="h-7 gap-1.5 text-xs text-muted hover:text-ink"
+                className="h-7 gap-1.5 text-sm text-muted hover:text-ink"
               >
                 <RotateCcw className="h-3.5 w-3.5" aria-hidden />
                 New ticket
@@ -576,7 +637,7 @@ export function OutputScreen({
                 variant="ghost"
                 size="sm"
                 onClick={onEditInputs}
-                className="h-7 gap-1.5 text-xs text-muted hover:text-ink lg:hidden"
+                className="h-7 gap-1.5 text-sm text-muted hover:text-ink lg:hidden"
               >
                 Edit inputs
               </Button>

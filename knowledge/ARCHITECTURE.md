@@ -35,18 +35,20 @@ All route strings live in **`lib/routes.ts`** (`WORKSPACE_ROOT = "/dashboard"`, 
 InputScreen (client, /dashboard/generate)
   → lib/hooks/useTicketGeneration.ts
       · uploads screenshot to /api/upload → ImageKit URL
-      · POST /api/tickets  (NDJSON stream request)
+      · POST /api/tickets  (NDJSON stream request; includes selected model)
   → app/api/tickets/route.ts
-      · Clerk auth → rate limit → load encrypted AI key
+      · Clerk auth → rate limit → load encrypted AI key + provider
       · streamTicketRun()  ← lib/ai/run.ts
           · decrypt key → createTicketAgent() (lib/ai/agent.ts)
+          · model = req.model || AI_MODEL_CONFIG[provider].model
           · agent.stream() driven, yielding RunStreamEvent frames
       · on `done`: insert into tickets, flagForHumanReview if needed
       · frames written to ReadableStream (NDJSON)
   → client parses each line, updates steps / status / ticket state
   → GenerateWorkspace shows the run in the OutputScreen pane (AgentRunTimeline
     while running); on `done` the hook flips `screen` → OutputScreen resolves
-    the streamed steps into the ticket document
+    the streamed steps into the ticket document (MetaStrip shows confidence,
+    model, tokens, latency)
 ```
 
 Streaming contract lives in `lib/ai/stream-types.ts` and is shared by client and server — change the event shapes there, not ad hoc.

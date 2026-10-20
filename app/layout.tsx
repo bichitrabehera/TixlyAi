@@ -7,7 +7,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { ThemeProvider } from "@/components/ThemeProvider";
 
 const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -39,22 +38,20 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider signInUrl="/login">
-      <ThemeProvider>
-        <html lang="en" suppressHydrationWarning>
-          <Analytics />
-          <SpeedInsights />
-          <body
-            className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${fraunces.variable} min-h-full bg-(--bg) font-sans antialiased`}
-          >
-            <TooltipProvider>
-              <ErrorBoundary>
-                <RouteThemeGuard />
-                {children}
-              </ErrorBoundary>
-            </TooltipProvider>
-          </body>
-        </html>
-      </ThemeProvider>
+      <html lang="en" suppressHydrationWarning>
+        <Analytics />
+        <SpeedInsights />
+        <body
+          className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${fraunces.variable} min-h-full bg-(--bg) font-sans antialiased`}
+        >
+          <TooltipProvider>
+            <ErrorBoundary>
+              <RouteThemeGuard />
+              {children}
+            </ErrorBoundary>
+          </TooltipProvider>
+        </body>
+      </html>
     </ClerkProvider>
   );
 }

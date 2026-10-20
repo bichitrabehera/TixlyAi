@@ -70,7 +70,7 @@ export function Hero() {
           }}
         >
           <img
-            src="/Banner.png"
+            src="/Banner1.png"
             alt="Tixly dashboard preview"
             fetchPriority="high"
             className="w-full object-cover rounded-lg"

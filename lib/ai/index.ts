@@ -13,10 +13,12 @@ export type {
 export { AI_MODEL_CONFIG, RUN_STEPS } from "./config";
 
 export function detectProvider(apiKey: string): AiProvider | null {
-  if (apiKey.startsWith("sk-or-v1-")) return "openrouter";
-  if (apiKey.startsWith("sk-ant-")) return "anthropic";
-  if (apiKey.startsWith("sk-")) return "openai";
-  if (apiKey.startsWith("AQ.")) return "google";
+  const key = apiKey.trim();
+  if (key.startsWith("sk-or-v1-")) return "openrouter";
+  if (key.startsWith("sk-ant-")) return "anthropic";
+  if (key.startsWith("sk-")) return "openai";
+  // Google AI Studio keys start with "AIza" (e.g. AIzaSy...).
+  if (key.startsWith("AIza")) return "google";
   return null;
 }
 

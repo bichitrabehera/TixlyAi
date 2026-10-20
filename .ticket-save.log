@@ -1,0 +1,12 @@
+2026-10-20T20:43:21.664Z POST start {"userId":"user_3DkSAwAMi2SA66veHhQLAYsVG6J"}
+2026-10-20T20:43:22.092Z stream started {"signalAborted":false}
+2026-10-20T20:43:26.523Z done event received {"clientGone":false}
+2026-10-20T20:43:26.802Z user resolved {"clerkUserId":"user_3DkSAwAMi2SA66veHhQLAYsVG6J"}
+2026-10-20T20:43:27.093Z INSERT ok {"ticketId":"96a724f8-7358-4b8c-9546-f8aa9a380677"}
+2026-10-20T20:43:27.095Z done sent {"ticketId":"96a724f8-7358-4b8c-9546-f8aa9a380677","saveFailed":false,"clientGone":false}
+2026-10-20T20:43:38.594Z POST start {"userId":"user_3DkSAwAMi2SA66veHhQLAYsVG6J"}
+2026-10-20T20:43:38.647Z stream started {"signalAborted":false}
+2026-10-20T20:43:42.865Z done event received {"clientGone":false}
+2026-10-20T20:43:43.033Z user resolved {"clerkUserId":"user_3DkSAwAMi2SA66veHhQLAYsVG6J"}
+2026-10-20T20:43:43.184Z INSERT ok {"ticketId":"ce49f118-9fa7-4e4b-a3e7-def205f391aa"}
+2026-10-20T20:43:43.185Z done sent {"ticketId":"ce49f118-9fa7-4e4b-a3e7-def205f391aa","saveFailed":false,"clientGone":false}

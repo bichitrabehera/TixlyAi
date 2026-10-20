@@ -57,7 +57,7 @@ function NavLink({ item, pathname }: { item: NavEntry; pathname: string }) {
     <Link
       href={item.href}
       className={cn(
-        "flex w-full items-center rounded-lg px-2.5 py-1.5 text-sm transition-colors",
+        "flex h-9 w-full items-center rounded-lg px-3 text-sm transition-colors",
         active
           ? "bg-nav-active font-medium text-nav-active-fg"
           : "text-muted hover:bg-panel hover:text-ink",
@@ -79,26 +79,24 @@ export function AppSidebar({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
-        "flex w-64 shrink-0 flex-col justify-between border-r border-hairline bg-shell p-3 lg:w-74",
+        "flex w-64 shrink-0 flex-col justify-between bg-shell p-4 lg:w-72",
         className,
       )}
     >
       <div className="space-y-6">
-        <Link href="/dashboard">
-          <div className="flex h-9 items-center flex gap-2.5 px-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md border border-primary/30 bg-brand-tile">
-              <Ticket className="h-4 w-4 text-ink" aria-hidden />
-            </span>
-            <span className="text-sm font-bold tracking-tight text-ink">
-              Tixly
-            </span>
-          </div>
+        <Link href="/dashboard" className="flex h-9 items-center gap-2.5 px-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-md border border-primary/30 bg-brand-tile">
+            <Ticket className="h-4 w-4 text-ink" aria-hidden />
+          </span>
+          <span className="text-sm font-bold tracking-tight text-ink">
+            Tixly
+          </span>
         </Link>
 
         <button
           type="button"
           onClick={openPalette}
-          className="flex w-full items-center justify-between rounded-lg border border-control-border bg-canvas px-2.5 py-1.5 text-sm text-ink-3 transition-colors hover:border-dash hover:text-muted"
+          className="flex h-9 w-full items-center justify-between rounded-lg border border-control-border bg-canvas px-3 text-sm text-ink-3 transition-colors hover:border-dash hover:text-muted"
         >
           <span>Search…</span>
           <kbd className="rounded bg-shell px-1.5 py-0.5 font-mono text-[10px] text-muted">
@@ -106,48 +104,50 @@ export function AppSidebar({ className }: { className?: string }) {
           </kbd>
         </button>
 
-        <nav className="space-y-0.5" aria-label="Primary">
+        <nav className="space-y-1" aria-label="Primary">
           {NAV_ITEMS.map((item) => (
             <NavLink key={item.label} item={item} pathname={pathname} />
           ))}
         </nav>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-2">
         <Link
           href={`${ROUTES.settings}?section=integrations`}
-          className="flex w-full items-center rounded-lg px-2.5 py-1.5 text-sm text-muted transition-colors hover:bg-panel hover:text-ink"
+          className="flex h-9 w-full items-center rounded-lg px-3 text-sm text-muted transition-colors hover:bg-panel hover:text-ink"
         >
           Integrations
         </Link>
+
         <Link
           href={ROUTES.docs}
-          className="flex w-full items-center rounded-lg px-2.5 py-1.5 text-sm text-muted transition-colors hover:bg-panel hover:text-ink"
+          className="flex h-9 w-full items-center rounded-lg px-3 text-sm text-muted transition-colors hover:bg-panel hover:text-ink"
         >
           Help &amp; Support
         </Link>
 
-        <div className="mt-1 flex items-center gap-2 border rounded-lg border-hairline px-2 py-1.5">
+        <div className="flex min-h-14 items-center gap-3 rounded-lg border border-hairline px-3 py-2">
           {user?.imageUrl ? (
             <Image
               src={user.imageUrl}
               alt=""
-              width={22}
-              height={22}
-              className="h-[22px] w-[22px] shrink-0 rounded-full"
+              width={28}
+              height={28}
+              className="h-7 w-7 shrink-0 rounded-full"
             />
           ) : (
-            <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-track text-[10px] font-semibold text-muted">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-track text-xs font-semibold text-muted">
               {(user?.firstName || user?.username || "U")
                 .charAt(0)
                 .toUpperCase()}
             </span>
           )}
+
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-ink">
               {user?.fullName || user?.username || "Account"}
             </p>
-            <p className="truncate text-[10px] text-ink-3">
+            <p className="truncate text-xs text-ink-3">
               {user?.primaryEmailAddress?.emailAddress}
             </p>
           </div>
@@ -157,20 +157,21 @@ export function AppSidebar({ className }: { className?: string }) {
               <button
                 type="button"
                 aria-label="Account menu"
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-hairline hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-hairline hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
               >
-                <MoreHorizontal className="h-3.5 w-3.5" aria-hidden />
+                <MoreHorizontal className="h-4 w-4" aria-hidden />
               </button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end" side="top" className="w-56">
-              <DropdownMenuLabel className="px-2 py-1.5 text-xs">
+              <DropdownMenuLabel className="px-3 py-2 text-sm">
                 {user?.fullName || "Account"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => setAccountOpen(true)}>
                 Manage account
               </DropdownMenuItem>
-              <div className="flex items-center justify-between px-2.5 py-1.5">
+              <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-sm text-muted">Theme</span>
                 <ThemeSwitcher />
               </div>

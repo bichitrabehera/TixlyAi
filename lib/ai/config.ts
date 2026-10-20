@@ -8,10 +8,10 @@ import {
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
 /**
- * The model is fixed per provider — the app is locked to each provider's
- * configured model (OpenAI = gpt-4o). The UI no longer exposes a picker, and
- * the server ignores any client-supplied model so a stale stored selection
- * can never change what actually runs.
+ * Per-provider model configuration. `AI_MODEL_CONFIG` holds the default
+ * (seed) model used when the user hasn't picked one; `MODEL_CATALOG` is the
+ * curated list the Generate-screen picker offers. The server honors a
+ * client-supplied `model` from this catalog — the default is only a fallback.
  */
 export const AI_MODEL_CONFIG: Record<
   AiProvider,
@@ -22,6 +22,84 @@ export const AI_MODEL_CONFIG: Record<
   openrouter: { model: "openrouter/auto", baseURL: OPENROUTER_BASE_URL },
   google: { model: "gemini-2.0-flash" },
 };
+
+export interface CatalogModel {
+  id: string;
+  label: string;
+  vision: boolean;
+  fast?: boolean;
+  quality?: boolean;
+}
+
+export const MODEL_CATALOG: Record<AiProvider, CatalogModel[]> = {
+  openai: [
+    { id: "gpt-4o", label: "GPT-4o", vision: true, quality: true },
+    { id: "gpt-4o-mini", label: "GPT-4o Mini", vision: true, fast: true },
+    { id: "gpt-4.1", label: "GPT-4.1", vision: true, quality: true },
+    { id: "o3", label: "o3", vision: true, quality: true },
+    { id: "o4-mini", label: "o4 Mini", vision: true, fast: true },
+  ],
+  anthropic: [
+    {
+      id: "claude-sonnet-4-20250514",
+      label: "Claude Sonnet 4",
+      vision: true,
+      quality: true,
+    },
+    {
+      id: "claude-opus-4-20250514",
+      label: "Claude Opus 4",
+      vision: true,
+      quality: true,
+    },
+    {
+      id: "claude-3-5-haiku-20241022",
+      label: "Claude 3.5 Haiku",
+      vision: true,
+      fast: true,
+    },
+  ],
+  openrouter: [
+    { id: "openrouter/auto", label: "Auto (best fit)", vision: true },
+    { id: "openai/gpt-4o", label: "GPT-4o", vision: true, quality: true },
+    {
+      id: "anthropic/claude-sonnet-4",
+      label: "Claude Sonnet 4",
+      vision: true,
+      quality: true,
+    },
+    {
+      id: "google/gemini-2.0-flash-001",
+      label: "Gemini 2.0 Flash",
+      vision: true,
+      fast: true,
+    },
+  ],
+  google: [
+    {
+      id: "gemini-2.0-flash",
+      label: "Gemini 2.0 Flash",
+      vision: true,
+      fast: true,
+    },
+    {
+      id: "gemini-2.5-flash",
+      label: "Gemini 2.5 Flash",
+      vision: true,
+      fast: true,
+    },
+    {
+      id: "gemini-2.5-pro",
+      label: "Gemini 2.5 Pro",
+      vision: true,
+      quality: true,
+    },
+  ],
+};
+
+export function defaultModelFor(provider: AiProvider): string {
+  return MODEL_CATALOG[provider][0]?.id ?? AI_MODEL_CONFIG[provider].model;
+}
 
 export const AGENT_LIMITS = {
   maxNoteLength: MAX_NOTE_LENGTH,
@@ -36,7 +114,10 @@ export const RUN_STEPS = {
   analyze: { id: "analyze", label: "Analyzing screenshot" },
   tools: { id: "tools", label: "Cross-checking references" },
   draft: { id: "draft", label: "Drafting ticket" },
-  validateOutput: { id: "validate_output", label: "Validating structured output" },
+  validateOutput: {
+    id: "validate_output",
+    label: "Validating structured output",
+  },
   fallback: { id: "fallback", label: "Retrying without image" },
 } as const;
 

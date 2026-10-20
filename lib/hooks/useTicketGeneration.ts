@@ -11,13 +11,14 @@ import {
   ALLOWED_IMAGE_MIME,
   DETAIL_LEVELS,
   MAX_IMAGE_BYTES,
-  OCR_LANGUAGE,
+  MODEL_STORAGE_KEY,
   PREFS_STORAGE_KEY,
   PRIORITIES,
   TICKET_TYPES,
   type AiProvider,
   type TicketType,
 } from "@/lib/constants";
+import { MODEL_CATALOG, defaultModelFor } from "@/lib/ai/config";
 import type { RunStreamEvent, StreamStep } from "@/lib/ai/stream-types";
 import {
   clearSession,
@@ -36,7 +37,10 @@ export interface RunUsage {
   latencyMs?: number;
 }
 
-export type RunnerEvent = RunStreamEvent & { ticketId?: string };
+export type RunnerEvent = RunStreamEvent & {
+  ticketId?: string;
+  saveFailed?: boolean;
+};
 
 const TYPE_DEFAULT_PREFS: Record<
   TicketType,
@@ -109,18 +113,6 @@ function readAsDataURL(file: Blob): Promise<string> {
   });
 }
 
-async function extractTextFromImage(dataUrl: string): Promise<string | null> {
-  try {
-    const { createWorker } = await import("tesseract.js");
-    const worker = await createWorker(OCR_LANGUAGE);
-    const { data } = await worker.recognize(dataUrl);
-    await worker.terminate();
-    return data.text?.trim() || null;
-  } catch {
-    return null;
-  }
-}
-
 function isValidImageFile(file: File): {
   ok: boolean;
   error?: string;
@@ -184,6 +176,7 @@ export function useTicketGeneration() {
   const [dragging, setDragging] = useState(false);
   const [hasAiKey, setHasAiKey] = useState<boolean | null>(null);
   const [aiProvider, setAiProvider] = useState<AiProvider | null>(null);
+  const [model, setModel] = useState<string>("");
   const [uploadCount, setUploadCount] = useState(0);
   const [screen, setScreen] = useState<"input" | "output">("input");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -206,7 +199,24 @@ export function useTicketGeneration() {
       .then((res) => res.json())
       .then((data) => {
         setHasAiKey(data.hasAiKey);
-        setAiProvider((data.aiProvider as AiProvider | null) ?? null);
+        const provider = (data.aiProvider as AiProvider | null) ?? null;
+        setAiProvider(provider);
+        // Resolve the model alongside the provider: prefer the stored pick if
+        // it's still in the provider's catalog, else the catalog default.
+        if (provider) {
+          let stored: string | null = null;
+          try {
+            stored = localStorage.getItem(MODEL_STORAGE_KEY);
+          } catch {
+            /* ignore private mode */
+          }
+          const catalogIds = MODEL_CATALOG[provider].map((m) => m.id);
+          setModel(
+            stored && catalogIds.includes(stored)
+              ? stored
+              : defaultModelFor(provider),
+          );
+        }
       })
       .catch(() => setHasAiKey(false));
   }, []);
@@ -214,6 +224,15 @@ export function useTicketGeneration() {
   useEffect(() => {
     refreshKeyStatus();
   }, [refreshKeyStatus]);
+
+  // Persist the model pick.
+  useEffect(() => {
+    try {
+      if (model) localStorage.setItem(MODEL_STORAGE_KEY, model);
+    } catch {
+      /* ignore quota/private mode */
+    }
+  }, [model]);
 
   // The Settings dialog (rendered in the app shell) is the only place keys
   // change now; it broadcasts so this workspace can re-check the key gate.
@@ -379,15 +398,11 @@ export function useTicketGeneration() {
       return;
     }
 
-    // The model is locked to gpt-4o (vision-capable), so the screenshot is
-    // always sent and no model/vision hints travel to the server.
-    const isVision = true;
-
     const controller = new AbortController();
     abortRef.current = controller;
 
     setLoading(true);
-    setStatus(isVision ? "Analyzing screenshot…" : "Reading screenshot…");
+    setStatus("Analyzing screenshot…");
     setError("");
     setOcrFailed(false);
     setSteps([]);
@@ -396,21 +411,7 @@ export function useTicketGeneration() {
     setNeedsReview(false);
 
     try {
-      let ocrText = manualOcrText.trim();
-
-      if (!isVision && !ocrText) {
-        setStatus("Reading screenshot…");
-        const extracted = await extractTextFromImage(image);
-        if (!extracted) {
-          setOcrFailed(true);
-          setError(
-            "This model can't read images, and text extraction found nothing. Paste the text from the screenshot below and generate again.",
-          );
-          setStatus("");
-          return;
-        }
-        ocrText = extracted;
-      }
+      const ocrText = manualOcrText.trim();
 
       let screenshotUrl: string | null = null;
       let imageDataUri: string | null = null;
@@ -424,8 +425,6 @@ export function useTicketGeneration() {
       } else {
         screenshotUrl = image;
       }
-
-      setStatus("Analyzing screenshot…");
 
       const response = await fetch("/api/tickets", {
         method: "POST",
@@ -443,6 +442,7 @@ export function useTicketGeneration() {
           includeTechnicalContext,
           preferredPriority,
           language: "en",
+          ...(model ? { model } : {}),
         }),
         signal: controller.signal,
       });
@@ -485,6 +485,11 @@ export function useTicketGeneration() {
             setNeedsReview(event.needsReview);
             setStatus("");
             setScreen("output");
+            if (event.saveFailed) {
+              toast.warning(
+                "Ticket generated but couldn't be saved to history. It will not appear under History.",
+              );
+            }
             break;
           case "error":
             throw new Error(event.message);
@@ -545,6 +550,7 @@ export function useTicketGeneration() {
     detectComponent,
     includeTechnicalContext,
     preferredPriority,
+    model,
     uploadImage,
   ]);
 
@@ -759,6 +765,7 @@ export function useTicketGeneration() {
     dragging,
     hasAiKey,
     aiProvider,
+    model,
     ticketType,
     preferredPriority,
     prefsValue,
@@ -772,6 +779,7 @@ export function useTicketGeneration() {
     setManualOcrText,
     setOcrFailed,
     setPreferredPriority,
+    setModel,
     setScreen,
     generateTicket,
     stopGeneration,

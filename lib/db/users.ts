@@ -1,6 +1,6 @@
 import { db } from "./index";
 import { users, tickets, aiKeys } from "./schema";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, sql } from "drizzle-orm";
 import { type AiProvider } from "@/lib/constants";
 
 export async function getOrCreateUser(clerkUserId: string, email: string) {
@@ -11,8 +11,11 @@ export async function getOrCreateUser(clerkUserId: string, email: string) {
     .values({ clerkUserId, email })
     .onConflictDoUpdate({
       target: users.clerkUserId,
-      // On conflict keep the stored email unless we have a real one.
-      set: { email: email || undefined },
+      // On conflict keep the stored email unless we have a real one. An
+      // all-undefined `set` makes drizzle throw "No values to set" at build
+      // time, so an empty email falls back to the existing column value
+      // (valid on the right side of ON CONFLICT DO UPDATE).
+      set: { email: email || sql`users.email` },
     })
     .returning();
 

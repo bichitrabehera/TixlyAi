@@ -1,9 +1,11 @@
 import "dotenv/config";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { appendFileSync } from "node:fs";
 import { db } from "@/lib/db";
 import { tickets } from "@/lib/db/schema";
 import { getOrCreateUser, getAiKey, listAiKeys, setAiKeyStatus } from "@/lib/db/users";
+import { deleteAllTicketsForUser } from "@/lib/db/tickets";
 import { checkRateLimit } from "@/lib/rate-limit";
 import {
   AI_PROVIDERS,
@@ -47,6 +49,24 @@ export async function GET() {
   }
 }
 
+export async function DELETE() {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const deleted = await deleteAllTicketsForUser(userId);
+    return NextResponse.json({ deleted });
+  } catch (error) {
+    console.error("Error deleting tickets:", error);
+    return NextResponse.json(
+      { error: "Failed to delete tickets" },
+      { status: 500 },
+    );
+  }
+}
+
 function extractTicketType(ticketJson: string, fallback?: string): string | null {
   try {
     const parsed = JSON.parse(ticketJson) as { type?: string };
@@ -56,11 +76,27 @@ function extractTicketType(ticketJson: string, fallback?: string): string | null
   }
 }
 
+// TEMP DIAGNOSTIC — remove after the save bug is confirmed fixed.
+const DIAG_LOG = ".ticket-save.log";
+function diag(message: string, data?: unknown) {
+  try {
+    appendFileSync(
+      DIAG_LOG,
+      `${new Date().toISOString()} ${message}${
+        data !== undefined ? " " + JSON.stringify(data) : ""
+      }\n`,
+    );
+  } catch {
+    /* logging must never break the request */
+  }
+}
+
 export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  diag("POST start", { userId });
 
   let req!: TicketRequest;
   try {
@@ -154,8 +190,12 @@ export async function POST(request: Request) {
 
       const markGone = () => {
         clientGone = true;
+        diag("clientGone marked (abort)");
       };
       request.signal.addEventListener("abort", markGone, { once: true });
+      diag("stream started", {
+        signalAborted: request.signal.aborted,
+      });
 
       try {
         const generator = streamTicketRun({
@@ -163,27 +203,35 @@ export async function POST(request: Request) {
           encryptedKey,
           req,
           userId,
+          model: req.model,
         });
 
         for await (const event of generator) {
-          // Client hit Stop or disconnected: abandoning the loop stops the
-          // generator from pulling further model calls, and nothing is saved.
-          if (clientGone) break;
-
           if (event.type === "error" && event.code === "key_invalid") {
             setAiKeyStatus(userId, provider, "invalid").catch(() => {});
           }
 
           if (event.type !== "done") {
+            // Client hit Stop or disconnected: abandon the loop so the
+            // generator stops pulling further model calls.
+            if (clientGone) {
+              diag("breaking mid-stream (clientGone)", { type: event.type });
+              break;
+            }
             send(event);
             continue;
           }
 
-          if (clientGone) break;
-
+          diag("done event received", { clientGone });
+          // The generator produced a ticket — always persist it, even if the
+          // client disconnected mid-stream. Throwing away a fully generated
+          // ticket because the browser left is the bug that made History
+          // silently empty.
           let ticketId: string | undefined;
+          let saveFailed = false;
           try {
             const user = await getOrCreateUser(userId, "");
+            diag("user resolved", { clerkUserId: user.clerkUserId });
             const ticketType = extractTicketType(
               event.ticket,
               req.ticketType,
@@ -201,6 +249,7 @@ export async function POST(request: Request) {
               .returning();
 
             ticketId = savedTicket.id;
+            diag("INSERT ok", { ticketId });
 
             if (event.needsReview) {
               await flagForHumanReview({
@@ -211,12 +260,26 @@ export async function POST(request: Request) {
             }
           } catch (saveError) {
             console.error("Failed to save ticket:", saveError);
+            diag("INSERT FAILED", {
+              message:
+                saveError instanceof Error
+                  ? saveError.message
+                  : String(saveError),
+              stack:
+                saveError instanceof Error ? saveError.stack?.slice(0, 500) : undefined,
+            });
+            saveFailed = true;
           }
 
-          send({ ...event, ticketId });
+          // send() no-ops if the client is gone (controller already closed).
+          send({ ...event, ticketId, saveFailed });
+          diag("done sent", { ticketId, saveFailed, clientGone });
         }
       } catch (error) {
         console.error("Error streaming ticket generation:", error);
+        diag("stream ERROR", {
+          message: error instanceof Error ? error.message : String(error),
+        });
         if (isAuthModelError(error)) {
           setAiKeyStatus(userId, provider, "invalid").catch(() => {});
           send({
@@ -242,6 +305,7 @@ export async function POST(request: Request) {
     },
     cancel() {
       clientGone = true;
+      diag("stream cancel() called by consumer");
     },
   });
 

@@ -19,6 +19,7 @@ const TYPE_FIELDS: Record<TicketType, string[]> = {
     "component",
     "additionalNotes",
     "needsHumanReview",
+    "confidence",
   ],
   feature: [
     "title",
@@ -29,6 +30,7 @@ const TYPE_FIELDS: Record<TicketType, string[]> = {
     "scope",
     "additionalNotes",
     "needsHumanReview",
+    "confidence",
   ],
   ui: [
     "title",
@@ -41,6 +43,7 @@ const TYPE_FIELDS: Record<TicketType, string[]> = {
     "environment",
     "additionalNotes",
     "needsHumanReview",
+    "confidence",
   ],
   feedback: [
     "title",
@@ -51,6 +54,7 @@ const TYPE_FIELDS: Record<TicketType, string[]> = {
     "actionItems",
     "additionalNotes",
     "needsHumanReview",
+    "confidence",
   ],
   task: [
     "title",
@@ -59,6 +63,7 @@ const TYPE_FIELDS: Record<TicketType, string[]> = {
     "checklist",
     "additionalNotes",
     "needsHumanReview",
+    "confidence",
   ],
 };
 
@@ -84,12 +89,14 @@ How to work:
 4. Use the available tools when useful: search past tickets for duplicates or context, fetch a ticket template for the target type, and check priority guidelines before setting priority/severity.
 5. If information is ambiguous or insufficient, set needsHumanReview to true and explain why in additionalNotes.
 6. Never hallucinate details that are not visible in the image or present in the inputs.
+7. Rate your overall certainty in the confidence field (0-100). Lower it when the screenshot is ambiguous, OCR is noisy, or fields are inferred rather than observed. When confidence is below 60, also set needsHumanReview to true.
 
 Ticket field guidance:
 - type: one of ${TICKET_TYPES.join("|")}
 - title: short summary (max ${TICKET_TITLE_MAX_LENGTH} chars)
 - priority: one of ${PRIORITIES.join("|")} — follow the priority guidelines tool
 - description: 2-3 sentence explanation of what is happening and why it matters
+- confidence: your certainty that this ticket is accurate and complete, 0-100 — never inflate it to look good
 ${typeInstruction}
 
 Request settings:

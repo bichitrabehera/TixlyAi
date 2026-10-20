@@ -10,13 +10,9 @@ import {
   type OutputPreferencesValue,
 } from "@/components/dashboard/OutputPreferences";
 import { AdvancedOptions } from "@/components/dashboard/AdvancedOptions";
-import {
-  PROVIDER_MODEL_LABEL,
-  type AiProvider,
-  type TicketType,
-} from "@/lib/constants";
+import { ModelPicker } from "@/components/generate/ModelPicker";
+import type { AiProvider, TicketType } from "@/lib/constants";
 import type { Priority } from "@/lib/hooks/useTicketGeneration";
-import { cn } from "@/lib/utils";
 
 interface InputScreenProps {
   image: string | null;
@@ -31,11 +27,13 @@ interface InputScreenProps {
   preferredPriority: Priority | undefined;
   prefsValue: OutputPreferencesValue;
   aiProvider: AiProvider | null;
+  model: string;
   fileInputRef: RefObject<HTMLInputElement | null>;
   onNoteChange: (value: string) => void;
   onTicketTypeChange: (value: TicketType | undefined) => void;
   onPreferredPriorityChange: (value: Priority | undefined) => void;
   onPrefsChange: (value: OutputPreferencesValue) => void;
+  onModelChange: (value: string) => void;
   onManualOcrChange: (value: string) => void;
   onDrop: (e: DragEvent) => void;
   onDragOver: (e: DragEvent) => void;
@@ -58,11 +56,13 @@ export function InputScreen({
   preferredPriority,
   prefsValue,
   aiProvider,
+  model,
   fileInputRef,
   onNoteChange,
   onTicketTypeChange,
   onPreferredPriorityChange,
   onPrefsChange,
+  onModelChange,
   onManualOcrChange,
   onDrop,
   onDragOver,
@@ -138,6 +138,13 @@ export function InputScreen({
           />
         </section>
 
+        <ModelPicker
+          provider={aiProvider}
+          value={model}
+          onChange={onModelChange}
+          disabled={loading}
+        />
+
         <AdvancedOptions
           value={prefsValue}
           onChange={onPrefsChange}
@@ -147,7 +154,7 @@ export function InputScreen({
         />
       </div>
 
-      <footer className="flex shrink-0 items-center justify-between border-t border-hairline bg-canvas p-4">
+      <footer className="flex shrink-0 items-center justify-between  bg-canvas p-4">
         <p className="flex items-baseline gap-1.5 text-xs">
           <span className="font-bold text-ink">{image ? 1 : 0}</span>
           <span className="text-muted">
